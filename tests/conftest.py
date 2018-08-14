@@ -4,10 +4,11 @@ Tasks:
 1. setup test database before starting the tests
 2. delete test database after running the tests
 """
-
+import json
 import os
 import copy
 import random
+import tempfile
 from collections import namedtuple
 from logging import getLogger
 from logging.config import dictConfig
@@ -329,17 +330,19 @@ def _get_height(b):
 def inputs(user_pk, b, alice):
     from bigchaindb.models import Transaction
     # create blocks with transactions for `USER` to spend
-    for block in range(4):
+    for height in range(1, 4):
         transactions = [
             Transaction.create(
                 [alice_pubkey(alice)],
                 [([user_pk], 1)],
                 metadata={'msg': random.random()},
-            ).sign([alice_privkey(alice)]).to_dict()
+            ).sign([alice_privkey(alice)])
             for _ in range(10)
         ]
-        block = Block(app_hash='', height=_get_height(b), transactions=transactions)
+        tx_ids = [tx.id for tx in transactions]
+        block = Block(app_hash='hash'+str(height), height=height, transactions=tx_ids)
         b.store_block(block._asdict())
+        b.store_bulk_transactions(transactions)
 
 
 @pytest.fixture
@@ -668,3 +671,27 @@ def node_keys():
             '83VINXdj2ynOHuhvSZz5tGuOE5oYzIi0mEximkX1KYMlt/Csu8JUjA4+by2Pz3fqSLshhuYYeM+IpvqcBl6BEA==',
             'PecJ58SaNRsWJZodDmqjpCWqG6btdwXFHLyE40RYlYM=':
             'uz8bYgoL4rHErWT1gjjrnA+W7bgD/uDQWSRKDmC8otc95wnnxJo1GxYlmh0OaqOkJaobpu13BcUcvITjRFiVgw=='}
+
+
+@pytest.fixture(scope='session')
+def priv_validator_path(node_keys):
+    (public_key, private_key) = list(node_keys.items())[0]
+    priv_validator = {
+        'address': '84F787D95E196DC5DE5F972666CFECCA36801426',
+        'pub_key': {
+            'type': 'AC26791624DE60',
+            'value': public_key
+        },
+        'last_height': 0,
+        'last_round': 0,
+        'last_step': 0,
+        'priv_key': {
+            'type': '954568A3288910',
+            'value': private_key
+        }
+    }
+    fd, path = tempfile.mkstemp()
+    socket = os.fdopen(fd, 'w')
+    json.dump(priv_validator, socket)
+    socket.close()
+    return path

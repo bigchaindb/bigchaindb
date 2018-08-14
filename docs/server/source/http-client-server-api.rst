@@ -301,7 +301,7 @@ Assets
 
         Currently this endpoint is only supported if using MongoDB.
 
-.. http:get:: /api/v1/assets?search={search}
+.. http:get:: /api/v1/assets/?search={search}
 
     Return all assets that match a given text search.
     
@@ -309,6 +309,10 @@ Assets
     
        The ``id`` of the asset
        is the same ``id`` of the CREATE transaction that created the asset.
+
+    .. note::
+    
+       You can use ``assets/?search`` or ``assets?search``.
 
     If no assets match the text search it returns an empty list.
 
@@ -424,6 +428,10 @@ Transaction Metadata
 
        The ``id`` of the metadata
        is the same ``id`` of the transaction where it was defined.
+
+    .. note::
+    
+       You can use ``metadata/?search`` or ``metadata?search``.
 
     If no metadata objects match the text search it returns an empty list.
 

@@ -9,19 +9,19 @@ import copy
 import json
 import sys
 
+from bigchaindb.utils import load_node_key
 from bigchaindb.common.exceptions import (DatabaseAlreadyExists,
                                           DatabaseDoesNotExist,
-                                          MultipleValidatorOperationError)
+                                          OperationError)
 import bigchaindb
-from bigchaindb import backend
+from bigchaindb import backend, ValidatorElection, BigchainDB
 from bigchaindb.backend import schema
 from bigchaindb.backend import query
-from bigchaindb.backend.query import VALIDATOR_UPDATE_ID, PRE_COMMIT_ID
+from bigchaindb.backend.query import PRE_COMMIT_ID
 from bigchaindb.commands import utils
 from bigchaindb.commands.utils import (configure_bigchaindb,
                                        input_on_stderr)
 from bigchaindb.log import setup_logging
-from bigchaindb.tendermint_utils import public_key_from_base64
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -95,21 +95,48 @@ def run_configure(args):
 
 @configure_bigchaindb
 def run_upsert_validator(args):
-    """Store validators which should be synced with Tendermint"""
+    """Initiate and manage elections to change the validator set"""
 
-    b = bigchaindb.BigchainDB()
-    public_key = public_key_from_base64(args.public_key)
-    validator = {'pub_key': {'type': 'ed25519',
-                             'data': public_key},
-                 'power': args.power}
-    validator_update = {'validator': validator,
-                        'update_id': VALIDATOR_UPDATE_ID}
-    try:
-        query.store_validator_update(b.connection, validator_update)
-    except MultipleValidatorOperationError:
-        logger.error('A validator update is pending to be applied. '
-                     'Please re-try after the current update has '
-                     'been processed.')
+    b = BigchainDB()
+
+    # Call the function specified by args.action, as defined above
+    globals()[f'run_upsert_validator_{args.action}'](args, b)
+
+
+def run_upsert_validator_new(args, bigchain):
+    """Initiates an election to add/update/remove a validator to an existing BigchainDB network
+
+    :param args: dict
+        args = {
+        'public_key': the public key of the proposed peer, (str)
+        'power': the proposed validator power for the new peer, (str)
+        'node_id': the node_id of the new peer (str)
+        'sk': the path to the private key of the node calling the election (str)
+        }
+    :param bigchain: an instance of BigchainDB
+    :return: election_id (tx_id)
+    :raises: OperationError if the write transaction fails for any reason
+    """
+
+    new_validator = {
+        'public_key': args.public_key,
+        'power': args.power,
+        'node_id': args.node_id
+    }
+
+    key = load_node_key(args.sk)
+
+    voters = ValidatorElection.recipients(bigchain)
+
+    election = ValidatorElection.generate([key.public_key],
+                                          voters,
+                                          new_validator, None).sign([key.private_key])
+    election.validate(bigchain)
+    resp = bigchain.write_transaction(election, 'broadcast_tx_commit')
+    if resp == (202, ''):
+        return election.id
+    else:
+        raise OperationError('Failed to commit election')
 
 
 def _run_init():
@@ -208,16 +235,30 @@ def create_parser():
                                help='The backend to use. It can only be '
                                '"localmongodb", currently.')
 
+    # parser for managing validator elections
     validator_parser = subparsers.add_parser('upsert-validator',
-                                             help='Add/update/delete a validator')
+                                             help='Add/update/delete a validator.')
 
-    validator_parser.add_argument('public_key',
-                                  help='Public key of the validator.')
+    validator_subparser = validator_parser.add_subparsers(title='Action',
+                                                          dest='action')
 
-    validator_parser.add_argument('power',
-                                  type=int,
-                                  help='Voting power of the validator. '
-                                  'Setting it to 0 will delete the validator.')
+    new_election_parser = validator_subparser.add_parser('new',
+                                                         help='Calls a new election.')
+
+    new_election_parser.add_argument('public_key',
+                                     help='Public key of the validator to be added/updated/removed.')
+
+    new_election_parser.add_argument('power',
+                                     type=int,
+                                     help='The proposed power for the validator. '
+                                          'Setting to 0 will remove the validator.')
+
+    new_election_parser.add_argument('node_id',
+                                     help='The node_id of the validator.')
+
+    new_election_parser.add_argument('--private-key',
+                                     dest='sk',
+                                     help='Path to the private key of the election initiator.')
 
     # parsers for showing/exporting config values
     subparsers.add_parser('show-config',

@@ -2,8 +2,12 @@ import contextlib
 import threading
 import queue
 import multiprocessing as mp
+import json
 
 import setproctitle
+
+from bigchaindb.tendermint_utils import key_from_base64
+from bigchaindb.common.crypto import key_pair_from_ed25519_key
 
 
 class ProcessGroup(object):
@@ -31,7 +35,8 @@ class ProcessGroup(object):
 class Process(mp.Process):
     """Wrapper around multiprocessing.Process that uses
     setproctitle to set the name of the process when running
-    the target task."""
+    the target task.
+    """
 
     def run(self):
         setproctitle.setproctitle(self.name)
@@ -167,3 +172,12 @@ class Lazy:
 
         self.stack = []
         return last
+
+
+# Load Tendermint's public and private key from the file path
+def load_node_key(path):
+    with open(path) as json_data:
+        priv_validator = json.load(json_data)
+        priv_key = priv_validator['priv_key']['value']
+        hex_private_key = key_from_base64(priv_key)
+        return key_pair_from_ed25519_key(hex_private_key)
