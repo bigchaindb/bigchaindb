@@ -1,6 +1,14 @@
 # Configuration Settings
 
-The value of each BigchainDB Server configuration setting is determined according to the following rules:
+Every BigchainDB Server configuration setting has two names: a config-file name and an environment variable name. For example, one of the settings has the config-file name `database.host` and the environment variable name `BIGCHAINDB_DATABASE_HOST`. Here are some more examples:
+
+`database.port` ↔ `BIGCHAINDB_DATABASE_PORT`
+
+`database.keyfile_passphrase` ↔ `BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE`
+
+`server.bind` ↔ `BIGCHAINDB_SERVER_BIND`
+
+The value of each setting is determined according to the following rules:
 
 * If it's set by an environment variable, then use that value
 * Otherwise, if it's set in a local config file, then use that value
