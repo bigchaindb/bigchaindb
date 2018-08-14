@@ -104,3 +104,16 @@ $ bigchaindb upsert-validator new B0E42D2589A455EAD339A035D6CE1C8C3E25863F268120
 ```
 
 If the command succeeds, it will create an election and return an `election_id`. Elections consist of one vote token per voting power, issued to the members of the validator set. Validators can cast their votes to approve the change to the validator set by spending their vote tokens. The status of the election can be monitored by providing the `election_id` to the `show` subcommand.
+
+#### upsert-validator show
+
+Retrieves information about an election initiated by `upsert-validator new`.
+
+Below is the command line syntax and the return value,
+
+```bash
+$ bigchaindb upsert-validator show ELECTION_ID
+<e_pub_key> <e_power> <e_node_id>
+```
+
+Note that the inputs and return values of `upsert-validator new` and `upsert-validator show` are inverse to one another.
