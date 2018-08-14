@@ -411,37 +411,26 @@ def test_upsert_validator_new_without_tendermint(b, priv_validator_path, user_sk
     assert b.get_transaction(resp)
 
 
-@pytest.mark.tendermint
 @pytest.mark.abci
 @pytest.mark.bdb
-def test_upsert_validator_approve(b, priv_validator_path, user_sk, monkeypatch):
+def test_upsert_validator_approve(b, priv_validator_path, user_sk, validators):
     from bigchaindb.commands.bigchaindb import run_upsert_validator_new, \
         run_upsert_validator_approve
 
-    def mock_get():
-        return [
-            {'pub_key': {'value': 'zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=',
-                         'type': 'tendermint/PubKeyEd25519'},
-             'voting_power': 10}
-        ]
-
-    def mock_write(tx, mode):
-        b.store_transaction(tx)
-        return 202, ''
-    b.get_validators = mock_get
-    b.write_transaction = mock_write
-    monkeypatch.setattr('requests.get', mock_get)
-    public_key = 'CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg='
+    public_key = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
     new_args = Namespace(action='new',
                          public_key=public_key,
                          power=1,
                          node_id='12345',
                          sk=priv_validator_path,
                          config={})
+
     election_id = run_upsert_validator_new(new_args, b)
+
     args = Namespace(action='approve',
                      election_id=election_id,
                      sk=priv_validator_path,
                      config={})
     approve = run_upsert_validator_approve(args, b)
-    assert approve == 'Your vote has been submitted.'
+
+    assert b.get_transaction(approve)

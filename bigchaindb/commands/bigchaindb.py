@@ -152,15 +152,21 @@ def run_upsert_validator_approve(args, bigchain):
     :return: a success message
     :raises: OperationError if the write transaction fails for any reason
     """
+
     key = load_node_key(args.sk)
     tx = bigchain.get_transaction(args.election_id)
-    voting_power = ValidatorElection.current_validators(bigchain)[key.public_key]
-    approval_tx = ValidatorElectionVote.generate(tx.to_inputs(), [
+    voting_power = ValidatorElection.current_validators(bigchain)[
+        key.public_key]
+
+    approval = ValidatorElectionVote.generate(tx.to_inputs(), [
         ([key.public_key], voting_power)], tx.id).sign([key.private_key])
-    approval_tx.validate(bigchain)
-    resp = bigchain.write_transaction(approval_tx, 'broadcast_tx_commit')
+    approval.validate(bigchain)
+
+    resp = bigchain.write_transaction(approval, 'broadcast_tx_commit')
+
     if resp == (202, ''):
-        return 'Your vote has been submitted.'
+        print('Your vote has been submitted.')
+        return approval.id
     else:
         raise OperationError('Failed to vote for election')
 

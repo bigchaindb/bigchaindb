@@ -32,11 +32,10 @@ class ValidatorElection(Transaction):
         """Return a dictionary of validators with key as `public_key` and
            value as the `voting_power`
         """
-
         validators = {}
         for validator in bigchain.get_validators():
             # NOTE: we assume that Tendermint encodes public key in base64
-            public_key = public_key_from_ed25519_key(key_from_base64(validator['pub_key']['value']))
+            public_key = public_key_from_ed25519_key(key_from_base64(validator['pub_key']['data']))
             validators[public_key] = validator['voting_power']
 
         return validators
@@ -114,7 +113,7 @@ class ValidatorElection(Transaction):
         if not self.is_same_topology(current_validators, self.outputs):
             raise UnequalValidatorSet('Validator set much be exactly same to the outputs of election')
 
-        return True
+        return self
 
     @classmethod
     def generate(cls, initiator, voters, election_data, metadata=None):

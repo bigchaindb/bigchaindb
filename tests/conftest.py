@@ -661,7 +661,7 @@ def ed25519_node_keys(node_keys):
     return node_keys_dict
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture
 def node_keys():
     return {'zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=':
             'cM5oW4J0zmUSZ/+QRoRlincvgCwR0pEjFoY//ZnnjD3Mv8Nqy8q6VdnOFI0XDHhwtFcqRIz0Y8rtjSdngUTKUw==',
@@ -673,7 +673,12 @@ def node_keys():
             'uz8bYgoL4rHErWT1gjjrnA+W7bgD/uDQWSRKDmC8otc95wnnxJo1GxYlmh0OaqOkJaobpu13BcUcvITjRFiVgw=='}
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture
+def private_validator_keys(node_keys):
+    return list(node_keys.items())[0]
+
+
+@pytest.fixture
 def priv_validator_path(node_keys):
     (public_key, private_key) = list(node_keys.items())[0]
     priv_validator = {
@@ -695,3 +700,21 @@ def priv_validator_path(node_keys):
     json.dump(priv_validator, socket)
     socket.close()
     return path
+
+
+@pytest.fixture
+def validators(b, node_keys):
+    from bigchaindb.backend import query
+
+    (public_key, private_key) = list(node_keys.items())[0]
+
+    validator_set = [{'address': 'F5426F0980E36E03044F74DD414248D29ABCBDB2',
+                      'pub_key': {
+                          'data': public_key,
+                          'type': 'ed25519'},
+                      'voting_power': 10}]
+
+    validator_update = {'validators': validator_set,
+                        'height': 4266642}
+
+    query.store_validator_set(b.connection, validator_update)
