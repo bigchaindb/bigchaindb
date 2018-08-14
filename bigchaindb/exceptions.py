@@ -4,7 +4,3 @@ class BigchainDBError(Exception):
 
 class CriticalDoubleSpend(BigchainDBError):
     """Data integrity error that requires attention"""
-
-
-class CriticalDoubleInclusion(BigchainDBError):
-    """Data integrity error that requires attention"""

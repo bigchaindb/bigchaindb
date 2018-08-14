@@ -330,17 +330,19 @@ def _get_height(b):
 def inputs(user_pk, b, alice):
     from bigchaindb.models import Transaction
     # create blocks with transactions for `USER` to spend
-    for block in range(4):
+    for height in range(1, 4):
         transactions = [
             Transaction.create(
                 [alice_pubkey(alice)],
                 [([user_pk], 1)],
                 metadata={'msg': random.random()},
-            ).sign([alice_privkey(alice)]).to_dict()
+            ).sign([alice_privkey(alice)])
             for _ in range(10)
         ]
-        block = Block(app_hash='', height=_get_height(b), transactions=transactions)
+        tx_ids = [tx.id for tx in transactions]
+        block = Block(app_hash='hash'+str(height), height=height, transactions=tx_ids)
         b.store_block(block._asdict())
+        b.store_bulk_transactions(transactions)
 
 
 @pytest.fixture
