@@ -1,4 +1,3 @@
-from time import sleep
 from unittest.mock import patch
 
 import pytest
@@ -8,27 +7,6 @@ pytestmark = pytest.mark.bdb
 
 
 class TestBigchainApi(object):
-
-    @pytest.mark.tendermint
-    def test_get_spent_with_double_inclusion_detected(self, b, alice):
-        from bigchaindb.models import Transaction
-        from bigchaindb.backend.exceptions import OperationError
-
-        tx = Transaction.create([alice.public_key], [([alice.public_key], 1)])
-        tx = tx.sign([alice.private_key])
-
-        b.store_bulk_transactions([tx])
-
-        transfer_tx = Transaction.transfer(tx.to_inputs(), [([alice.public_key], 1)],
-                                           asset_id=tx.id)
-        transfer_tx = transfer_tx.sign([alice.private_key])
-        b.store_bulk_transactions([transfer_tx])
-
-        transfer_tx2 = Transaction.transfer(tx.to_inputs(), [([alice.public_key], 1)],
-                                            asset_id=tx.id)
-        transfer_tx2 = transfer_tx2.sign([alice.private_key])
-        with pytest.raises(OperationError):
-            b.store_bulk_transactions([transfer_tx2])
 
     @pytest.mark.tendermint
     def test_get_spent_with_double_spend_detected(self, b, alice):
@@ -77,8 +55,6 @@ class TestBigchainApi(object):
     @pytest.mark.tendermint
     def test_text_search(self, b, alice):
         from bigchaindb.models import Transaction
-        from bigchaindb.backend.exceptions import OperationError
-        from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 
         # define the assets
         asset1 = {'msg': 'BigchainDB 1'}
@@ -97,13 +73,8 @@ class TestBigchainApi(object):
         b.store_bulk_transactions([tx1, tx2, tx3])
 
         # get the assets through text search
-        # this query only works with MongoDB
-        try:
-            assets = list(b.text_search('bigchaindb'))
-        except OperationError as exc:
-            assert not isinstance(b.connection, LocalMongoDBConnection)
-        else:
-            assert len(assets) == 3
+        assets = list(b.text_search('bigchaindb'))
+        assert len(assets) == 3
 
     @pytest.mark.usefixtures('inputs')
     @pytest.mark.tendermint
@@ -179,8 +150,6 @@ class TestTransactionValidation(object):
         from bigchaindb.common.exceptions import DoubleSpend
 
         b.store_bulk_transactions([signed_create_tx, signed_transfer_tx])
-
-        sleep(1)
 
         with pytest.raises(DoubleSpend):
             b.validate_transaction(double_spend_tx)
