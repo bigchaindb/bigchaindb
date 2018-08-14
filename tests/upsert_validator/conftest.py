@@ -40,3 +40,11 @@ def valid_election(b_mock, node_key, new_validator):
     return ValidatorElection.generate([node_key.public_key],
                                       voters,
                                       new_validator, None).sign([node_key.private_key])
+
+
+@pytest.fixture
+def valid_election_b(b, node_key, new_validator):
+    voters = ValidatorElection.recipients(b)
+    return ValidatorElection.generate([node_key.public_key],
+                                      voters,
+                                      new_validator, None).sign([node_key.private_key])

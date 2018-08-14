@@ -1,5 +1,7 @@
 import pytest
+import codecs
 
+from bigchaindb.tendermint_utils import public_key_to_base64
 from bigchaindb.upsert_validator import ValidatorElection, ValidatorElectionVote
 from bigchaindb.common.exceptions import AmountError
 from bigchaindb.common.crypto import generate_key_pair
@@ -194,7 +196,7 @@ def test_valid_election_conclude(b_mock, valid_election, ed25519_node_keys):
 
 @pytest.mark.tendermint
 @pytest.mark.bdb
-def test_get_validator_update(b_mock, valid_election, ed25519_node_keys):
+def test_get_validator_update_conclude(b_mock, valid_election, ed25519_node_keys):
     # store election
     b_mock.store_bulk_transactions([valid_election])
 
@@ -218,7 +220,6 @@ def test_get_validator_update(b_mock, valid_election, ed25519_node_keys):
 
 @pytest.mark.abci
 def test_upsert_validator(b, node_key, node_keys, new_validator, ed25519_node_keys):
-    from bigchaindb.tendermint_utils import public_key_to_base64
     import time
     import requests
 
@@ -269,6 +270,37 @@ def test_upsert_validator(b, node_key, node_keys, new_validator, ed25519_node_ke
     assert (public_key64 in validator_pub_keys)
 
 
+@pytest.mark.tendermint
+@pytest.mark.bdb
+def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
+    reset_validator_set(b, node_keys, 1)
+
+    power = 1
+    public_key = '9B3119650DF82B9A5D8A12E38953EA47475C09F0C48A4E6A0ECE182944B24403'
+    public_key64 = public_key_to_base64(public_key)
+    new_validator = {'public_key': public_key,
+                     'node_id': 'some_node_id',
+                     'power': power}
+    voters = ValidatorElection.recipients(b)
+    election = ValidatorElection.generate([node_key.public_key],
+                                          voters,
+                                          new_validator).sign([node_key.private_key])
+    # store election
+    b.store_bulk_transactions([election])
+
+    tx_vote0 = gen_vote(election, 0, ed25519_node_keys)
+    tx_vote1 = gen_vote(election, 1, ed25519_node_keys)
+    tx_vote2 = gen_vote(election, 2, ed25519_node_keys)
+
+    assert ValidatorElection.conclude(b, election.id, [tx_vote0, tx_vote1, tx_vote2])
+
+    update = ValidatorElection.get_validator_update(b, 4, [tx_vote0, tx_vote1, tx_vote2])
+
+    assert len(update) == 1
+    update_public_key = codecs.encode(update[0].pub_key.data, 'base64').decode().rstrip('\n')
+    assert update_public_key == public_key64
+
+
 # ============================================================================
 # Helper functions
 # ============================================================================
@@ -287,3 +319,12 @@ def gen_vote(election, i, ed25519_node_keys):
                                           [([election_pub_key], votes_i)],
                                           election_id=election.id)\
                                 .sign([key_i.private_key])
+
+
+def reset_validator_set(b, node_keys, height):
+    validators = []
+    for (node_pub, _) in node_keys.items():
+        validators.append({'pub_key': {'type': 'ed25519',
+                                       'data': node_pub},
+                           'voting_power': 10})
+    b.store_validator_set(height, validators)

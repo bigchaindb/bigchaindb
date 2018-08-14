@@ -24,7 +24,7 @@ class ValidatorElectionVote(Transaction):
             bigchain (BigchainDB): an instantiated bigchaindb.lib.BigchainDB object.
 
         Returns:
-            `True` if the election vote is valid
+            ValidatorElectionVote object
 
         Raises:
             ValidationError: If the election vote is invalid

@@ -1,7 +1,6 @@
 """This module contains all the goodness to integrate BigchainDB
 with Tendermint."""
 import logging
-import codecs
 
 from abci.application import BaseApplication
 from abci.types_pb2 import (
@@ -12,16 +11,15 @@ from abci.types_pb2 import (
     ResponseDeliverTx,
     ResponseEndBlock,
     ResponseCommit,
-    Validator,
-    PubKey
 )
 
 from bigchaindb import BigchainDB
 from bigchaindb.tendermint_utils import (decode_transaction,
-                                         public_key_to_base64,
                                          calculate_hash)
 from bigchaindb.lib import Block, PreCommitState
 from bigchaindb.backend.query import PRE_COMMIT_ID
+from bigchaindb.upsert_validator import ValidatorElection
+import bigchaindb.upsert_validator.validator_utils as vutils
 
 
 CodeTypeOk = 0
@@ -47,7 +45,7 @@ class App(BaseApplication):
     def init_chain(self, genesis):
         """Initialize chain with block of height 0"""
 
-        validator_set = [decode_validator(v) for v in genesis.validators]
+        validator_set = [vutils.decode_validator(v) for v in genesis.validators]
         block = Block(app_hash='', height=0, transactions=[])
         self.bigchaindb.store_block(block._asdict())
         self.bigchaindb.store_validator_set(1, validator_set)
@@ -135,13 +133,14 @@ class App(BaseApplication):
 
         # TODO: calculate if an election has concluded
         # NOTE: ensure the local validator set is updated
-        validator_updates = self.bigchaindb.get_validator_update(self.block_transactions)
+        validator_updates = ValidatorElection.get_validator_update(self.bigchaindb,
+                                                                   self.new_height,
+                                                                   self.block_transactions)
+        # if validator_updates:
+        #     validator_set = new_validator_set(self.bigchaindb, self.new_height, validator_updates)
+        #     self.bigchaindb.store_validator_set(self.new_height+1, validator_set)
 
-        if validator_updates:
-            validator_set = new_validator_set(self.bigchaindb, self.new_height, validator_updates)
-            self.bigchaindb.store_validator_set(self.new_height+1, validator_set)
-
-        validator_updates = [encode_validator(v) for v in validator_updates]
+        # validator_updates = [vutils.encode_validator(v) for v in validator_updates]
 
         # Store pre-commit state to recover in case there is a crash
         # during `commit`
@@ -172,37 +171,3 @@ class App(BaseApplication):
                      self.block_txn_ids)
         logger.benchmark('COMMIT_BLOCK, height:%s', self.new_height)
         return ResponseCommit(data=data)
-
-
-def encode_validator(v):
-    ed25519_public_key = v['public_key']
-    # NOTE: tendermint expects public to be encoded in go-amino format
-    pub_key = PubKey(type='ed25519',
-                     data=bytes.fromhex(ed25519_public_key))
-
-    return Validator(pub_key=pub_key,
-                     address=b'',
-                     power=v['power'])
-
-
-def decode_validator(v):
-    return {'pub_key': {'type': v.pub_key.type,
-                        'data': codecs.encode(v.pub_key.data, 'base64').decode().rstrip('\n')},
-            'voting_power': v.power}
-
-
-def new_validator_set(bigchain, height, updates):
-    validators = bigchain.get_validators(height)
-    validators_dict = {}
-    for v in validators:
-        validators_dict[v['pub_key']['data']] = v
-
-    updates_dict = {}
-    for u in updates:
-        public_key64 = public_key_to_base64(u['public_key'])
-        updates_dict[public_key64] = {'pub_key': {'type': 'ed25519',
-                                                  'data': public_key64},
-                                      'voting_power': u['power']}
-
-    new_validators_dict = {**validators_dict, **updates_dict}
-    return list(new_validators_dict.values())

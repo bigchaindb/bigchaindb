@@ -8,7 +8,8 @@ from abci.types_pb2 import (
 
 from bigchaindb.core import (CodeTypeOk,
                              CodeTypeError,
-                             new_validator_set)
+                             )
+from bigchaindb.upsert_validator.validator_utils import new_validator_set
 from bigchaindb.tendermint_utils import public_key_to_base64
 
 
@@ -233,7 +234,7 @@ def test_new_validator_set(b):
     validators = [node1]
     updates = [node1_new_power, node2]
     b.store_validator_set(1, validators)
-    updated_validator_set = new_validator_set(b, 1, updates)
+    updated_validator_set = new_validator_set(b.get_validators(1), 1, updates)
 
     updated_validators = []
     for u in updates:
