@@ -24,7 +24,6 @@ from bigchaindb.common.exceptions import (SchemaValidationError,
 from bigchaindb.tendermint_utils import encode_transaction, merkleroot
 from bigchaindb import exceptions as core_exceptions
 from bigchaindb.consensus import BaseConsensusRules
-from bigchaindb.upsert_validator import ValidatorElection, ValidatorElectionVote
 
 
 logger = logging.getLogger(__name__)

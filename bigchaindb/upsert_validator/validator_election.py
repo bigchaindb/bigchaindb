@@ -152,25 +152,16 @@ class ValidatorElection(Transaction):
         return base58.b58encode(bytes.fromhex(election_id))
 
     @classmethod
-    def count_votes(cls, election_pk, txns):
+    def count_votes(cls, election_pk, txns, getter=getattr):
         votes = 0
         for txn in txns:
-            if isinstance(txn, dict):
-                if txn['operation'] == 'VALIDATOR_ELECTION_VOTE':
-                    for output in txn['outputs']:
-                        # NOTE: We enforce that a valid vote to election id will have only
-                        # election_pk in the output public keys, including any other public key
-                        # along with election_pk will lead to vote being not considered valid.
-                        if len(output['public_keys']) == 1 and [election_pk] == output['public_keys']:
-                            votes = votes + int(output['amount'])
-            else:
-                if txn.operation == 'VALIDATOR_ELECTION_VOTE':
-                    for output in txn.outputs:
-                        # NOTE: We enforce that a valid vote to election id will have only
-                        # election_pk in the output public keys, including any other public key
-                        # along with election_pk will lead to vote being not considered valid.
-                        if len(output.public_keys) == 1 and [election_pk] == output.public_keys:
-                            votes = votes + int(output.amount)
+            if getter(txn, 'operation') == 'VALIDATOR_ELECTION_VOTE':
+                for output in getter(txn, 'outputs'):
+                    # NOTE: We enforce that a valid vote to election id will have only
+                    # election_pk in the output public keys, including any other public key
+                    # along with election_pk will lead to vote being not considered valid.
+                    if len(getter(output, 'public_keys')) == 1 and [election_pk] == getter(output, 'public_keys'):
+                        votes = votes + int(getter(output, 'amount'))
         return votes
 
     def get_commited_votes(self, bigchain, election_pk=None):
@@ -180,7 +171,7 @@ class ValidatorElection(Transaction):
                                                                    self.id,
                                                                    [election_pk],
                                                                    'VALIDATOR_ELECTION_VOTE'))
-        return self.count_votes(election_pk, txns)
+        return self.count_votes(election_pk, txns, dict.get)
 
     @classmethod
     def conclude(cls, bigchain, txn_id, current_votes=[], height=None):
@@ -210,22 +201,24 @@ class ValidatorElection(Transaction):
     def get_validator_update(cls, bigchain, new_height, txns):
         votes = {}
         for txn in txns:
-            if isinstance(txn, ValidatorElectionVote):
-                election_id = txn.asset['id']
-                election_votes = votes.get(election_id, [])
-                election_votes.append(txn)
-                votes[election_id] = election_votes
+            if not isinstance(txn, ValidatorElectionVote):
+                continue
 
-                election = cls.conclude(bigchain, election_id, election_votes, new_height)
-                # Once an election concludes any other conclusion for the same
-                # or any other election is invalidated
-                if election:
-                    # The new validator set comes into effect from height = new_height+1
-                    validator_updates = [election.asset['data']]
-                    curr_validator_set = bigchain.get_validators(new_height)
-                    updated_validator_set = new_validator_set(curr_validator_set,
-                                                              new_height, validator_updates)
+            election_id = txn.asset['id']
+            election_votes = votes.get(election_id, [])
+            election_votes.append(txn)
+            votes[election_id] = election_votes
 
-                    bigchain.store_validator_set(new_height+1, updated_validator_set)
-                    return [encode_validator(election.asset['data'])]
+            election = cls.conclude(bigchain, election_id, election_votes, new_height)
+            # Once an election concludes any other conclusion for the same
+            # or any other election is invalidated
+            if election:
+                # The new validator set comes into effect from height = new_height+1
+                validator_updates = [election.asset['data']]
+                curr_validator_set = bigchain.get_validators(new_height)
+                updated_validator_set = new_validator_set(curr_validator_set,
+                                                          new_height, validator_updates)
+
+                bigchain.store_validator_set(new_height+1, updated_validator_set)
+                return [encode_validator(election.asset['data'])]
         return []

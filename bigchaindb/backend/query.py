@@ -372,10 +372,10 @@ def get_validator_set(conn, height):
 @singledispatch
 def get_asset_tokens_for_public_keys(connection, asset_id,
                                      public_keys, operation):
-    """Retrieve a list of `VALIDATOR_ELECTION_VOTE`s `txids` that are owned by `owner`.
+    """Retrieve a list of tokens of type `asset_id` that are owned by `public_keys`.
     Args:
-        election_id (str): Id of the election.
-        election_public_key (str): base58 encoded public key of the election
+        asset_id (str): Id of the token.
+        public_keys (str): list of public keys
         operation: filter transaction based on `operation`
     Returns:
         Iterator of transaction that list given owner in conditions.

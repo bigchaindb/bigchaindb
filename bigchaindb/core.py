@@ -131,16 +131,11 @@ class App(BaseApplication):
         else:
             self.block_txn_hash = block['app_hash']
 
-        # TODO: calculate if an election has concluded
-        # NOTE: ensure the local validator set is updated
+        # Check if the current block concluded any validator elections and
+        # update the locally tracked validator set
         validator_updates = ValidatorElection.get_validator_update(self.bigchaindb,
                                                                    self.new_height,
                                                                    self.block_transactions)
-        # if validator_updates:
-        #     validator_set = new_validator_set(self.bigchaindb, self.new_height, validator_updates)
-        #     self.bigchaindb.store_validator_set(self.new_height+1, validator_set)
-
-        # validator_updates = [vutils.encode_validator(v) for v in validator_updates]
 
         # Store pre-commit state to recover in case there is a crash
         # during `commit`
