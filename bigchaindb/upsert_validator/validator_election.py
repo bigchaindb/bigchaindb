@@ -33,13 +33,13 @@ class ValidatorElection(Transaction):
         super().__init__(operation, asset, inputs, outputs, metadata, version, hash_id)
 
     @classmethod
-    def current_validators(cls, bigchain):
+    def current_validators(cls, bigchain, height=None):
         """Return a dictionary of validators with key as `public_key` and
            value as the `voting_power`
         """
 
         validators = {}
-        for validator in bigchain.get_validators():
+        for validator in bigchain.get_validators(height):
             # NOTE: we assume that Tendermint encodes public key in base64
             public_key = public_key_from_ed25519_key(key_from_base64(validator['pub_key']['data']))
             validators[public_key] = validator['voting_power']
@@ -183,7 +183,7 @@ class ValidatorElection(Transaction):
         return self.count_votes(election_pk, txns)
 
     @classmethod
-    def conclude(cls, bigchain, txn_id, current_votes=[]):
+    def conclude(cls, bigchain, txn_id, current_votes=[], height=None):
         """Check if the given election has concluded or not
         NOTE:
         * Election is concluded iff the current validator set is exactly equal
@@ -196,7 +196,7 @@ class ValidatorElection(Transaction):
             election_pk = election.to_public_key(election.id)
             votes_commited = election.get_commited_votes(bigchain, election_pk)
             votes_current = election.count_votes(election_pk, current_votes)
-            current_validators = election.current_validators(bigchain)
+            current_validators = election.current_validators(bigchain, height)
 
             if election.is_same_topology(current_validators, election.outputs):
                 total_votes = sum(current_validators.values())
@@ -216,7 +216,7 @@ class ValidatorElection(Transaction):
                 election_votes.append(txn)
                 votes[election_id] = election_votes
 
-                election = cls.conclude(bigchain, election_id, election_votes)
+                election = cls.conclude(bigchain, election_id, election_votes, new_height)
                 # Once an election concludes any other conclusion for the same
                 # or any other election is invalidated
                 if election:

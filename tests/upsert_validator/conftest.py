@@ -22,7 +22,7 @@ def new_validator():
 
 
 def mock_get_validators(network_validators):
-    def validator_set():
+    def validator_set(height):
         validators = []
         for public_key, power in network_validators.items():
             validators.append({

@@ -442,21 +442,6 @@ class BigchainDB(object):
         validators = result['validators']
         return validators
 
-    def get_validator_update(self, txns):
-        votes = {}
-        for txn in txns:
-            if isinstance(txn, ValidatorElectionVote):
-                election_id = txn.asset['id']
-                election_votes = votes.get(election_id, [])
-                votes[election_id] = election_votes.append(txn)
-
-                election = ValidatorElection.conclude(self, election_id, election_votes)
-                # Once an election concludes any other conclusion for the same
-                # or any other election is invalidated
-                if election:
-                    return [election.asset['data']]
-        return []
-
     def delete_validator_update(self):
         return backend.query.delete_validator_update(self.connection)
 

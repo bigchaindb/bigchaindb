@@ -194,30 +194,6 @@ def test_valid_election_conclude(b_mock, valid_election, ed25519_node_keys):
     assert not ValidatorElection.conclude(b_mock, valid_election.id, [tx_vote3])
 
 
-@pytest.mark.tendermint
-@pytest.mark.bdb
-def test_get_validator_update_conclude(b_mock, valid_election, ed25519_node_keys):
-    # store election
-    b_mock.store_bulk_transactions([valid_election])
-
-    # Node 0: cast vote
-    tx_vote0 = gen_vote(valid_election, 0, ed25519_node_keys)
-    assert b_mock.get_validator_update([tx_vote0]) == []
-    b_mock.store_bulk_transactions([tx_vote0])
-
-    tx_vote1 = gen_vote(valid_election, 1, ed25519_node_keys)
-    assert b_mock.get_validator_update([tx_vote1]) == []
-    b_mock.store_bulk_transactions([tx_vote1])
-
-    # Election can only be concluded once
-    tx_vote2 = gen_vote(valid_election, 2, ed25519_node_keys)
-    assert b_mock.get_validator_update([tx_vote2]) == [valid_election.asset['data']]
-    b_mock.store_bulk_transactions([tx_vote2])
-
-    tx_vote3 = gen_vote(valid_election, 3, ed25519_node_keys)
-    assert b_mock.get_validator_update([tx_vote3]) == []
-
-
 @pytest.mark.abci
 def test_upsert_validator(b, node_key, node_keys, new_validator, ed25519_node_keys):
     import time
@@ -292,12 +268,24 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
     tx_vote1 = gen_vote(election, 1, ed25519_node_keys)
     tx_vote2 = gen_vote(election, 2, ed25519_node_keys)
 
+    assert not ValidatorElection.conclude(b, election.id, [tx_vote0])
+    assert not ValidatorElection.conclude(b, election.id, [tx_vote0, tx_vote1])
     assert ValidatorElection.conclude(b, election.id, [tx_vote0, tx_vote1, tx_vote2])
 
-    update = ValidatorElection.get_validator_update(b, 4, [tx_vote0, tx_vote1, tx_vote2])
+    assert ValidatorElection.get_validator_update(b, 4, [tx_vote0]) == []
+    assert ValidatorElection.get_validator_update(b, 4, [tx_vote0, tx_vote1]) == []
 
-    assert len(update) == 1
+    update = ValidatorElection.get_validator_update(b, 4, [tx_vote0, tx_vote1, tx_vote2])
     update_public_key = codecs.encode(update[0].pub_key.data, 'base64').decode().rstrip('\n')
+    assert len(update) == 1
+    assert update_public_key == public_key64
+
+    b.store_bulk_transactions([tx_vote0, tx_vote1])
+
+    update = ValidatorElection.get_validator_update(b, 4, [tx_vote2])
+    print('update', update)
+    update_public_key = codecs.encode(update[0].pub_key.data, 'base64').decode().rstrip('\n')
+    assert len(update) == 1
     assert update_public_key == public_key64
 
 
