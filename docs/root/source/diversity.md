@@ -1,3 +1,9 @@
+<!---
+Copyright BigchainDB GmbH and BigchainDB contributors
+SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+Code is Apache-2.0 and docs are CC-BY-4.0
+--->
+
 # Kinds of Node Diversity
 
 Steps should be taken to make it difficult for any one actor or event to control or damage “enough” of the nodes. (Because BigchainDB Server uses Tendermint, "enough" is ⅓.) There are many kinds of diversity to consider, listed below. It may be quite difficult to have high diversity of all kinds.
