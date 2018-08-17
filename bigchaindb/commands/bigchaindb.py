@@ -145,8 +145,8 @@ def run_upsert_validator_new(args, bigchain):
 
 
 def run_upsert_validator_approve(args, bigchain):
-    """Approve an election to add/update/remove a validator to an
-    existing BigchainDB network
+    """Approve an election to add/update/remove a validator to an existing BigchainDB network
+
     :param args: dict
         args = {
         'election_id': the election_id of the election (str)
