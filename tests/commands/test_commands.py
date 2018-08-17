@@ -416,7 +416,6 @@ def test_upsert_validator_new_without_tendermint(b, priv_validator_path, user_sk
 
 
 @pytest.mark.abci
-@pytest.mark.bdb
 def test_upsert_validator_approve(b, priv_validator_path, user_sk, validators):
     from bigchaindb.commands.bigchaindb import run_upsert_validator_new, \
         run_upsert_validator_approve
