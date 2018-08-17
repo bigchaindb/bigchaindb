@@ -1,5 +1,10 @@
+# Copyright BigchainDB GmbH and BigchainDB contributors
+# SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+# Code is Apache-2.0 and docs are CC-BY-4.0
+
 """This module contains all the goodness to integrate BigchainDB
-with Tendermint."""
+with Tendermint.
+"""
 import logging
 import codecs
 
@@ -33,7 +38,8 @@ class App(BaseApplication):
 
     The role of this class is to expose the BigchainDB
     transactional logic to the Tendermint Consensus
-    State Machine."""
+    State Machine.
+    """
 
     def __init__(self, bigchaindb=None):
         self.bigchaindb = bigchaindb or BigchainDB()
@@ -69,7 +75,8 @@ class App(BaseApplication):
         the mempool.
 
         Args:
-            raw_tx: a raw string (in bytes) transaction."""
+            raw_tx: a raw string (in bytes) transaction.
+        """
 
         logger.benchmark('CHECK_TX_INIT')
         logger.debug('check_tx: %s', raw_transaction)
@@ -101,7 +108,8 @@ class App(BaseApplication):
         """Validate the transaction before mutating the state.
 
         Args:
-            raw_tx: a raw string (in bytes) transaction."""
+            raw_tx: a raw string (in bytes) transaction.
+        """
         logger.debug('deliver_tx: %s', raw_transaction)
         transaction = self.bigchaindb.is_valid_transaction(
             decode_transaction(raw_transaction), self.block_transactions)
@@ -120,7 +128,8 @@ class App(BaseApplication):
         hash to be stored in the next block.
 
         Args:
-            height (int): new height of the chain."""
+            height (int): new height of the chain.
+        """
 
         height = request_end_block.height
         self.new_height = height

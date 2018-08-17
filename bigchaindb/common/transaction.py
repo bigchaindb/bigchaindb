@@ -1,3 +1,7 @@
+# Copyright BigchainDB GmbH and BigchainDB contributors
+# SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+# Code is Apache-2.0 and docs are CC-BY-4.0
+
 """Transaction related models to parse and construct transaction
 payloads.
 
@@ -570,7 +574,7 @@ class Transaction(object):
 
     @property
     def spent_outputs(self):
-        """tuple of :obj:`dict`: Inputs of this transaction. Each input
+        """Tuple of :obj:`dict`: Inputs of this transaction. Each input
         is represented as a dictionary containing a transaction id and
         output index.
         """

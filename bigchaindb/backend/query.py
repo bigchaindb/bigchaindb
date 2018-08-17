@@ -1,3 +1,7 @@
+# Copyright BigchainDB GmbH and BigchainDB contributors
+# SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+# Code is Apache-2.0 and docs are CC-BY-4.0
+
 """Query interfaces for backends."""
 
 from functools import singledispatch
@@ -364,6 +368,7 @@ def store_validator_set(conn, validator_update):
 @singledispatch
 def get_validator_set(conn, height):
     """Get validator set for a given `height`, if `height` is not specified
-    then return the latest validator set"""
+    then return the latest validator set
+    """
 
     raise NotImplementedError
