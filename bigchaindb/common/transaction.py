@@ -9,6 +9,8 @@ Attributes:
 from collections import namedtuple
 from copy import deepcopy
 from functools import reduce
+import functools
+import ujson
 
 import base58
 from cryptoconditions import Fulfillment, ThresholdSha256, Ed25519Sha256
@@ -36,6 +38,51 @@ UnspentOutput = namedtuple(
         'condition_uri',
     )
 )
+
+
+def memoize(func):
+    cache = func.cache = {}
+
+    @functools.wraps(func)
+    def memoized_func(*args, **kwargs):
+        key = args[1]['id']
+        if key not in cache:
+            cache[key] = func(*args, **kwargs)
+
+        return cache[key]
+
+    return memoized_func
+
+
+def memoize_class(func):
+    cache = func.cache = {}
+
+    @functools.wraps(func)
+    def memoized_func(*args, **kwargs):
+        key = args[0].id
+        if key not in cache:
+            cache[key] = func(*args, **kwargs)
+
+        return cache[key]
+
+    return memoized_func
+
+
+def memoize_input_valid(func):
+    cache = func.cache = {}
+
+    @functools.wraps(func)
+    def memoized_func(*args, **kwargs):
+        inp_fulfillment = args[1].fulfillment
+        op = args[2]
+        msg = args[3]
+        key = '{}.{}.{}'.format(inp_fulfillment, op, msg)
+        if key not in cache:
+            cache[key] = func(*args, **kwargs)
+
+        return cache[key]
+
+    return memoized_func
 
 
 class Input(object):
@@ -496,7 +543,7 @@ class Transaction(object):
     VERSION = '2.0'
 
     def __init__(self, operation, asset, inputs=None, outputs=None,
-                 metadata=None, version=None, hash_id=None):
+                 metadata=None, version=None, hash_id=None, tx_dict=None):
         """The constructor allows to create a customizable Transaction.
 
             Note:
@@ -549,6 +596,7 @@ class Transaction(object):
         self.outputs = outputs or []
         self.metadata = metadata
         self._id = hash_id
+        self.tx_dict = tx_dict
 
     @property
     def unspent_outputs(self):
@@ -986,7 +1034,7 @@ class Transaction(object):
             raise ValueError('Inputs and '
                              'output_condition_uris must have the same count')
 
-        tx_dict = self.to_dict()
+        tx_dict = self.tx_dict  # self.to_dict()
         tx_dict = Transaction._remove_signatures(tx_dict)
         tx_dict['id'] = None
         tx_serialized = Transaction._to_str(tx_dict)
@@ -999,6 +1047,7 @@ class Transaction(object):
         return all(validate(i, cond)
                    for i, cond in enumerate(output_condition_uris))
 
+    @memoize_input_valid
     def _input_valid(self, input_, operation, message, output_condition_uri=None):
         """Validates a single Input against a single Output.
 
@@ -1044,6 +1093,7 @@ class Transaction(object):
         ffill_valid = parsed_ffill.validate(message=message.digest())
         return output_valid and ffill_valid
 
+    @memoize_class
     def to_dict(self):
         """Transforms the object to a Python dictionary.
 
@@ -1092,7 +1142,8 @@ class Transaction(object):
         return self._id
 
     def to_hash(self):
-        return self.to_dict()['id']
+        return self.id
+        # return self.to_dict()['id']
 
     @staticmethod
     def _to_str(value):
@@ -1146,7 +1197,9 @@ class Transaction(object):
                 tx_body (dict): The Transaction to be transformed.
         """
         # NOTE: Remove reference to avoid side effects
-        tx_body = deepcopy(tx_body)
+        # tx_body = deepcopy(tx_body)
+        # tx_body = rapidjson.loads(rapidjson.dumps(tx_body))
+        tx_body = ujson.loads(ujson.dumps(tx_body))
         try:
             proposed_tx_id = tx_body['id']
         except KeyError:
@@ -1163,6 +1216,7 @@ class Transaction(object):
             raise InvalidHash(err_msg.format(proposed_tx_id))
 
     @classmethod
+    @memoize
     def from_dict(cls, tx, skip_schema_validation=True):
         """Transforms a Python dictionary to a Transaction object.
 
@@ -1180,7 +1234,7 @@ class Transaction(object):
         inputs = [Input.from_dict(input_) for input_ in tx['inputs']]
         outputs = [Output.from_dict(output) for output in tx['outputs']]
         return cls(tx['operation'], tx['asset'], inputs, outputs,
-                   tx['metadata'], tx['version'], hash_id=tx['id'])
+                   tx['metadata'], tx['version'], hash_id=tx['id'], tx_dict=tx)
 
     @classmethod
     def from_db(cls, bigchain, tx_dict_list):
