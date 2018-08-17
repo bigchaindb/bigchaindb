@@ -14,7 +14,7 @@ BigchainDB Server Documentation
    quickstart
    network-operations/index
    production-nodes/index
-   clusters
+   networks
    dev-and-test/index
    server-reference/index
    http-client-server-api

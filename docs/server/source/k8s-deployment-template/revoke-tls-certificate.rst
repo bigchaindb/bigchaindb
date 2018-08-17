@@ -7,9 +7,9 @@ How to Revoke an SSL/TLS Certificate
 ====================================
 
 This page enumerates the steps *we* take to revoke a self-signed SSL/TLS
-certificate in a cluster.
+certificate in a BigchainDB network.
 It can only be done by someone with access to the self-signed CA
-associated with the cluster's managing organization.
+associated with the network's managing organization.
 
 Step 1: Revoke a Certificate
 ----------------------------
@@ -45,4 +45,4 @@ Generate a new CRL for your infrastructure using:
 The generated ``crl.pem`` file needs to be uploaded to your infrastructure to
 prevent the revoked certificate from being used again.
 
-In particlar, the generated ``crl.pem`` file should be sent to all BigchainDB node operators in your BigchainDB cluster, so that they can update it in their MongoDB instance and their BigchainDB Server instance.
+In particlar, the generated ``crl.pem`` file should be sent to all BigchainDB node operators in your BigchainDB network, so that they can update it in their MongoDB instance and their BigchainDB Server instance.

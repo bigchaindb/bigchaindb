@@ -13,7 +13,7 @@ including `decentralization <decentralized.html>`_,
 `immutability <immutable.html>`_ 
 and `native support for assets <assets.html>`_.
 
-At a high level, one can communicate with a BigchainDB cluster (set of nodes) using the BigchainDB HTTP API, or a wrapper for that API, such as the BigchainDB Python Driver. Each BigchainDB node runs BigchainDB Server and various other software. The `terminology page <terminology.html>`_ explains some of those terms in more detail.
+At a high level, one can communicate with a BigchainDB network (set of nodes) using the BigchainDB HTTP API, or a wrapper for that API, such as the BigchainDB Python Driver. Each BigchainDB node runs BigchainDB Server and various other software. The `terminology page <terminology.html>`_ explains some of those terms in more detail.
 
 .. raw:: html
 
