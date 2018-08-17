@@ -1,3 +1,9 @@
+<!---
+Copyright BigchainDB GmbH and BigchainDB contributors
+SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+Code is Apache-2.0 and docs are CC-BY-4.0
+--->
+
 # How BigchainDB is Decentralized
 
 Decentralization means that no one owns or controls everything, and there is no single point of failure.

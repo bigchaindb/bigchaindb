@@ -1,3 +1,9 @@
+<!---
+Copyright BigchainDB GmbH and BigchainDB contributors
+SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+Code is Apache-2.0 and docs are CC-BY-4.0
+--->
+
 # Write a BigchainDB Enhancement Proposal (BEP)
 
 If you have an idea for a new feature or enhancement, and you want some feedback before you write a full BigchainDB Enhancement Proposal (BEP), then feel free to:
