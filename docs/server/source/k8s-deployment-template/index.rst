@@ -17,7 +17,7 @@ Kubernetes Deployment Template
    and your organization has people who know Kubernetes,
    then this Kubernetes deployment template might be helpful.
 
-This section outlines a way to deploy a BigchainDB node (or BigchainDB cluster)
+This section outlines a way to deploy a BigchainDB node (or BigchainDB network)
 on Microsoft Azure using Kubernetes.
 You may choose to use it as a template or reference for your own deployment,
 but *we make no claim that it is suitable for your purposes*.

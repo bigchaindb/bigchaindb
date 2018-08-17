@@ -74,7 +74,7 @@ This user is created on the *admin* database with the authorization to create ot
 
 vars.BDB_PERSISTENT_PEERS, BDB_VALIDATORS, BDB_VALIDATORS_POWERS, BDB_GENESIS_TIME and BDB_CHAIN_ID
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-These parameters are shared across the cluster. More information about the generation
+These parameters are shared across the BigchainDB network. More information about the generation
 of these parameters can be found at :ref:`generate-the-blockchain-id-and-genesis-time`.
 
 
@@ -82,7 +82,7 @@ vars.NODE_DNS_SERVER
 ^^^^^^^^^^^^^^^^^^^^
 IP of Kubernetes service(kube-dns), can be retrieved using
 using CLI(kubectl) or k8s dashboard. This parameter is used by the Nginx gateway instance
-to resolve the hostnames of all the services running in the k8s cluster.
+to resolve the hostnames of all the services running in the Kubernetes cluster.
 
 .. code::
 
