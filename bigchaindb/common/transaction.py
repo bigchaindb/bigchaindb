@@ -63,8 +63,12 @@ def memoize_class(func):
 
     @functools.wraps(func)
     def memoized_func(*args, **kwargs):
-        key = args[0].id
-        if key not in cache:
+        key = args[0]._id
+        if key is None:
+            result = func(*args, **kwargs)
+            cache[result['id']] = result
+            return result
+        elif key not in cache:
             cache[key] = func(*args, **kwargs)
 
         return cache[key]
@@ -1146,8 +1150,7 @@ class Transaction(object):
         return self._id
 
     def to_hash(self):
-        return self.id
-        # return self.to_dict()['id']
+        return self.to_dict()['id']
 
     @staticmethod
     def _to_str(value):
