@@ -1,3 +1,7 @@
+# Copyright BigchainDB GmbH and BigchainDB contributors
+# SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+# Code is Apache-2.0 and docs are CC-BY-4.0
+
 # ## Testing potentially hazardous strings
 # This test uses a library of `naughty` strings (code injections, weird unicode chars., etc.) as both keys and values.
 # We look for either a successful tx, or in the case that we use a naughty string as a key, and it violates some key
@@ -8,7 +12,8 @@
 # env variables.
 import os
 
-# Since the naughty strings get encoded and decoded in odd ways, we'll use a regex to sweep those details under the rug.
+# Since the naughty strings get encoded and decoded in odd ways,
+# we'll use a regex to sweep those details under the rug.
 import re
 
 # We'll use a nice library of naughty strings...

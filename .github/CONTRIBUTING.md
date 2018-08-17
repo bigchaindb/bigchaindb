@@ -1,3 +1,9 @@
+<!---
+Copyright BigchainDB GmbH and BigchainDB contributors
+SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+Code is Apache-2.0 and docs are CC-BY-4.0
+--->
+
 # How to Contribute to the BigchainDB Project
 
 There are many ways you can contribute to the BigchainDB project, some very easy and others more involved.
