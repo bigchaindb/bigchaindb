@@ -1,3 +1,7 @@
+# Copyright BigchainDB GmbH and BigchainDB contributors
+# SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+# Code is Apache-2.0 and docs are CC-BY-4.0
+
 # # Stream Acceptance Test
 # This test checks if the event stream works correctly. The basic idea of this
 # test is to generate some random **valid** transaction, send them to a

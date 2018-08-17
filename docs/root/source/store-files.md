@@ -1,3 +1,9 @@
+<!---
+Copyright BigchainDB GmbH and BigchainDB contributors
+SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+Code is Apache-2.0 and docs are CC-BY-4.0
+--->
+
 # How to Store Files in BigchainDB
 
 While it's possible to store a file in a BigchainDB network, we don't recommend doing that. It works best for storing, indexing and querying _structured data_, not files.

@@ -1,3 +1,9 @@
+<!---
+Copyright BigchainDB GmbH and BigchainDB contributors
+SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+Code is Apache-2.0 and docs are CC-BY-4.0
+--->
+
 ## Feature : Add query parameter "mode" to `POST` transaction
 Add new query parameter `mode` to the [post transaction api](https://docs.bigchaindb.com/projects/server/en/latest/http-client-server-api.html#post--api-v1-transactions) such that client can,
 - asynchronously post the transaction

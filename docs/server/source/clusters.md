@@ -1,3 +1,9 @@
+<!---
+Copyright BigchainDB GmbH and BigchainDB contributors
+SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+Code is Apache-2.0 and docs are CC-BY-4.0
+--->
+
 # Clusters
 
 A **BigchainDB Cluster** is a set of connected **BigchainDB Nodes**, managed by a **BigchainDB Consortium** (i.e. an organization). Those terms are defined in the [BigchainDB Terminology page](https://docs.bigchaindb.com/en/latest/terminology.html).
