@@ -23,4 +23,5 @@ BigchainDB Server Documentation
    data-models/index
    k8s-deployment-template/index
    release-notes
+   code-reference/index
    appendices/index
