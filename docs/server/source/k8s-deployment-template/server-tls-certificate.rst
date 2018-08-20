@@ -47,7 +47,7 @@ and using something like:
 
    ./easyrsa --req-cn=mdb-instance-0 --subject-alt-name=DNS:localhost,DNS:mdb-instance-0 gen-req mdb-instance-0 nopass
 
-You should replace the Common Name (``mdb-instance-0`` above) with the correct name for *your* MongoDB instance in the cluster, e.g. ``mdb-instance-5`` or ``mdb-instance-12``. (This name is decided by the organization managing the cluster.)
+You should replace the Common Name (``mdb-instance-0`` above) with the correct name for *your* MongoDB instance in the network, e.g. ``mdb-instance-5`` or ``mdb-instance-12``. (This name is decided by the organization managing the network.)
 
 You will be prompted to enter the Distinguished Name (DN) information for this certificate.
 For each field, you can accept the default value [in brackets] by pressing Enter.
@@ -68,7 +68,7 @@ Step 3: Get the Server Certificate Signed
 The CSR file created in the last step
 should be located in ``pki/reqs/mdb-instance-0.req``
 (where the integer ``0`` may be different for you).
-You need to send it to the organization managing the cluster
+You need to send it to the organization managing the BigchainDB network
 so that they can use their CA
 to sign the request.
 (The managing organization should already have a self-signed CA.)

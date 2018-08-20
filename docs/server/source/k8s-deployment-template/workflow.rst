@@ -20,7 +20,7 @@ Overview
    then this Kubernetes deployment template might be helpful.
 
 This page summarizes some steps to go through
-to set up a BigchainDB cluster.
+to set up a BigchainDB network.
 You can modify them to suit your needs.
 
 .. _generate-the-blockchain-id-and-genesis-time:
@@ -30,7 +30,7 @@ Generate All Shared BigchainDB Setup Parameters
 
 There are some shared BigchainDB setup paramters that every node operator
 in the consortium shares
-because they are properties of the Tendermint cluster.
+because they are properties of the Tendermint network.
 They look like this:
 
 .. code::
@@ -46,7 +46,7 @@ Those paramters only have to be generated once, by one member of the consortium.
 That person will then share the results (Tendermint setup parameters)
 with all the node operators.
 
-The above example parameters are for a cluster of 4 initial (seed) nodes.
+The above example parameters are for a network of 4 initial (seed) nodes.
 Note how ``BDB_PERSISTENT_PEERS``, ``BDB_VALIDATORS`` and ``BDB_VALIDATOR_POWERS`` are lists
 with 4 items each.
 **If your consortium has a different number of initial nodes,
@@ -119,7 +119,7 @@ to all POST requests with a secret token in the HTTP headers.
 You can make up that ``SECRET_TOKEN`` now.
 For example, ``superSECRET_token4-POST*requests``.
 You will put it in the ``vars`` file later.
-Every BigchainDB node in a cluster can have a different secret token.
+Every BigchainDB node in a BigchainDB network can have a different secret token.
 To make an HTTP POST request to your BigchainDB node,
 you must include an HTTP header named ``X-Secret-Access-Token``
 and set it equal to your secret token, e.g.
@@ -136,7 +136,7 @@ and set it equal to your secret token, e.g.
    between different Kubernetes clusters, especially if they are running different versions of Kubernetes.
    We tested this Kubernetes Deployment Template on Azure ACS in February 2018 and at that time
    ACS was deploying a **Kubernetes 1.7.7** cluster. If you can force your cluster to have that version of Kubernetes,
-   then you'll increase the likelihood that everything will work in your cluster.
+   then you'll increase the likelihood that everything will work.
 
 4. Deploy your BigchainDB node inside your new Kubernetes cluster.
 You will fill up the ``vars`` file,
