@@ -36,6 +36,26 @@ def test_upsert_validator_valid_election_vote(b_mock, valid_election, ed25519_no
 
 @pytest.mark.tendermint
 @pytest.mark.bdb
+def test_upsert_validator_valid_non_election_vote(b_mock, valid_election, ed25519_node_keys):
+    b_mock.store_bulk_transactions([valid_election])
+
+    input0 = valid_election.to_inputs()[0]
+    votes = valid_election.outputs[0].amount
+    public_key0 = input0.owners_before[0]
+    key0 = ed25519_node_keys[public_key0]
+
+    election_pub_key = ValidatorElection.to_public_key(valid_election.id)
+
+    # Ensure that threshold conditions are now allowed
+    with pytest.raises(ValidationError):
+        ValidatorElectionVote.generate([input0],
+                                       [([election_pub_key, key0.public_key], votes)],
+                                       election_id=valid_election.id)\
+                             .sign([key0.private_key])
+
+
+@pytest.mark.tendermint
+@pytest.mark.bdb
 def test_upsert_validator_delegate_election_vote(b_mock, valid_election, ed25519_node_keys):
     alice = generate_key_pair()
 
