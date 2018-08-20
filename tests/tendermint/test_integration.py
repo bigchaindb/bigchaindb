@@ -11,7 +11,6 @@ import pytest
 
 from abci.server import ProtocolHandler
 from abci.encoding import read_messages
-from copy import deepcopy
 from io import BytesIO
 
 
@@ -107,43 +106,6 @@ def test_app(tb, init_chain_request):
 
     # when empty block is generated hash of previous block should be returned
     assert block0['app_hash'] == new_block_hash
-
-
-@pytest.mark.skip
-@pytest.mark.abci
-def test_upsert_validator(b, alice):
-    from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
-    from bigchaindb.backend import query, connect
-    from bigchaindb.models import Transaction
-    from bigchaindb.tendermint_utils import public_key_to_base64
-    import time
-
-    conn = connect()
-    power = 1
-    public_key = '9B3119650DF82B9A5D8A12E38953EA47475C09F0C48A4E6A0ECE182944B24403'
-
-    validator = {'pub_key': {'type': 'AC26791624DE60',
-                             'data': public_key},
-                 'power': power}
-    validator_update = {'validator': validator,
-                        'update_id': VALIDATOR_UPDATE_ID}
-
-    query.store_validator_update(conn, deepcopy(validator_update))
-
-    tx = Transaction.create([alice.public_key],
-                            [([alice.public_key], 1)],
-                            asset=None)\
-                    .sign([alice.private_key])
-
-    code, message = b.write_transaction(tx, 'broadcast_tx_commit')
-    assert code == 202
-    time.sleep(5)
-
-    validators = b.get_validators()
-    validators = [(v['pub_key']['value'], v['voting_power']) for v in validators]
-
-    public_key64 = public_key_to_base64(public_key)
-    assert ((public_key64, str(power)) in validators)
 
 
 @pytest.mark.abci

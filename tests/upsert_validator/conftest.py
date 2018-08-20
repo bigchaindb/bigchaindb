@@ -26,11 +26,11 @@ def new_validator():
 
 
 def mock_get_validators(network_validators):
-    def validator_set():
+    def validator_set(height):
         validators = []
         for public_key, power in network_validators.items():
             validators.append({
-                'pub_key': {'type': 'AC26791624DE60', 'value': public_key},
+                'pub_key': {'type': 'AC26791624DE60', 'data': public_key},
                 'voting_power': power
             })
         return validators
@@ -41,6 +41,14 @@ def mock_get_validators(network_validators):
 @pytest.fixture
 def valid_election(b_mock, node_key, new_validator):
     voters = ValidatorElection.recipients(b_mock)
+    return ValidatorElection.generate([node_key.public_key],
+                                      voters,
+                                      new_validator, None).sign([node_key.private_key])
+
+
+@pytest.fixture
+def valid_election_b(b, node_key, new_validator):
+    voters = ValidatorElection.recipients(b)
     return ValidatorElection.generate([node_key.public_key],
                                       voters,
                                       new_validator, None).sign([node_key.private_key])

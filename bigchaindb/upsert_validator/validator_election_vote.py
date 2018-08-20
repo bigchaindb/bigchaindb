@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
-import base58
-
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.schema import (_validate_schema,
                                       TX_SCHEMA_COMMON,
@@ -30,17 +28,13 @@ class ValidatorElectionVote(Transaction):
             bigchain (BigchainDB): an instantiated bigchaindb.lib.BigchainDB object.
 
         Returns:
-            `True` if the election vote is valid
+            ValidatorElectionVote object
 
         Raises:
             ValidationError: If the election vote is invalid
         """
         self.validate_transfer_inputs(bigchain, current_transactions)
         return self
-
-    @classmethod
-    def to_public_key(cls, election_id):
-        return base58.b58encode(bytes.fromhex(election_id))
 
     @classmethod
     def generate(cls, inputs, recipients, election_id, metadata=None):

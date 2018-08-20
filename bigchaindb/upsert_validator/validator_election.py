@@ -2,6 +2,9 @@
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
+import base58
+
+from bigchaindb import backend
 from bigchaindb.common.exceptions import (InvalidSignature,
                                           MultipleInputsError,
                                           InvalidProposer,
@@ -15,6 +18,8 @@ from bigchaindb.common.schema import (_validate_schema,
                                       TX_SCHEMA_VALIDATOR_ELECTION,
                                       TX_SCHEMA_COMMON,
                                       TX_SCHEMA_CREATE)
+from . import ValidatorElectionVote
+from .validator_utils import (new_validator_set, encode_validator)
 
 
 class ValidatorElection(Transaction):
@@ -32,15 +37,15 @@ class ValidatorElection(Transaction):
         super().__init__(operation, asset, inputs, outputs, metadata, version, hash_id)
 
     @classmethod
-    def current_validators(cls, bigchain):
+    def get_validators(cls, bigchain, height=None):
         """Return a dictionary of validators with key as `public_key` and
            value as the `voting_power`
         """
 
         validators = {}
-        for validator in bigchain.get_validators():
+        for validator in bigchain.get_validators(height):
             # NOTE: we assume that Tendermint encodes public key in base64
-            public_key = public_key_from_ed25519_key(key_from_base64(validator['pub_key']['value']))
+            public_key = public_key_from_ed25519_key(key_from_base64(validator['pub_key']['data']))
             validators[public_key] = validator['voting_power']
 
         return validators
@@ -50,7 +55,7 @@ class ValidatorElection(Transaction):
         """Convert validator dictionary to a recipient list for `Transaction`"""
 
         recipients = []
-        for public_key, voting_power in cls.current_validators(bigchain).items():
+        for public_key, voting_power in cls.get_validators(bigchain).items():
             recipients.append(([public_key], voting_power))
 
         return recipients
@@ -84,7 +89,7 @@ class ValidatorElection(Transaction):
             bigchain (BigchainDB): an instantiated bigchaindb.lib.BigchainDB object.
 
         Returns:
-            `True` if the election is valid
+            ValidatorElection object
 
         Raises:
             ValidationError: If the election is invalid
@@ -99,7 +104,7 @@ class ValidatorElection(Transaction):
         if not self.inputs_valid(input_conditions):
             raise InvalidSignature('Transaction signature is invalid.')
 
-        current_validators = self.current_validators(bigchain)
+        current_validators = self.get_validators(bigchain)
 
         # NOTE: Proposer should be a single node
         if len(self.inputs) != 1 or len(self.inputs[0].owners_before) != 1:
@@ -118,7 +123,7 @@ class ValidatorElection(Transaction):
         if not self.is_same_topology(current_validators, self.outputs):
             raise UnequalValidatorSet('Validator set much be exactly same to the outputs of election')
 
-        return True
+        return self
 
     @classmethod
     def generate(cls, initiator, voters, election_data, metadata=None):
@@ -145,3 +150,77 @@ class ValidatorElection(Transaction):
     @classmethod
     def transfer(cls, tx_signers, recipients, metadata=None, asset=None):
         raise NotImplementedError
+
+    @classmethod
+    def to_public_key(cls, election_id):
+        return base58.b58encode(bytes.fromhex(election_id))
+
+    @classmethod
+    def count_votes(cls, election_pk, transactions, getter=getattr):
+        votes = 0
+        for txn in transactions:
+            if getter(txn, 'operation') == 'VALIDATOR_ELECTION_VOTE':
+                for output in getter(txn, 'outputs'):
+                    # NOTE: We enforce that a valid vote to election id will have only
+                    # election_pk in the output public keys, including any other public key
+                    # along with election_pk will lead to vote being not considered valid.
+                    if len(getter(output, 'public_keys')) == 1 and [election_pk] == getter(output, 'public_keys'):
+                        votes = votes + int(getter(output, 'amount'))
+        return votes
+
+    def get_commited_votes(self, bigchain, election_pk=None):
+        if election_pk is None:
+            election_pk = self.to_public_key(self.id)
+        txns = list(backend.query.get_asset_tokens_for_public_key(bigchain.connection,
+                                                                  self.id,
+                                                                  election_pk))
+        return self.count_votes(election_pk, txns, dict.get)
+
+    @classmethod
+    def has_concluded(cls, bigchain, election_id, current_votes=[], height=None):
+        """Check if the given `election_id` can be concluded or not
+        NOTE:
+        * Election is concluded iff the current validator set is exactly equal
+          to the validator set encoded in election outputs
+        * Election can concluded only if the current votes achieves a supermajority
+        """
+        election = bigchain.get_transaction(election_id)
+
+        if election:
+            election_pk = election.to_public_key(election.id)
+            votes_commited = election.get_commited_votes(bigchain, election_pk)
+            votes_current = election.count_votes(election_pk, current_votes)
+            current_validators = election.get_validators(bigchain, height)
+
+            if election.is_same_topology(current_validators, election.outputs):
+                total_votes = sum(current_validators.values())
+                if (votes_commited < (2/3)*total_votes) and \
+                   (votes_commited + votes_current >= (2/3)*total_votes):
+                    return election
+        return False
+
+    @classmethod
+    def get_validator_update(cls, bigchain, new_height, txns):
+        votes = {}
+        for txn in txns:
+            if not isinstance(txn, ValidatorElectionVote):
+                continue
+
+            election_id = txn.asset['id']
+            election_votes = votes.get(election_id, [])
+            election_votes.append(txn)
+            votes[election_id] = election_votes
+
+            election = cls.has_concluded(bigchain, election_id, election_votes, new_height)
+            # Once an election concludes any other conclusion for the same
+            # or any other election is invalidated
+            if election:
+                # The new validator set comes into effect from height = new_height+1
+                validator_updates = [election.asset['data']]
+                curr_validator_set = bigchain.get_validators(new_height)
+                updated_validator_set = new_validator_set(curr_validator_set,
+                                                          new_height, validator_updates)
+
+                bigchain.store_validator_set(new_height+1, updated_validator_set)
+                return [encode_validator(election.asset['data'])]
+        return []
