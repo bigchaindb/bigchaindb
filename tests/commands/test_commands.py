@@ -390,7 +390,7 @@ def test_upsert_validator_new_without_tendermint(b, priv_validator_path, user_sk
 
     def mock_get():
         return [
-            {'pub_key': {'value': 'zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=',
+            {'pub_key': {'data': 'zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=',
                          'type': 'tendermint/PubKeyEd25519'},
              'voting_power': 10}
         ]
