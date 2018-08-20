@@ -37,7 +37,7 @@ class ValidatorElection(Transaction):
         super().__init__(operation, asset, inputs, outputs, metadata, version, hash_id)
 
     @classmethod
-    def current_validators(cls, bigchain, height=None):
+    def get_validators(cls, bigchain, height=None):
         """Return a dictionary of validators with key as `public_key` and
            value as the `voting_power`
         """
@@ -55,7 +55,7 @@ class ValidatorElection(Transaction):
         """Convert validator dictionary to a recipient list for `Transaction`"""
 
         recipients = []
-        for public_key, voting_power in cls.current_validators(bigchain).items():
+        for public_key, voting_power in cls.get_validators(bigchain).items():
             recipients.append(([public_key], voting_power))
 
         return recipients
@@ -104,7 +104,7 @@ class ValidatorElection(Transaction):
         if not self.inputs_valid(input_conditions):
             raise InvalidSignature('Transaction signature is invalid.')
 
-        current_validators = self.current_validators(bigchain)
+        current_validators = self.get_validators(bigchain)
 
         # NOTE: Proposer should be a single node
         if len(self.inputs) != 1 or len(self.inputs[0].owners_before) != 1:
@@ -190,7 +190,7 @@ class ValidatorElection(Transaction):
             election_pk = election.to_public_key(election.id)
             votes_commited = election.get_commited_votes(bigchain, election_pk)
             votes_current = election.count_votes(election_pk, current_votes)
-            current_validators = election.current_validators(bigchain, height)
+            current_validators = election.get_validators(bigchain, height)
 
             if election.is_same_topology(current_validators, election.outputs):
                 total_votes = sum(current_validators.values())
