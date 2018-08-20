@@ -178,14 +178,14 @@ class ValidatorElection(Transaction):
         return self.count_votes(election_pk, txns, dict.get)
 
     @classmethod
-    def conclude(cls, bigchain, txn_id, current_votes=[], height=None):
-        """Check if the given election has concluded or not
+    def has_concluded(cls, bigchain, election_id, current_votes=[], height=None):
+        """Check if the given `election_id` can be concluded or not
         NOTE:
         * Election is concluded iff the current validator set is exactly equal
           to the validator set encoded in election outputs
         * Election can concluded only if the current votes achieves a supermajority
         """
-        election = bigchain.get_transaction(txn_id)
+        election = bigchain.get_transaction(election_id)
 
         if election:
             election_pk = election.to_public_key(election.id)
@@ -196,9 +196,8 @@ class ValidatorElection(Transaction):
             if election.is_same_topology(current_validators, election.outputs):
                 total_votes = sum(current_validators.values())
                 if (votes_commited < (2/3)*total_votes) and \
-                   (votes_commited + votes_current > (2/3)*total_votes):
+                   (votes_commited + votes_current >= (2/3)*total_votes):
                     return election
-
         return False
 
     @classmethod
@@ -213,7 +212,7 @@ class ValidatorElection(Transaction):
             election_votes.append(txn)
             votes[election_id] = election_votes
 
-            election = cls.conclude(bigchain, election_id, election_votes, new_height)
+            election = cls.has_concluded(bigchain, election_id, election_votes, new_height)
             # Once an election concludes any other conclusion for the same
             # or any other election is invalidated
             if election:
