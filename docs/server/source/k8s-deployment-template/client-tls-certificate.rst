@@ -9,7 +9,7 @@ How to Generate a Client Certificate for MongoDB
 ================================================
 
 This page enumerates the steps *we* use to generate a client certificate to be
-used by clients who want to connect to a TLS-secured MongoDB cluster.
+used by clients who want to connect to a TLS-secured MongoDB database.
 We use Easy-RSA.
 
 
@@ -42,7 +42,7 @@ and using:
 
 You should change the Common Name (e.g. ``bdb-instance-0``)
 to a value that reflects what the
-client certificate is being used for, e.g. ``mdb-mon-instance-3`` or ``mdb-bak-instance-4``. (The final integer is specific to your BigchainDB node in the BigchainDB cluster.)
+client certificate is being used for, e.g. ``mdb-mon-instance-3`` or ``mdb-bak-instance-4``. (The final integer is specific to your BigchainDB node in the BigchainDB network.)
 
 You will be prompted to enter the Distinguished Name (DN) information for this certificate. For each field, you can accept the default value [in brackets] by pressing Enter.
 
@@ -66,7 +66,7 @@ Step 3: Get the Client Certificate Signed
 The CSR file created in the previous step
 should be located in ``pki/reqs/bdb-instance-0.req``
 (or whatever Common Name you used in the ``gen-req`` command above).
-You need to send it to the organization managing the cluster
+You need to send it to the organization managing the BigchainDB network
 so that they can use their CA
 to sign the request.
 (The managing organization should already have a self-signed CA.)

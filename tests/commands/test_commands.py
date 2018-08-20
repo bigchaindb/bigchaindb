@@ -388,9 +388,9 @@ def test_upsert_validator_new_with_tendermint(b, priv_validator_path, user_sk, m
 def test_upsert_validator_new_without_tendermint(b, priv_validator_path, user_sk, monkeypatch):
     from bigchaindb.commands.bigchaindb import run_upsert_validator_new
 
-    def mock_get():
+    def mock_get(height):
         return [
-            {'pub_key': {'value': 'zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=',
+            {'pub_key': {'data': 'zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=',
                          'type': 'tendermint/PubKeyEd25519'},
              'voting_power': 10}
         ]
@@ -401,8 +401,6 @@ def test_upsert_validator_new_without_tendermint(b, priv_validator_path, user_sk
 
     b.get_validators = mock_get
     b.write_transaction = mock_write
-
-    monkeypatch.setattr('requests.get', mock_get)
 
     args = Namespace(action='new',
                      public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',

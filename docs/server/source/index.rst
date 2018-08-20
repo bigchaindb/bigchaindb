@@ -12,9 +12,9 @@ BigchainDB Server Documentation
    ← Back to All BigchainDB Docs <https://docs.bigchaindb.com/en/latest/index.html>
    introduction
    quickstart
-   simple-network-setup
+   network-operations/index
    production-nodes/index
-   clusters
+   networks
    dev-and-test/index
    server-reference/index
    http-client-server-api

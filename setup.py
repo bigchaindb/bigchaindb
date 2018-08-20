@@ -80,7 +80,7 @@ install_requires = [
     'pymongo~=3.6',
     'pysha3~=1.0.2',
     'cryptoconditions~=0.6.0.dev',
-    'python-rapidjson==0.0.11',
+    'python-rapidjson~=0.6.0',
     'logstats~=0.2.1',
     'flask>=0.10.1',
     'flask-cors~=3.0.0',
@@ -90,7 +90,6 @@ install_requires = [
     'jsonschema~=2.5.1',
     'pyyaml~=3.12',
     'aiohttp~=3.0',
-    'python-rapidjson-schema==0.1.1',
     'bigchaindb-abci==0.5.1',
     'setproctitle~=1.1.0',
 ]

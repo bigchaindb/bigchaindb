@@ -3,5 +3,5 @@
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
 
-from bigchaindb.upsert_validator.validator_election import ValidatorElection # noqa
 from bigchaindb.upsert_validator.validator_election_vote import ValidatorElectionVote # noqa
+from bigchaindb.upsert_validator.validator_election import ValidatorElection # noqa
