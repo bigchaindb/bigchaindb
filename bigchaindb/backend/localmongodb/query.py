@@ -310,11 +310,9 @@ def get_validator_set(conn, height=None):
 
 
 @register_query(LocalMongoDBConnection)
-def get_asset_tokens_for_public_keys(conn, asset_id, public_keys, operation=None):
-    query = {'outputs.public_keys': public_keys,
+def get_asset_tokens_for_public_key(conn, asset_id, public_key):
+    query = {'outputs.public_keys': [public_key],
              'asset.id': asset_id}
-    if operation:
-        query['operation'] = operation
 
     cursor = conn.run(
         conn.collection('transactions').aggregate([

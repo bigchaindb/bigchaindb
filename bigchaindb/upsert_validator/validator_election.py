@@ -156,9 +156,9 @@ class ValidatorElection(Transaction):
         return base58.b58encode(bytes.fromhex(election_id))
 
     @classmethod
-    def count_votes(cls, election_pk, txns, getter=getattr):
+    def count_votes(cls, election_pk, transactions, getter=getattr):
         votes = 0
-        for txn in txns:
+        for txn in transactions:
             if getter(txn, 'operation') == 'VALIDATOR_ELECTION_VOTE':
                 for output in getter(txn, 'outputs'):
                     # NOTE: We enforce that a valid vote to election id will have only
@@ -171,10 +171,9 @@ class ValidatorElection(Transaction):
     def get_commited_votes(self, bigchain, election_pk=None):
         if election_pk is None:
             election_pk = self.to_public_key(self.id)
-        txns = list(backend.query.get_asset_tokens_for_public_keys(bigchain.connection,
-                                                                   self.id,
-                                                                   [election_pk],
-                                                                   'VALIDATOR_ELECTION_VOTE'))
+        txns = list(backend.query.get_asset_tokens_for_public_key(bigchain.connection,
+                                                                  self.id,
+                                                                  election_pk))
         return self.count_votes(election_pk, txns, dict.get)
 
     @classmethod
