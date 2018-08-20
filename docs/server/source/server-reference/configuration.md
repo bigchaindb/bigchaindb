@@ -6,42 +6,19 @@ Code is Apache-2.0 and docs are CC-BY-4.0
 
 # Configuration Settings
 
-The value of each BigchainDB Server configuration setting is determined according to the following rules:
+Every BigchainDB Server configuration setting has two names: a config-file name and an environment variable name. For example, one of the settings has the config-file name `database.host` and the environment variable name `BIGCHAINDB_DATABASE_HOST`. Here are some more examples:
+
+`database.port` ↔ `BIGCHAINDB_DATABASE_PORT`
+
+`database.keyfile_passphrase` ↔ `BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE`
+
+`server.bind` ↔ `BIGCHAINDB_SERVER_BIND`
+
+The value of each setting is determined according to the following rules:
 
 * If it's set by an environment variable, then use that value
 * Otherwise, if it's set in a local config file, then use that value
 * Otherwise, use the default value
-
-For convenience, here's a list of all the relevant environment variables (documented below):
-
-`BIGCHAINDB_DATABASE_BACKEND`<br>
-`BIGCHAINDB_DATABASE_HOST`<br>
-`BIGCHAINDB_DATABASE_PORT`<br>
-`BIGCHAINDB_DATABASE_NAME`<br>
-`BIGCHAINDB_DATABASE_CONNECTION_TIMEOUT`<br>
-`BIGCHAINDB_DATABASE_MAX_TRIES`<br>
-`BIGCHAINDB_SERVER_BIND`<br>
-`BIGCHAINDB_SERVER_LOGLEVEL`<br>
-`BIGCHAINDB_SERVER_WORKERS`<br>
-`BIGCHAINDB_WSSERVER_SCHEME`<br>
-`BIGCHAINDB_WSSERVER_HOST`<br>
-`BIGCHAINDB_WSSERVER_PORT`<br>
-`BIGCHAINDB_WSSERVER_ADVERTISED_SCHEME`<br>
-`BIGCHAINDB_WSSERVER_ADVERTISED_HOST`<br>
-`BIGCHAINDB_WSSERVER_ADVERTISED_PORT`<br>
-`BIGCHAINDB_CONFIG_PATH`<br>
-`BIGCHAINDB_LOG`<br>
-`BIGCHAINDB_LOG_FILE`<br>
-`BIGCHAINDB_LOG_ERROR_FILE`<br>
-`BIGCHAINDB_LOG_LEVEL_CONSOLE`<br>
-`BIGCHAINDB_LOG_LEVEL_LOGFILE`<br>
-`BIGCHAINDB_LOG_DATEFMT_CONSOLE`<br>
-`BIGCHAINDB_LOG_DATEFMT_LOGFILE`<br>
-`BIGCHAINDB_LOG_FMT_CONSOLE`<br>
-`BIGCHAINDB_LOG_FMT_LOGFILE`<br>
-`BIGCHAINDB_TENDERMINT_HOST`<br>
-`BIGCHAINDB_TENDERMINT_PORT`<br>
-
 
 The local config file is `$HOME/.bigchaindb` by default (a file which might not even exist), but you can tell BigchainDB to use a different file by using the `-c` command-line option, e.g. `bigchaindb -c path/to/config_file.json start`
 or using the `BIGCHAINDB_CONFIG_PATH` environment variable, e.g. `BIGHAINDB_CONFIG_PATH=.my_bigchaindb_config bigchaindb start`.
@@ -51,25 +28,30 @@ You can read the current default values in the file [bigchaindb/\_\_init\_\_.py]
 
 Running `bigchaindb -y configure localmongodb` will generate a local config file in `$HOME/.bigchaindb` with all the default values.
 
-
-
 ## database.*
 
-The settings with names of the form `database.*` are for the database backend
+The settings with names of the form `database.*` are for the backend database
 (currently only MongoDB). They are:
 
-* `database.backend` is only `localmongodb`, currently.
+* `database.backend` can only be `localmongodb`, currently.
 * `database.host` is the hostname (FQDN) of the backend database.
 * `database.port` is self-explanatory.
 * `database.name` is a user-chosen name for the database inside MongoDB, e.g. `bigchain`.
-* `database.connection_timeout` is the maximum number of milliseconds that BigchainDB will wait before giving up on one attempt to connect to the database backend.
-* `database.max_tries` is the maximum number of times that BigchainDB will try to establish a connection with the database backend. If 0, then it will try forever.
+* `database.connection_timeout` is the maximum number of milliseconds that BigchainDB will wait before giving up on one attempt to connect to the backend database.
+* `database.max_tries` is the maximum number of times that BigchainDB will try to establish a connection with the backend database. If 0, then it will try forever.
+* `database.replicaset` is the name of the MongoDB replica set. The default value is `null` because in BighainDB 2.0+, each BigchainDB node has its own independent MongoDB database and no replica set is necessary.
+* `database.login` and `database.password` are the login and password used to authenticate to the backend database, specified in plaintext.
+* `database.ssl` determines if BigchainDB connects to MongoDB over TLS/SSL or not. It can be set to `true` or `false`.
+* `database.ca_cert`, `database.certfile`, `database.keyfile` and `database.crlfile` are the paths to the CA, signed certificate, private key and certificate revocation list files respectively.
+* `database.keyfile_passphrase` is the private key decryption passphrase, specified in plaintext.
 
 **Example using environment variables**
+
 ```text
 export BIGCHAINDB_DATABASE_BACKEND=localmongodb
 export BIGCHAINDB_DATABASE_HOST=localhost
 export BIGCHAINDB_DATABASE_PORT=27017
+export BIGCHAINDB_DATABASE_NAME=database8
 export BIGCHAINDB_DATABASE_CONNECTION_TIMEOUT=5000
 export BIGCHAINDB_DATABASE_MAX_TRIES=3
 ```
@@ -77,30 +59,31 @@ export BIGCHAINDB_DATABASE_MAX_TRIES=3
 **Default values**
 
 If (no environment variables were set and there's no local config file), or you used `bigchaindb -y configure localmongodb` to create a default local config file for a `localmongodb` backend, then the defaults will be:
+
 ```js
 "database": {
     "backend": "localmongodb",
     "host": "localhost",
     "port": 27017,
     "name": "bigchain",
-    "replicaset": null,
     "connection_timeout": 5000,
     "max_tries": 3,
+    "replicaset": null,
     "login": null,
     "password": null
     "ssl": false,
     "ca_cert": null,
-    "crlfile": null,
     "certfile": null,
     "keyfile": null,
+    "crlfile": null,
     "keyfile_passphrase": null,
 }
 ```
 
+## server.*
 
-## server.bind, server.loglevel & server.workers
-
-These settings are for the [Gunicorn HTTP server](http://gunicorn.org/), which is used to serve the [HTTP client-server API](../http-client-server-api.html).
+`server.bind`, `server.loglevel` and `server.workers`
+are settings for the [Gunicorn HTTP server](http://gunicorn.org/), which is used to serve the [HTTP client-server API](../http-client-server-api.html).
 
 `server.bind` is where to bind the Gunicorn HTTP server socket. It's a string. It can be any valid value for [Gunicorn's bind setting](http://docs.gunicorn.org/en/stable/settings.html#bind). If you want to allow IPv4 connections from anyone, on port 9984, use `0.0.0.0:9984`. In a production setting, we recommend you use Gunicorn behind a reverse proxy server. If Gunicorn and the reverse proxy are running on the same machine, then use `localhost:PORT` where PORT is _not_ 9984 (because the reverse proxy needs to listen on port 9984). Maybe use PORT=9983 in that case because we know 9983 isn't used. If Gunicorn and the reverse proxy are running on different machines, then use `A.B.C.D:9984` where A.B.C.D is the IP address of the reverse proxy. There's [more information about deploying behind a reverse proxy in the Gunicorn documentation](http://docs.gunicorn.org/en/stable/deploy.html). (They call it a proxy.)
 
@@ -111,6 +94,7 @@ for more information.
 `server.workers` is [the number of worker processes](http://docs.gunicorn.org/en/stable/settings.html#workers) for handling requests. If set to `None`, the value will be (2 × cpu_count + 1). Each worker process has a single thread. The HTTP server will be able to handle `server.workers` requests simultaneously.
 
 **Example using environment variables**
+
 ```text
 export BIGCHAINDB_SERVER_BIND=0.0.0.0:9984
 export BIGCHAINDB_SERVER_LOGLEVEL=debug
@@ -118,6 +102,7 @@ export BIGCHAINDB_SERVER_WORKERS=5
 ```
 
 **Example config file snippet**
+
 ```js
 "server": {
     "bind": "0.0.0.0:9984",
@@ -127,6 +112,7 @@ export BIGCHAINDB_SERVER_WORKERS=5
 ```
 
 **Default values (from a config file)**
+
 ```js
 "server": {
     "bind": "localhost:9984",
@@ -135,8 +121,10 @@ export BIGCHAINDB_SERVER_WORKERS=5
 }
 ```
 
+## wsserver.*
 
-## wsserver.scheme, wsserver.host and wsserver.port
+
+### wsserver.scheme, wsserver.host and wsserver.port
 
 These settings are for the
 [aiohttp server](https://aiohttp.readthedocs.io/en/stable/index.html),
@@ -150,6 +138,7 @@ If you want to allow connections from anyone, on port 9985,
 set `wsserver.host` to 0.0.0.0 and `wsserver.port` to 9985.
 
 **Example using environment variables**
+
 ```text
 export BIGCHAINDB_WSSERVER_SCHEME=ws
 export BIGCHAINDB_WSSERVER_HOST=0.0.0.0
@@ -157,6 +146,7 @@ export BIGCHAINDB_WSSERVER_PORT=9985
 ```
 
 **Example config file snippet**
+
 ```js
 "wsserver": {
     "scheme": "wss",
@@ -166,6 +156,7 @@ export BIGCHAINDB_WSSERVER_PORT=9985
 ```
 
 **Default values (from a config file)**
+
 ```js
 "wsserver": {
     "scheme": "ws",
@@ -174,7 +165,7 @@ export BIGCHAINDB_WSSERVER_PORT=9985
 }
 ```
 
-## wsserver.advertised_scheme, wsserver.advertised_host and wsserver.advertised_port
+### wsserver.advertised_scheme, wsserver.advertised_host and wsserver.advertised_port
 
 These settings are for the advertising the Websocket URL to external clients in
 the root API endpoint. These configurations might be useful if your deployment
@@ -182,6 +173,7 @@ is hosted behind a firewall, NAT, etc. where the exposed public IP or domain is
 different from where BigchainDB is running.
 
 **Example using environment variables**
+
 ```text
 export BIGCHAINDB_WSSERVER_ADVERTISED_SCHEME=wss
 export BIGCHAINDB_WSSERVER_ADVERTISED_HOST=mybigchaindb.com
@@ -189,6 +181,7 @@ export BIGCHAINDB_WSSERVER_ADVERTISED_PORT=443
 ```
 
 **Example config file snippet**
+
 ```js
 "wsserver": {
     "advertised_scheme": "wss",
@@ -198,6 +191,7 @@ export BIGCHAINDB_WSSERVER_ADVERTISED_PORT=443
 ```
 
 **Default values (from a config file)**
+
 ```js
 "wsserver": {
     "advertised_scheme": "ws",
@@ -206,14 +200,13 @@ export BIGCHAINDB_WSSERVER_ADVERTISED_PORT=443
 }
 ```
 
-## log
+## log.*
 
-The `log` key is expected to point to a mapping (set of key/value pairs)
-holding the logging configuration.
+The `log.*` settings are to configure logging.
 
-**Example**:
+**Example**
 
-```
+```js
 {
     "log": {
         "file": "/var/log/bigchaindb.log",
@@ -223,13 +216,14 @@ holding the logging configuration.
         "datefmt_console": "%Y-%m-%d %H:%M:%S",
         "datefmt_logfile": "%Y-%m-%d %H:%M:%S",
         "fmt_console": "%(asctime)s [%(levelname)s] (%(name)s) %(message)s",
-        "fmt_logfile": "%(asctime)s [%(levelname)s] (%(name)s) %(message)s"
+        "fmt_logfile": "%(asctime)s [%(levelname)s] (%(name)s) %(message)s",
+        "granular_levels": {}
 }
 ```
 
-**Defaults to**:
+**Default values**
 
-```
+```js
 {
     "log": {
         "file": "~/bigchaindb.log",
@@ -239,49 +233,20 @@ holding the logging configuration.
         "datefmt_console": "%Y-%m-%d %H:%M:%S",
         "datefmt_logfile": "%Y-%m-%d %H:%M:%S",
         "fmt_logfile": "[%(asctime)s] [%(levelname)s] (%(name)s) %(message)s (%(processName)-10s - pid: %(process)d)",
-        "fmt_console": "[%(asctime)s] [%(levelname)s] (%(name)s) %(message)s (%(processName)-10s - pid: %(process)d)"
+        "fmt_console": "[%(asctime)s] [%(levelname)s] (%(name)s) %(message)s (%(processName)-10s - pid: %(process)d)",
+        "granular_levels": {}
 }
 ```
 
-The next subsections explain each field of the `log` configuration.
+### log.file
 
+The full path to the file where logs should be written.
+The user running `bigchaindb` must have write access to the
+specified path.
 
-### log.file & log.error_file
-The full paths to the files where logs and error logs should be written to.
-
-**Example**:
-
-```
-{
-    "log": {
-        "file": "/var/log/bigchaindb/bigchaindb.log"
-        "error_file": "/var/log/bigchaindb/bigchaindb-errors.log"
-    }
-}
-```
-
-**Defaults to**:
-
-    * `"~/bigchaindb.log"`
-    * `"~/bigchaindb-errors.log"`
-
-Please note that the user running `bigchaindb` must have write access to the
-locations.
-
-#### Log rotation
-
-Log files have a size limit of 200 MB and will be rotated up to five times.
-
-For example if we consider the log file setting:
-
-```
-{
-    "log": {
-        "file": "~/bigchain.log"
-    }
-}
-```
-
+**Log rotation:** Log files have a size limit of 200 MB
+and will be rotated up to five times.
+For example, if we `log.file` is set to `"~/bigchain.log"`, then
 logs would always be written to `bigchain.log`. Each time the file
 `bigchain.log` reaches 200 MB it would be closed and renamed
 `bigchain.log.1`. If `bigchain.log.1` and `bigchain.log.2` already exist they
@@ -290,141 +255,73 @@ applied up to `bigchain.log.5` after which `bigchain.log.5` would be
 overwritten by `bigchain.log.4`, thus ending the rotation cycle of whatever
 logs were in `bigchain.log.5`.
 
+### log.error_file
+
+Similar to `log.file` (see above), this is the
+full path to the file where error logs should be written.
 
 ### log.level_console
+
 The log level used to log to the console. Possible allowed values are the ones
 defined by [Python](https://docs.python.org/3.6/library/logging.html#levels),
-but case insensitive for convenience's sake:
+but case-insensitive for the sake of convenience:
 
-```
+```text
 "critical", "error", "warning", "info", "benchmark", "debug", "notset"
 ```
-
-**Example**:
-
-```
-{
-    "log": {
-        "level_console": "info"
-    }
-}
-```
-
-**Defaults to**: `"info"`.
-
 
 ### log.level_logfile
+
 The log level used to log to the log file. Possible allowed values are the ones
 defined by [Python](https://docs.python.org/3.6/library/logging.html#levels),
-but case insensitive for convenience's sake:
+but case-insensitive for the sake of convenience:
 
-```
+```text
 "critical", "error", "warning", "info", "benchmark", "debug", "notset"
 ```
 
-**Example**:
-
-```
-{
-    "log": {
-        "level_file": "info"
-    }
-}
-```
-
-**Defaults to**: `"info"`.
-
-
 ### log.datefmt_console
+
 The format string for the date/time portion of a message, when logged to the
 console.
 
-**Example**:
-
-```
-{
-    "log": {
-        "datefmt_console": "%x %X %Z"
-    }
-}
-```
-
-**Defaults to**: `"%Y-%m-%d %H:%M:%S"`.
-
 For more information on how to construct the format string please consult the
-table under Python's documentation of
- [`time.strftime(format[, t])`](https://docs.python.org/3.6/library/time.html#time.strftime)
+table under [Python's documentation of time.strftime(format[, t])](https://docs.python.org/3.6/library/time.html#time.strftime).
 
 ### log.datefmt_logfile
+
 The format string for the date/time portion of a message, when logged to a log
  file.
 
-**Example**:
-
-```
-{
-    "log": {
-        "datefmt_logfile": "%c %z"
-    }
-}
-```
-
-**Defaults to**: `"%Y-%m-%d %H:%M:%S"`.
-
 For more information on how to construct the format string please consult the
-table under Python's documentation of
- [`time.strftime(format[, t])`](https://docs.python.org/3.6/library/time.html#time.strftime)
-
+table under [Python's documentation of time.strftime(format[, t])](https://docs.python.org/3.6/library/time.html#time.strftime).
 
 ### log.fmt_console
+
 A string used to format the log messages when logged to the console.
 
-**Example**:
-
-```
-{
-    "log": {
-        "fmt_console": "%(asctime)s [%(levelname)s] %(message)s %(process)d"
-    }
-}
-```
-
-**Defaults to**: `"[%(asctime)s] [%(levelname)s] (%(name)s) %(message)s (%(processName)-10s - pid: %(process)d)"`
-
 For more information on possible formatting options please consult Python's
 documentation on
-[LogRecord attributes](https://docs.python.org/3.6/library/logging.html#logrecord-attributes)
-
+[LogRecord attributes](https://docs.python.org/3.6/library/logging.html#logrecord-attributes).
 
 ### log.fmt_logfile
+
 A string used to format the log messages when logged to a log file.
-
-**Example**:
-
-```
-{
-    "log": {
-        "fmt_logfile": "%(asctime)s [%(levelname)s] %(message)s %(process)d"
-    }
-}
-```
-
-**Defaults to**: `"[%(asctime)s] [%(levelname)s] (%(name)s) %(message)s (%(processName)-10s - pid: %(process)d)"`
 
 For more information on possible formatting options please consult Python's
 documentation on
-[LogRecord attributes](https://docs.python.org/3.6/library/logging.html#logrecord-attributes)
-
+[LogRecord attributes](https://docs.python.org/3.6/library/logging.html#logrecord-attributes).
 
 ### log.granular_levels
+
 Log levels for BigchainDB's modules. This can be useful to control the log
 level of specific parts of the application. As an example, if you wanted the
 logging of the `core.py` module to be more verbose, you would set the
  configuration shown in the example below.
 
-**Example**:
+**Example**
 
-```
+```js
 {
     "log": {
         "granular_levels": {
@@ -433,17 +330,22 @@ logging of the `core.py` module to be more verbose, you would set the
 }
 ```
 
-**Defaults to**: `{}`
+**Default value**
 
-## tendermint.host & tendermint.port
+```js
+{}
+```
 
-The settings with names of the form `tendermint.*` are for
-consensus(Tendermint) backend that we are using:
+## tendermint.*
 
-* `tendermint.host` is the hostname (FQDN)/IP address of the tendermint backend.
+The settings with names of the form `tendermint.*` tell BigchainDB Server
+where it can connect to the node's Tendermint instance.
+
+* `tendermint.host` is the hostname (FQDN)/IP address of the Tendermint instance.
 * `tendermint.port` is self-explanatory.
 
 **Example using environment variables**
+
 ```text
 export BIGCHAINDB_TENDERMINT_HOST=tendermint
 export BIGCHAINDB_TENDERMINT_PORT=26657
@@ -454,6 +356,6 @@ export BIGCHAINDB_TENDERMINT_PORT=26657
 ```js
 "tendermint": {
     "host": "localhost",
-    "port": 26657,
+    "port": 26657
 }
 ```

@@ -9,7 +9,6 @@ import logging
 import jsonschema
 import yaml
 import rapidjson
-import rapidjson_schema
 
 from bigchaindb.common.exceptions import SchemaValidationError
 
@@ -22,7 +21,7 @@ def _load_schema(name, path=__file__):
     path = os.path.join(os.path.dirname(path), name + '.yaml')
     with open(path) as handle:
         schema = yaml.safe_load(handle)
-    fast_schema = rapidjson_schema.loads(rapidjson.dumps(schema))
+    fast_schema = rapidjson.Validator(rapidjson.dumps(schema))
     return path, (schema, fast_schema)
 
 
@@ -57,7 +56,7 @@ def _validate_schema(schema, body):
     # a helpful error message.
 
     try:
-        schema[1].validate(rapidjson.dumps(body))
+        schema[1](rapidjson.dumps(body))
     except ValueError as exc:
         try:
             jsonschema.validate(body, schema[0])

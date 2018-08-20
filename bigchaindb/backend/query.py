@@ -372,3 +372,17 @@ def get_validator_set(conn, height):
     """
 
     raise NotImplementedError
+
+
+@singledispatch
+def get_asset_tokens_for_public_key(connection, asset_id,
+                                    public_key, operation):
+    """Retrieve a list of tokens of type `asset_id` that are owned by the `public_key`.
+    Args:
+        asset_id (str): Id of the token.
+        public_key (str): base58 encoded public key
+        operation: filter transaction based on `operation`
+    Returns:
+        Iterator of transaction that list given owner in conditions.
+    """
+    raise NotImplementedError

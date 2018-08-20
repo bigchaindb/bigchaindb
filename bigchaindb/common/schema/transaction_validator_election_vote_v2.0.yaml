@@ -10,7 +10,9 @@ required:
 - operation
 - outputs
 properties:
-  operation: "VALIDATOR_ELECTION_VOTE"
+  operation:
+    type: string
+    value: "VALIDATOR_ELECTION_VOTE"
   outputs:
     type: array
     items:

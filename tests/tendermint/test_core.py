@@ -10,7 +10,11 @@ from abci.types_pb2 import (
     RequestEndBlock
 )
 
-from bigchaindb.core import CodeTypeOk, CodeTypeError
+from bigchaindb.core import (CodeTypeOk,
+                             CodeTypeError,
+                             )
+from bigchaindb.upsert_validator.validator_utils import new_validator_set
+from bigchaindb.tendermint_utils import public_key_to_base64
 
 
 pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
@@ -220,3 +224,26 @@ def test_store_pre_commit_state_in_end_block(b, alice, init_chain_request):
     assert resp['commit_id'] == PRE_COMMIT_ID
     assert resp['height'] == 100
     assert resp['transactions'] == [tx.id]
+
+
+def test_new_validator_set(b):
+    node1 = {'pub_key': {'type': 'ed25519',
+                         'data': 'FxjS2/8AFYoIUqF6AcePTc87qOT7e4WGgH+sGCpTUDQ='},
+             'voting_power': 10}
+    node1_new_power = {'public_key': '1718D2DBFF00158A0852A17A01C78F4DCF3BA8E4FB7B8586807FAC182A535034',
+                       'power': 20}
+    node2 = {'public_key': '1888A353B181715CA2554701D06C1665BC42C5D936C55EA9C5DBCBDB8B3F02A3',
+             'power': 10}
+
+    validators = [node1]
+    updates = [node1_new_power, node2]
+    b.store_validator_set(1, validators)
+    updated_validator_set = new_validator_set(b.get_validators(1), 1, updates)
+
+    updated_validators = []
+    for u in updates:
+        updated_validators.append({'pub_key': {'type': 'ed25519',
+                                               'data': public_key_to_base64(u['public_key'])},
+                                   'voting_power':  u['power']})
+
+    assert updated_validator_set == updated_validators
