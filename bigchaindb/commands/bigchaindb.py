@@ -159,8 +159,7 @@ def run_upsert_validator_approve(args, bigchain):
 
     key = load_node_key(args.sk)
     tx = bigchain.get_transaction(args.election_id)
-    voting_power = ValidatorElection.current_validators(bigchain)[
-        key.public_key]
+    voting_power = ValidatorElection.get_validators(bigchain)[key.public_key]
 
     approval = ValidatorElectionVote.generate(tx.to_inputs(), [
         ([key.public_key], voting_power)], tx.id).sign([key.private_key])
