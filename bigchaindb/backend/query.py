@@ -14,7 +14,7 @@ PRE_COMMIT_ID = 'a_unique_id_string'
 
 @singledispatch
 def store_transaction(connection, signed_transaction):
-    """Write a transaction to the backlog table.
+    """Write a signed transaction to the 'transactions' table.
 
     Args:
         signed_transaction (dict): a signed transaction.
