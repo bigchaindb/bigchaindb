@@ -710,6 +710,8 @@ def priv_validator_path(node_keys):
 def validators(b, node_keys):
     from bigchaindb.backend import query
 
+    original_validators = b.get_validators()
+
     (public_key, private_key) = list(node_keys.items())[0]
 
     validator_set = [{'address': 'F5426F0980E36E03044F74DD414248D29ABCBDB2',
@@ -719,6 +721,13 @@ def validators(b, node_keys):
                       'voting_power': 10}]
 
     validator_update = {'validators': validator_set,
-                        'height': 4266642}
+                        'height': b.get_latest_block()['height'] + 1}
+
+    query.store_validator_set(b.connection, validator_update)
+
+    yield
+
+    validator_update = {'validators': original_validators,
+                        'height': b.get_latest_block()['height']}
 
     query.store_validator_set(b.connection, validator_update)
