@@ -10,7 +10,7 @@ from bigchaindb.upsert_validator import ValidatorElection, ValidatorElectionVote
 from bigchaindb.common.exceptions import AmountError
 from bigchaindb.common.crypto import generate_key_pair
 from bigchaindb.common.exceptions import ValidationError
-
+from tests.utils import generate_block
 
 pytestmark = [pytest.mark.execute]
 
@@ -219,9 +219,12 @@ def test_valid_election_conclude(b_mock, valid_election, ed25519_node_keys):
 
 
 @pytest.mark.abci
-def test_upsert_validator(b, node_key, node_keys, new_validator, ed25519_node_keys):
+def test_upsert_validator(b, node_key, node_keys, ed25519_node_keys):
     import time
     import requests
+
+    if b.get_latest_block()['height'] == 0:
+        generate_block(b)
 
     (node_pub, _) = list(node_keys.items())[0]
 
