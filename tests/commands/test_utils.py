@@ -10,6 +10,8 @@ import pytest
 
 from unittest.mock import patch
 
+pytestmark = pytest.mark.tendermint
+
 
 @pytest.fixture
 def reset_bigchaindb_config(monkeypatch):

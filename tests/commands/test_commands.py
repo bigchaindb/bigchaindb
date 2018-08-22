@@ -396,7 +396,7 @@ def test_upsert_validator_new_without_tendermint(b, priv_validator_path, user_sk
         ]
 
     def mock_write(tx, mode):
-        b.store_transaction(tx)
+        b.store_bulk_transactions([tx])
         return (202, '')
 
     b.get_validators = mock_get

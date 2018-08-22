@@ -7,7 +7,6 @@ import pytest
 pytestmark = pytest.mark.tendermint
 
 
-@pytest.mark.skipif(reason='will be fixed in another PR')
 @pytest.fixture
 def config(request, monkeypatch):
     backend = request.config.getoption('--database-backend')

@@ -8,7 +8,6 @@ MongoDB.
 """
 import logging
 from collections import namedtuple
-from copy import deepcopy
 from uuid import uuid4
 
 try:
@@ -118,25 +117,6 @@ class BigchainDB(object):
 
     def process_status_code(self, status_code, failure_msg):
         return (202, '') if status_code == 0 else (500, failure_msg)
-
-    def store_transaction(self, transaction):
-        """Store a valid transaction to the transactions collection."""
-
-        # self.update_utxoset(transaction)
-        transaction = deepcopy(transaction.to_dict())
-        if transaction['operation'] == 'CREATE':
-            asset = transaction.pop('asset')
-            asset['id'] = transaction['id']
-            if asset['data']:
-                backend.query.store_asset(self.connection, asset)
-
-        metadata = transaction.pop('metadata')
-        transaction_metadata = {'id': transaction['id'],
-                                'metadata': metadata}
-
-        backend.query.store_metadatas(self.connection, [transaction_metadata])
-
-        return backend.query.store_transaction(self.connection, transaction)
 
     def store_bulk_transactions(self, transactions):
         txns = []
