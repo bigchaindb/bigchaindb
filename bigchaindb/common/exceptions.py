@@ -70,12 +70,6 @@ class InvalidSignature(ValidationError):
     """
 
 
-class TransactionNotInValidBlock(ValidationError):
-    """Raised when a transfer transaction is attempting to fulfill the
-    outputs of a transaction that is in an invalid or undecided block
-    """
-
-
 class AssetIdMismatch(ValidationError):
     """Raised when multiple transaction inputs related to different assets"""
 

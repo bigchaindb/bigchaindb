@@ -2,16 +2,7 @@
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
-"""Database creation and schema-providing interfaces for backends.
-
-Attributes:
-    TABLES (tuple): The three standard tables BigchainDB relies on:
-
-        * ``backlog`` for incoming transactions awaiting to be put into
-          a block.
-        * ``bigchain`` for blocks.
-
-"""
+"""Database creation and schema-providing interfaces for backends."""
 
 from functools import singledispatch
 import logging
@@ -23,7 +14,10 @@ from bigchaindb.common.utils import validate_all_values_for_key
 
 logger = logging.getLogger(__name__)
 
-TABLES = ('bigchain', 'backlog', 'assets', 'metadata')
+# Tables/collections that every backend database must create
+TABLES = ('transactions', 'blocks', 'assets', 'metadata',
+          'validators', 'pre_commit', 'utxos')
+
 VALID_LANGUAGES = ('danish', 'dutch', 'english', 'finnish', 'french', 'german',
                    'hungarian', 'italian', 'norwegian', 'portuguese', 'romanian',
                    'russian', 'spanish', 'swedish', 'turkish', 'none',

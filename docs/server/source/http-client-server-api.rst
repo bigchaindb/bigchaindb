@@ -51,6 +51,15 @@ that allows you to discover the BigchainDB API endpoints:
 Transactions
 ------------
 
+.. note::
+
+   If you want to do more sophisticated queries
+   than those provided by the BigchainDB HTTP API,
+   then one option is to connect to MongoDB directly (if possible)
+   and do whatever queries MongoDB allows.
+   For more about that option, see
+   `the page about querying BigchainDB <https://docs.bigchaindb.com/en/latest/query.html>`_.
+
 .. http:get:: /api/v1/transactions/{transaction_id}
 
    Get the transaction with the ID ``transaction_id``.
@@ -184,6 +193,14 @@ The ``/api/v1/outputs`` endpoint returns transactions outputs filtered by a
 given public key, and optionally filtered to only include either spent or
 unspent outputs.
 
+.. note::
+
+   If you want to do more sophisticated queries
+   than those provided by the BigchainDB HTTP API,
+   then one option is to connect to MongoDB directly (if possible)
+   and do whatever queries MongoDB allows.
+   For more about that option, see
+   `the page about querying BigchainDB <https://docs.bigchaindb.com/en/latest/query.html>`_.
 
 .. http:get:: /api/v1/outputs
 
@@ -294,6 +311,15 @@ unspent outputs.
 Assets
 ------
 
+.. note::
+
+   If you want to do more sophisticated queries
+   than those provided by the BigchainDB HTTP API,
+   then one option is to connect to MongoDB directly (if possible)
+   and do whatever queries MongoDB allows.
+   For more about that option, see
+   `the page about querying BigchainDB <https://docs.bigchaindb.com/en/latest/query.html>`_.
+
 .. http:get:: /api/v1/assets
 
    Return all the assets that match a given text search.
@@ -301,10 +327,6 @@ Assets
    :query string search: Text search string to query.
    :query int limit: (Optional) Limit the number of returned assets. Defaults
                      to ``0`` meaning return all matching assets.
-
-   .. note::
-
-        Currently this endpoint is only supported if using MongoDB.
 
 .. http:get:: /api/v1/assets/?search={search}
 
@@ -413,6 +435,15 @@ Assets
 Transaction Metadata
 --------------------
 
+.. note::
+
+   If you want to do more sophisticated queries
+   than those provided by the BigchainDB HTTP API,
+   then one option is to connect to MongoDB directly (if possible)
+   and do whatever queries MongoDB allows.
+   For more about that option, see
+   `the page about querying BigchainDB <https://docs.bigchaindb.com/en/latest/query.html>`_.
+
 .. http:get:: /api/v1/metadata
 
    Return all the metadata objects that match a given text search.
@@ -420,10 +451,6 @@ Transaction Metadata
    :query string search: Text search string to query.
    :query int limit: (Optional) Limit the number of returned metadata objects. Defaults
                      to ``0`` meaning return all matching objects.
-
-   .. note::
-
-        Currently this endpoint is only supported if using MongoDB.
 
 .. http:get:: /api/v1/metadata/?search={search}
 

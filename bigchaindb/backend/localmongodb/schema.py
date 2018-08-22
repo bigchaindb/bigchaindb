@@ -31,8 +31,7 @@ def create_database(conn, dbname):
 
 @register_schema(LocalMongoDBConnection)
 def create_tables(conn, dbname):
-    for table_name in ['transactions', 'utxos', 'assets', 'blocks', 'metadata',
-                       'validators', 'pre_commit']:
+    for table_name in backend.schema.TABLES:
         logger.info('Create `%s` table.', table_name)
         # create the table
         # TODO: read and write concerns can be declared here
