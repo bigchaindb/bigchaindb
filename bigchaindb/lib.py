@@ -1,3 +1,7 @@
+# Copyright BigchainDB GmbH and BigchainDB contributors
+# SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+# Code is Apache-2.0 and docs are CC-BY-4.0
+
 """Module containing main contact points with Tendermint and
 MongoDB.
 
@@ -23,6 +27,7 @@ from bigchaindb.common.exceptions import (SchemaValidationError,
 from bigchaindb.tendermint_utils import encode_transaction, merkleroot
 from bigchaindb import exceptions as core_exceptions
 from bigchaindb.consensus import BaseConsensusRules
+
 
 logger = logging.getLogger(__name__)
 
@@ -418,15 +423,7 @@ class BigchainDB(object):
     def get_validators(self, height=None):
         result = backend.query.get_validator_set(self.connection, height)
         validators = result['validators']
-        for v in validators:
-            v.pop('address')
-            v['voting_power'] = int(v['voting_power'])
-
         return validators
-
-    def get_validator_update(self):
-        update = backend.query.get_validator_update(self.connection)
-        return [update['validator']] if update else []
 
     def delete_validator_update(self):
         return backend.query.delete_validator_update(self.connection)

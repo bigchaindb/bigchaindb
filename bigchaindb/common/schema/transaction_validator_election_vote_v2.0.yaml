@@ -1,3 +1,7 @@
+# Copyright BigchainDB GmbH and BigchainDB contributors
+# SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+# Code is Apache-2.0 and docs are CC-BY-4.0
+
 ---
 "$schema": "http://json-schema.org/draft-04/schema#"
 type: object
@@ -6,7 +10,9 @@ required:
 - operation
 - outputs
 properties:
-  operation: "VALIDATOR_ELECTION_VOTE"
+  operation:
+    type: string
+    value: "VALIDATOR_ELECTION_VOTE"
   outputs:
     type: array
     items:
