@@ -39,7 +39,7 @@ def test_get_metadata_tendermint(client, tb, alice):
     tx = Transaction.create([alice.public_key], [([alice.public_key], 1)], metadata=metadata,
                             asset=asset).sign([alice.private_key])
 
-    b.store_transaction(tx)
+    b.store_bulk_transactions([tx])
 
     # test that metadata is returned
     res = client.get(METADATA_ENDPOINT + '?search=my_meta')
@@ -63,13 +63,13 @@ def test_get_metadata_limit_tendermint(client, tb, alice):
     meta1 = {'key': 'meta 1'}
     tx1 = Transaction.create([alice.public_key], [([alice.public_key], 1)], metadata=meta1,
                              asset=asset1).sign([alice.private_key])
-    b.store_transaction(tx1)
+    b.store_bulk_transactions([tx1])
 
     asset2 = {'msg': 'abc 2'}
     meta2 = {'key': 'meta 2'}
     tx2 = Transaction.create([alice.public_key], [([alice.public_key], 1)], metadata=meta2,
                              asset=asset2).sign([alice.private_key])
-    b.store_transaction(tx2)
+    b.store_bulk_transactions([tx2])
 
     # test that both assets are returned without limit
     res = client.get(METADATA_ENDPOINT + '?search=meta')

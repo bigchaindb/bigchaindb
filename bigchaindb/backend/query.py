@@ -13,20 +13,6 @@ PRE_COMMIT_ID = 'a_unique_id_string'
 
 
 @singledispatch
-def store_transaction(connection, signed_transaction):
-    """Write a signed transaction to the 'transactions' table.
-
-    Args:
-        signed_transaction (dict): a signed transaction.
-
-    Returns:
-        The result of the operation.
-    """
-
-    raise NotImplementedError
-
-
-@singledispatch
 def store_asset(connection, asset):
     """Write an asset to the asset table.
 

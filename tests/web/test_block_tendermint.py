@@ -15,10 +15,17 @@ pytestmark = pytest.mark.tendermint
 @pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_get_block_endpoint(tb, client, alice):
+    import copy
     b = tb
     tx = Transaction.create([alice.public_key], [([alice.public_key], 1)], asset={'cycle': 'hero'})
     tx = tx.sign([alice.private_key])
-    b.store_transaction(tx)
+
+    # with store_bulk_transactions we use `insert_many` where PyMongo
+    # automatically adds an `_id` field to the tx, therefore we need the
+    # deepcopy, for more info see:
+    # https://api.mongodb.com/python/current/faq.html#writes-and-ids
+    tx_dict = copy.deepcopy(tx.to_dict())
+    b.store_bulk_transactions([tx])
 
     block = Block(app_hash='random_utxo',
                   height=31,
@@ -26,7 +33,7 @@ def test_get_block_endpoint(tb, client, alice):
     b.store_block(block._asdict())
 
     res = client.get(BLOCKS_ENDPOINT + str(block.height))
-    expected_response = {'height': block.height, 'transactions': [tx.to_dict()]}
+    expected_response = {'height': block.height, 'transactions': [tx_dict]}
     assert res.json == expected_response
     assert res.status_code == 200
 
@@ -46,7 +53,7 @@ def test_get_block_containing_transaction(tb, client, alice):
     b = tb
     tx = Transaction.create([alice.public_key], [([alice.public_key], 1)], asset={'cycle': 'hero'})
     tx = tx.sign([alice.private_key])
-    b.store_transaction(tx)
+    b.store_bulk_transactions([tx])
 
     block = Block(app_hash='random_utxo',
                   height=13,

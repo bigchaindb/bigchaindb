@@ -16,16 +16,6 @@ register_query = module_dispatch_registrar(backend.query)
 
 
 @register_query(LocalMongoDBConnection)
-def store_transaction(conn, signed_transaction):
-    try:
-        return conn.run(
-            conn.collection('transactions')
-            .insert_one(signed_transaction))
-    except DuplicateKeyError:
-        pass
-
-
-@register_query(LocalMongoDBConnection)
 def store_transactions(conn, signed_transactions):
     return conn.run(conn.collection('transactions')
                     .insert_many(signed_transactions))
