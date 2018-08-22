@@ -265,7 +265,6 @@ def test_post_create_transaction_with_invalid_schema(mock_logger, client):
     ('ValidationError', 'Create and transfer!'),
     ('InputDoesNotExist', 'Hallucinations?'),
     ('TransactionOwnerError', 'Not yours!'),
-    ('TransactionNotInValidBlock', 'Wait, maybe?'),
     ('ValidationError', '?'),
 ))
 @patch('bigchaindb.web.views.base.logger')
