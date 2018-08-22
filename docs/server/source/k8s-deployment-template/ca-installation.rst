@@ -1,11 +1,16 @@
+
+.. Copyright BigchainDB GmbH and BigchainDB contributors
+   SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+   Code is Apache-2.0 and docs are CC-BY-4.0
+
 .. _how-to-set-up-a-self-signed-certificate-authority:
 
 How to Set Up a Self-Signed Certificate Authority
 =================================================
 
 This page enumerates the steps *we* use to set up a self-signed certificate authority (CA).
-This is something that only needs to be done once per cluster,
-by the organization managing the cluster, i.e. the CA is for the whole cluster.
+This is something that only needs to be done once per BigchainDB network,
+by the organization managing the network, i.e. the CA is for the whole network.
 We use Easy-RSA.
 
 

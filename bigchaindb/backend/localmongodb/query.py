@@ -1,10 +1,13 @@
+# Copyright BigchainDB GmbH and BigchainDB contributors
+# SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+# Code is Apache-2.0 and docs are CC-BY-4.0
+
 """Query implementation for MongoDB"""
 
 from pymongo import DESCENDING
 
 from bigchaindb import backend
 from bigchaindb.backend.exceptions import DuplicateKeyError
-from bigchaindb.common.exceptions import MultipleValidatorOperationError
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 from bigchaindb.common.transaction import Transaction
@@ -111,7 +114,8 @@ def get_spent(conn, transaction_id, output):
 def get_latest_block(conn):
     return conn.run(
         conn.collection('blocks')
-        .find_one(sort=[('height', DESCENDING)]))
+        .find_one(projection={'_id': False},
+                  sort=[('height', DESCENDING)]))
 
 
 @register_query(LocalMongoDBConnection)
@@ -278,13 +282,15 @@ def get_pre_commit_state(conn, commit_id):
 
 
 @register_query(LocalMongoDBConnection)
-def store_validator_set(conn, validator_update):
-    try:
-        return conn.run(
-            conn.collection('validators')
-            .insert_one(validator_update))
-    except DuplicateKeyError:
-        raise MultipleValidatorOperationError('Validator update already exists')
+def store_validator_set(conn, validators_update):
+    height = validators_update['height']
+    return conn.run(
+        conn.collection('validators').replace_one(
+            {'height': height},
+            validators_update,
+            upsert=True
+        )
+    )
 
 
 @register_query(LocalMongoDBConnection)
@@ -301,3 +307,16 @@ def get_validator_set(conn, height=None):
     )
 
     return list(cursor)[0]
+
+
+@register_query(LocalMongoDBConnection)
+def get_asset_tokens_for_public_key(conn, asset_id, public_key):
+    query = {'outputs.public_keys': [public_key],
+             'asset.id': asset_id}
+
+    cursor = conn.run(
+        conn.collection('transactions').aggregate([
+            {'$match': query},
+            {'$project': {'_id': False}}
+        ]))
+    return cursor

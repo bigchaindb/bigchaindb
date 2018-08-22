@@ -1,3 +1,7 @@
+# Copyright BigchainDB GmbH and BigchainDB contributors
+# SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+# Code is Apache-2.0 and docs are CC-BY-4.0
+
 """Query interfaces for backends."""
 
 from functools import singledispatch
@@ -10,7 +14,7 @@ PRE_COMMIT_ID = 'a_unique_id_string'
 
 @singledispatch
 def store_transaction(connection, signed_transaction):
-    """Write a transaction to the backlog table.
+    """Write a signed transaction to the 'transactions' table.
 
     Args:
         signed_transaction (dict): a signed transaction.
@@ -364,6 +368,21 @@ def store_validator_set(conn, validator_update):
 @singledispatch
 def get_validator_set(conn, height):
     """Get validator set for a given `height`, if `height` is not specified
-    then return the latest validator set"""
+    then return the latest validator set
+    """
 
+    raise NotImplementedError
+
+
+@singledispatch
+def get_asset_tokens_for_public_key(connection, asset_id,
+                                    public_key, operation):
+    """Retrieve a list of tokens of type `asset_id` that are owned by the `public_key`.
+    Args:
+        asset_id (str): Id of the token.
+        public_key (str): base58 encoded public key
+        operation: filter transaction based on `operation`
+    Returns:
+        Iterator of transaction that list given owner in conditions.
+    """
     raise NotImplementedError
