@@ -14,9 +14,8 @@ pytestmark = pytest.mark.tendermint
 
 @pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
-def test_get_block_endpoint(tb, client, alice):
+def test_get_block_endpoint(b, client, alice):
     import copy
-    b = tb
     tx = Transaction.create([alice.public_key], [([alice.public_key], 1)], asset={'cycle': 'hero'})
     tx = tx.sign([alice.private_key])
 
@@ -49,8 +48,7 @@ def test_get_block_returns_404_if_not_found(client):
 
 
 @pytest.mark.bdb
-def test_get_block_containing_transaction(tb, client, alice):
-    b = tb
+def test_get_block_containing_transaction(b, client, alice):
     tx = Transaction.create([alice.public_key], [([alice.public_key], 1)], asset={'cycle': 'hero'})
     tx = tx.sign([alice.private_key])
     b.store_bulk_transactions([tx])
