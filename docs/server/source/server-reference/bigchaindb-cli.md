@@ -117,8 +117,8 @@ If the command succeeds, it will create an election and return an `election_id`.
  ```bash
 $ bigchaindb upsert-validator approve <election_id> --private-key PATH_TO_YOUR_PRIVATE_KEY
 ```
- Here, `<election_id>` is the transaction id of the election the approval should be given for. `--private-key` should be
-the path to wherever the private key for your validator node is stored, (*not* the private key itself).
+ Here, `<election_id>` is the transaction id of the election the approval should be given for. `--private-key` should be the path to Tendermint's private key which can be generally found at `/home/user/.tendermint/config/priv_validator.json`.
+
  Example usage,
  ```bash
 $ bigchaindb upsert-validator approve 04a067582cf03eba2b53b82e4adb5ece424474cbd4f7183780855a93ac5e3caa --private-key /home/user/.tendermint/config/priv_validator.json
