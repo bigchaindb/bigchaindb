@@ -16,7 +16,7 @@ import sys
 from bigchaindb.utils import load_node_key
 from bigchaindb.common.exceptions import (DatabaseAlreadyExists,
                                           DatabaseDoesNotExist,
-                                          OperationError)
+                                          OperationError, KeypairMismatchException)
 import bigchaindb
 from bigchaindb import (backend, ValidatorElection,
                         BigchainDB, ValidatorElectionVote)
@@ -159,9 +159,15 @@ def run_upsert_validator_approve(args, bigchain):
 
     key = load_node_key(args.sk)
     tx = bigchain.get_transaction(args.election_id)
-    voting_power = [v.amount for v in tx.outputs if key.public_key in v.public_keys][0]
+    voting_powers = [v.amount for v in tx.outputs if key.public_key in v.public_keys]
+    if len(voting_powers) > 0:
+        voting_power = voting_powers[0]
+    else:
+        raise KeypairMismatchException(
+            'The key you provided does not match any of the eligible voters in this election.'
+        )
 
-    inputs = [input for input in tx.to_inputs() if key.public_key in input.owners_before]
+    inputs = [i for i in tx.to_inputs() if key.public_key in i.owners_before]
     approval = ValidatorElectionVote.generate(inputs, [
         ([key.public_key], voting_power)], tx.id).sign([key.private_key])
     approval.validate(bigchain)
