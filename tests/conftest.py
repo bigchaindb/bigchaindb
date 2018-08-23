@@ -713,7 +713,7 @@ def validators(b, node_keys):
 
     height = get_block_height(b)
 
-    original_validators = b.get_validators(height=height)
+    original_validators = b.get_validators()
 
     (public_key, private_key) = list(node_keys.items())[0]
 
