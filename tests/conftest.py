@@ -20,7 +20,6 @@ from logging.config import dictConfig
 import pytest
 from pymongo import MongoClient
 
-from bigchaindb import ValidatorElection
 from bigchaindb.common import crypto
 from bigchaindb.log import setup_logging
 from bigchaindb.tendermint_utils import key_from_base64
@@ -765,34 +764,6 @@ def get_block_height(b):
         height = 0
 
     return height
-
-
-@pytest.fixture
-def b_mock(b, network_validators):
-    b.get_validators = mock_get_validators(network_validators)
-
-    return b
-
-
-def mock_get_validators(network_validators):
-    def validator_set(height):
-        validators = []
-        for public_key, power in network_validators.items():
-            validators.append({
-                'pub_key': {'type': 'AC26791624DE60', 'data': public_key},
-                'voting_power': power
-            })
-        return validators
-
-    return validator_set
-
-
-@pytest.fixture
-def valid_election(b_mock, node_key, new_validator):
-    voters = ValidatorElection.recipients(b_mock)
-    return ValidatorElection.generate([node_key.public_key],
-                                      voters,
-                                      new_validator, None).sign([node_key.private_key])
 
 
 @pytest.fixture
