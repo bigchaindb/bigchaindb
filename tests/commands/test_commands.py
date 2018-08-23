@@ -434,7 +434,7 @@ def test_upsert_validator_approve_without_tendermint(b, priv_validator_path, new
     from argparse import Namespace
 
     def mock_write(tx, mode):
-        b.store_transaction(tx)
+        b.store_bulk_transactions([tx])
         return (202, '')
 
     # patch the validator set. We now have one validator with power 10
@@ -451,7 +451,7 @@ def test_upsert_validator_approve_without_tendermint(b, priv_validator_path, new
 
     # patch in an election with a vote issued to the user
     election_id = valid_election.id
-    b.store_transaction(valid_election)
+    b.store_bulk_transactions([valid_election])
 
     # call run_upsert_validator_approve with args that point to the election
     args = Namespace(action='approve',
