@@ -247,16 +247,6 @@ def merlin():
 
 
 @pytest.fixture
-def merlin_privkey(merlin):
-    return merlin.private_key
-
-
-@pytest.fixture
-def merlin_pubkey(merlin):
-    return merlin.public_key
-
-
-@pytest.fixture
 def b():
     from bigchaindb import BigchainDB
     return BigchainDB()

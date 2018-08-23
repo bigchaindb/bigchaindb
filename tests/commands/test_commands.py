@@ -274,7 +274,6 @@ def test_calling_main(start_mock, monkeypatch):
     assert start_mock.called is True
 
 
-@patch('bigchaindb.config_utils.autoconfigure')
 @patch('bigchaindb.commands.bigchaindb.run_recover')
 @patch('bigchaindb.start.start')
 def test_recover_db_on_start(mock_run_recover,
