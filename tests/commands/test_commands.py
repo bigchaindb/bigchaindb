@@ -10,6 +10,7 @@ from argparse import Namespace
 import pytest
 
 from bigchaindb import ValidatorElection
+from bigchaindb.common.exceptions import KeypairMismatchException
 from tests.conftest import node_keys
 
 
@@ -428,6 +429,7 @@ def test_upsert_validator_approve_with_tendermint(b, priv_validator_path, user_s
     assert b.get_transaction(approve)
 
 
+@pytest.mark.bdb
 @pytest.mark.tendermint
 def test_upsert_validator_approve_without_tendermint(b, priv_validator_path, new_validator, node_key):
     from bigchaindb.commands.bigchaindb import run_upsert_validator_approve
@@ -463,6 +465,42 @@ def test_upsert_validator_approve_without_tendermint(b, priv_validator_path, new
 
     # assert returned id is in the db
     assert b.get_transaction(approval_id)
+
+
+@pytest.mark.bdb
+@pytest.mark.tendermint
+def test_upsert_validator_approve_called_with_bad_key(b, bad_validator_path, new_validator, node_key):
+    from bigchaindb.commands.bigchaindb import run_upsert_validator_approve
+    from argparse import Namespace
+
+    def mock_write(tx, mode):
+        b.store_bulk_transactions([tx])
+        return (202, '')
+
+    # patch the validator set. We now have one validator with power 10
+    b.get_validators = mock_get
+    b.write_transaction = mock_write
+
+    # our voters is a list of length 1, populated from our mocked validator
+    voters = ValidatorElection.recipients(b)
+    # and our voter is the public key from the voter list
+    voter = node_key.public_key
+    valid_election = ValidatorElection.generate([voter],
+                                                voters,
+                                                new_validator, None).sign([node_key.private_key])
+
+    # patch in an election with a vote issued to the user
+    election_id = valid_election.id
+    b.store_bulk_transactions([valid_election])
+
+    # call run_upsert_validator_approve with args that point to the election, but a bad signing key
+    args = Namespace(action='approve',
+                     election_id=election_id,
+                     sk=bad_validator_path,
+                     config={})
+
+    with pytest.raises(KeypairMismatchException):
+        run_upsert_validator_approve(args, b)
 
 
 def mock_get(height):

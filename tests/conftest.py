@@ -703,6 +703,30 @@ def priv_validator_path(node_keys):
 
 
 @pytest.fixture
+def bad_validator_path(node_keys):
+    (public_key, private_key) = list(node_keys.items())[1]
+    priv_validator = {
+        'address': '84F787D95E196DC5DE5F972666CFECCA36801426',
+        'pub_key': {
+            'type': 'AC26791624DE60',
+            'value': public_key
+        },
+        'last_height': 0,
+        'last_round': 0,
+        'last_step': 0,
+        'priv_key': {
+            'type': '954568A3288910',
+            'value': private_key
+        }
+    }
+    fd, path = tempfile.mkstemp()
+    socket = os.fdopen(fd, 'w')
+    json.dump(priv_validator, socket)
+    socket.close()
+    return path
+
+
+@pytest.fixture
 def validators(b, node_keys):
     from bigchaindb.backend import query
 
