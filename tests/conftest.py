@@ -679,11 +679,6 @@ def node_keys():
 
 
 @pytest.fixture
-def private_validator_keys(node_keys):
-    return list(node_keys.items())[0]
-
-
-@pytest.fixture
 def priv_validator_path(node_keys):
     (public_key, private_key) = list(node_keys.items())[0]
     priv_validator = {
