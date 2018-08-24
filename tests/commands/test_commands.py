@@ -431,7 +431,7 @@ def test_upsert_validator_show(b, priv_validator_path, user_sk, monkeypatch):
 
     resp = run_upsert_validator_show(show_args, b)
 
-    assert resp == (public_key, power, node_id)
+    assert resp == f'public_key={public_key}\npower={power}\nnode_id={node_id}'
 
 
 @pytest.mark.abci

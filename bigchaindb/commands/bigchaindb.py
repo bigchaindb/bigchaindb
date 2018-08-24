@@ -200,7 +200,7 @@ def run_upsert_validator_show(args, bigchain):
     power = new_validator['power']
     node_id = new_validator['node_id']
 
-    return public_key, power, node_id
+    return f'public_key={public_key}\npower={power}\nnode_id={node_id}'
 
 
 def _run_init():
