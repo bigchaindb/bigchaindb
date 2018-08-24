@@ -57,10 +57,9 @@ def test_asset_is_separated_from_transaciton(b):
 
 
 @pytest.mark.bdb
-def test_get_latest_block(tb):
+def test_get_latest_block(b):
     from bigchaindb.lib import Block
 
-    b = tb
     for i in range(10):
         app_hash = os.urandom(16).hex()
         txn_id = os.urandom(16).hex()
@@ -75,8 +74,8 @@ def test_get_latest_block(tb):
 @pytest.mark.bdb
 @patch('bigchaindb.backend.query.get_block', return_value=None)
 @patch('bigchaindb.BigchainDB.get_latest_block', return_value={'height': 10})
-def test_get_empty_block(_0, _1, tb):
-    assert tb.get_block(5) == {'height': 5, 'transactions': []}
+def test_get_empty_block(_0, _1, b):
+    assert b.get_block(5) == {'height': 5, 'transactions': []}
 
 
 def test_validation_error(b):
@@ -172,15 +171,15 @@ def test_validator_updates(b, validator_pub_key):
 
 
 @pytest.mark.bdb
-def test_update_utxoset(tb, signed_create_tx, signed_transfer_tx, db_context):
+def test_update_utxoset(b, signed_create_tx, signed_transfer_tx, db_context):
     mongo_client = MongoClient(host=db_context.host, port=db_context.port)
-    tb.update_utxoset(signed_create_tx)
+    b.update_utxoset(signed_create_tx)
     utxoset = mongo_client[db_context.name]['utxos']
     assert utxoset.count() == 1
     utxo = utxoset.find_one()
     assert utxo['transaction_id'] == signed_create_tx.id
     assert utxo['output_index'] == 0
-    tb.update_utxoset(signed_transfer_tx)
+    b.update_utxoset(signed_transfer_tx)
     assert utxoset.count() == 1
     utxo = utxoset.find_one()
     assert utxo['transaction_id'] == signed_transfer_tx.id
@@ -188,14 +187,14 @@ def test_update_utxoset(tb, signed_create_tx, signed_transfer_tx, db_context):
 
 
 @pytest.mark.bdb
-def test_store_transaction(mocker, tb, signed_create_tx,
+def test_store_transaction(mocker, b, signed_create_tx,
                            signed_transfer_tx, db_context):
     mocked_store_asset = mocker.patch('bigchaindb.backend.query.store_assets')
     mocked_store_metadata = mocker.patch(
         'bigchaindb.backend.query.store_metadatas')
     mocked_store_transaction = mocker.patch(
         'bigchaindb.backend.query.store_transactions')
-    tb.store_bulk_transactions([signed_create_tx])
+    b.store_bulk_transactions([signed_create_tx])
     # mongo_client = MongoClient(host=db_context.host, port=db_context.port)
     # utxoset = mongo_client[db_context.name]['utxos']
     # assert utxoset.count() == 1
@@ -204,40 +203,40 @@ def test_store_transaction(mocker, tb, signed_create_tx,
     # assert utxo['output_index'] == 0
 
     mocked_store_asset.assert_called_once_with(
-        tb.connection,
+        b.connection,
         [{'id': signed_create_tx.id, 'data': signed_create_tx.asset['data']}],
     )
     mocked_store_metadata.assert_called_once_with(
-        tb.connection,
+        b.connection,
         [{'id': signed_create_tx.id, 'metadata': signed_create_tx.metadata}],
     )
     mocked_store_transaction.assert_called_once_with(
-        tb.connection,
+        b.connection,
         [{k: v for k, v in signed_create_tx.to_dict().items()
          if k not in ('asset', 'metadata')}],
     )
     mocked_store_asset.reset_mock()
     mocked_store_metadata.reset_mock()
     mocked_store_transaction.reset_mock()
-    tb.store_bulk_transactions([signed_transfer_tx])
+    b.store_bulk_transactions([signed_transfer_tx])
     # assert utxoset.count() == 1
     # utxo = utxoset.find_one()
     # assert utxo['transaction_id'] == signed_transfer_tx.id
     # assert utxo['output_index'] == 0
     assert not mocked_store_asset.called
     mocked_store_metadata.asser_called_once_with(
-        tb.connection,
+        b.connection,
         [{'id': signed_transfer_tx.id, 'metadata': signed_transfer_tx.metadata}],
     )
     mocked_store_transaction.assert_called_once_with(
-        tb.connection,
+        b.connection,
         [{k: v for k, v in signed_transfer_tx.to_dict().items()
          if k != 'metadata'}],
     )
 
 
 @pytest.mark.bdb
-def test_store_bulk_transaction(mocker, tb, signed_create_tx,
+def test_store_bulk_transaction(mocker, b, signed_create_tx,
                                 signed_transfer_tx, db_context):
     mocked_store_assets = mocker.patch(
         'bigchaindb.backend.query.store_assets')
@@ -245,7 +244,7 @@ def test_store_bulk_transaction(mocker, tb, signed_create_tx,
         'bigchaindb.backend.query.store_metadatas')
     mocked_store_transactions = mocker.patch(
         'bigchaindb.backend.query.store_transactions')
-    tb.store_bulk_transactions((signed_create_tx,))
+    b.store_bulk_transactions((signed_create_tx,))
     # mongo_client = MongoClient(host=db_context.host, port=db_context.port)
     # utxoset = mongo_client[db_context.name]['utxos']
     # assert utxoset.count() == 1
@@ -253,34 +252,34 @@ def test_store_bulk_transaction(mocker, tb, signed_create_tx,
     # assert utxo['transaction_id'] == signed_create_tx.id
     # assert utxo['output_index'] == 0
     mocked_store_assets.assert_called_once_with(
-        tb.connection,
+        b.connection,
         [{'id': signed_create_tx.id, 'data': signed_create_tx.asset['data']}],
     )
     mocked_store_metadata.assert_called_once_with(
-        tb.connection,
+        b.connection,
         [{'id': signed_create_tx.id, 'metadata': signed_create_tx.metadata}],
     )
     mocked_store_transactions.assert_called_once_with(
-        tb.connection,
+        b.connection,
         [{k: v for k, v in signed_create_tx.to_dict().items()
          if k not in ('asset', 'metadata')}],
     )
     mocked_store_assets.reset_mock()
     mocked_store_metadata.reset_mock()
     mocked_store_transactions.reset_mock()
-    tb.store_bulk_transactions((signed_transfer_tx,))
+    b.store_bulk_transactions((signed_transfer_tx,))
     # assert utxoset.count() == 1
     # utxo = utxoset.find_one()
     # assert utxo['transaction_id'] == signed_transfer_tx.id
     # assert utxo['output_index'] == 0
     assert not mocked_store_assets.called
     mocked_store_metadata.asser_called_once_with(
-        tb.connection,
+        b.connection,
         [{'id': signed_transfer_tx.id,
           'metadata': signed_transfer_tx.metadata}],
     )
     mocked_store_transactions.assert_called_once_with(
-        tb.connection,
+        b.connection,
         [{k: v for k, v in signed_transfer_tx.to_dict().items()
           if k != 'metadata'}],
     )
