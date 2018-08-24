@@ -133,7 +133,9 @@ Below is the command line syntax and the return value,
 
 ```bash
 $ bigchaindb upsert-validator show ELECTION_ID
-<e_pub_key> <e_power> <e_node_id>
+public_key=<e_pub_key>
+power=<e_power>
+node_id=<e_node_id>
 ```
 
 Note that the inputs and return values of `upsert-validator new` and `upsert-validator show` are inverse to one another.
