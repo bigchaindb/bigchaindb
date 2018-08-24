@@ -1,3 +1,8 @@
+
+.. Copyright BigchainDB GmbH and BigchainDB contributors
+   SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+   Code is Apache-2.0 and docs are CC-BY-4.0
+
 Log Analytics on Azure
 ======================
 
@@ -165,7 +170,7 @@ Until we figure out a way to obtain the *workspace key* via the command line,
 you can get it via the OMS Portal.
 To get to the OMS Portal, go to the Azure Portal and click on:
 
-Resource Groups > (Your k8s cluster's resource group) > Log analytics (OMS) > (Name of the only item listed) > OMS Workspace > OMS Portal
+Resource Groups > (Your Kubernetes cluster's resource group) > Log analytics (OMS) > (Name of the only item listed) > OMS Workspace > OMS Portal
 
 (Let us know if you find a faster way.)
 Then see `Microsoft's instructions to obtain your workspace ID and key

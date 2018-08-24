@@ -1,7 +1,11 @@
+# Copyright BigchainDB GmbH and BigchainDB contributors
+# SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+# Code is Apache-2.0 and docs are CC-BY-4.0
+
 """This module contains all the goodness to integrate BigchainDB
-with Tendermint."""
+with Tendermint.
+"""
 import logging
-import codecs
 
 from abci.application import BaseApplication
 from abci.types_pb2 import (
@@ -12,8 +16,6 @@ from abci.types_pb2 import (
     ResponseDeliverTx,
     ResponseEndBlock,
     ResponseCommit,
-    Validator,
-    PubKey
 )
 
 from bigchaindb import BigchainDB
@@ -21,6 +23,8 @@ from bigchaindb.tendermint_utils import (decode_transaction,
                                          calculate_hash)
 from bigchaindb.lib import Block, PreCommitState
 from bigchaindb.backend.query import PRE_COMMIT_ID
+from bigchaindb.upsert_validator import ValidatorElection
+import bigchaindb.upsert_validator.validator_utils as vutils
 
 
 CodeTypeOk = 0
@@ -33,7 +37,8 @@ class App(BaseApplication):
 
     The role of this class is to expose the BigchainDB
     transactional logic to the Tendermint Consensus
-    State Machine."""
+    State Machine.
+    """
 
     def __init__(self, bigchaindb=None):
         self.bigchaindb = bigchaindb or BigchainDB()
@@ -46,7 +51,7 @@ class App(BaseApplication):
     def init_chain(self, genesis):
         """Initialize chain with block of height 0"""
 
-        validator_set = [decode_validator(v) for v in genesis.validators]
+        validator_set = [vutils.decode_validator(v) for v in genesis.validators]
         block = Block(app_hash='', height=0, transactions=[])
         self.bigchaindb.store_block(block._asdict())
         self.bigchaindb.store_validator_set(1, validator_set)
@@ -69,7 +74,8 @@ class App(BaseApplication):
         the mempool.
 
         Args:
-            raw_tx: a raw string (in bytes) transaction."""
+            raw_tx: a raw string (in bytes) transaction.
+        """
 
         logger.benchmark('CHECK_TX_INIT')
         logger.debug('check_tx: %s', raw_transaction)
@@ -101,7 +107,8 @@ class App(BaseApplication):
         """Validate the transaction before mutating the state.
 
         Args:
-            raw_tx: a raw string (in bytes) transaction."""
+            raw_tx: a raw string (in bytes) transaction.
+        """
         logger.debug('deliver_tx: %s', raw_transaction)
         transaction = self.bigchaindb.is_valid_transaction(
             decode_transaction(raw_transaction), self.block_transactions)
@@ -120,7 +127,8 @@ class App(BaseApplication):
         hash to be stored in the next block.
 
         Args:
-            height (int): new height of the chain."""
+            height (int): new height of the chain.
+        """
 
         height = request_end_block.height
         self.new_height = height
@@ -132,11 +140,11 @@ class App(BaseApplication):
         else:
             self.block_txn_hash = block['app_hash']
 
-        # TODO: calculate if an election has concluded
-        # NOTE: ensure the local validator set is updated
-        # validator_updates = self.bigchaindb.get_validator_update()
-        # validator_updates = [encode_validator(v) for v in validator_updates]
-        validator_updates = []
+        # Check if the current block concluded any validator elections and
+        # update the locally tracked validator set
+        validator_updates = ValidatorElection.get_validator_update(self.bigchaindb,
+                                                                   self.new_height,
+                                                                   self.block_transactions)
 
         # Store pre-commit state to recover in case there is a crash
         # during `commit`
@@ -167,22 +175,3 @@ class App(BaseApplication):
                      self.block_txn_ids)
         logger.benchmark('COMMIT_BLOCK, height:%s', self.new_height)
         return ResponseCommit(data=data)
-
-
-def encode_validator(v):
-    ed25519_public_key = v['pub_key']['data']
-    # NOTE: tendermint expects public to be encoded in go-amino format
-
-    pub_key = PubKey(type='ed25519',
-                     data=bytes.fromhex(ed25519_public_key))
-
-    return Validator(pub_key=pub_key,
-                     address=b'',
-                     power=v['power'])
-
-
-def decode_validator(v):
-    return {'address': codecs.encode(v.address, 'hex').decode().upper().rstrip('\n'),
-            'pub_key': {'type': v.pub_key.type,
-                        'data': codecs.encode(v.pub_key.data, 'base64').decode().rstrip('\n')},
-            'voting_power': v.power}

@@ -1,3 +1,9 @@
+<!---
+Copyright BigchainDB GmbH and BigchainDB contributors
+SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+Code is Apache-2.0 and docs are CC-BY-4.0
+--->
+
 # Integration test case suggestions
 This document gives an overview of possible integration test cases, provides some useful links and a specification how to write the Python `docstring` for a test case.
 

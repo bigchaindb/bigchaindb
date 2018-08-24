@@ -1,3 +1,7 @@
+# Copyright BigchainDB GmbH and BigchainDB contributors
+# SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+# Code is Apache-2.0 and docs are CC-BY-4.0
+
 import json
 from unittest.mock import Mock, patch
 
@@ -261,7 +265,6 @@ def test_post_create_transaction_with_invalid_schema(mock_logger, client):
     ('ValidationError', 'Create and transfer!'),
     ('InputDoesNotExist', 'Hallucinations?'),
     ('TransactionOwnerError', 'Not yours!'),
-    ('TransactionNotInValidBlock', 'Wait, maybe?'),
     ('ValidationError', '?'),
 ))
 @patch('bigchaindb.web.views.base.logger')

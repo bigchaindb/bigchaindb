@@ -1,10 +1,13 @@
+# Copyright BigchainDB GmbH and BigchainDB contributors
+# SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+# Code is Apache-2.0 and docs are CC-BY-4.0
+
 """Module containing main contact points with Tendermint and
 MongoDB.
 
 """
 import logging
 from collections import namedtuple
-from copy import deepcopy
 from uuid import uuid4
 
 try:
@@ -24,6 +27,7 @@ from bigchaindb.common.exceptions import (SchemaValidationError,
 from bigchaindb.tendermint_utils import encode_transaction, merkleroot
 from bigchaindb import exceptions as core_exceptions
 from bigchaindb.consensus import BaseConsensusRules
+
 
 logger = logging.getLogger(__name__)
 
@@ -113,25 +117,6 @@ class BigchainDB(object):
 
     def process_status_code(self, status_code, failure_msg):
         return (202, '') if status_code == 0 else (500, failure_msg)
-
-    def store_transaction(self, transaction):
-        """Store a valid transaction to the transactions collection."""
-
-        # self.update_utxoset(transaction)
-        transaction = deepcopy(transaction.to_dict())
-        if transaction['operation'] == 'CREATE':
-            asset = transaction.pop('asset')
-            asset['id'] = transaction['id']
-            if asset['data']:
-                backend.query.store_asset(self.connection, asset)
-
-        metadata = transaction.pop('metadata')
-        transaction_metadata = {'id': transaction['id'],
-                                'metadata': metadata}
-
-        backend.query.store_metadatas(self.connection, [transaction_metadata])
-
-        return backend.query.store_transaction(self.connection, transaction)
 
     def store_bulk_transactions(self, transactions):
         txns = []
@@ -438,15 +423,7 @@ class BigchainDB(object):
     def get_validators(self, height=None):
         result = backend.query.get_validator_set(self.connection, height)
         validators = result['validators']
-        for v in validators:
-            v.pop('address')
-            v['voting_power'] = int(v['voting_power'])
-
         return validators
-
-    def get_validator_update(self):
-        update = backend.query.get_validator_update(self.connection)
-        return [update['validator']] if update else []
 
     def delete_validator_update(self):
         return backend.query.delete_validator_update(self.connection)

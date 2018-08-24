@@ -1,3 +1,8 @@
+
+.. Copyright BigchainDB GmbH and BigchainDB contributors
+   SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+   Code is Apache-2.0 and docs are CC-BY-4.0
+
 Kubernetes Template: Upgrade all Software in a BigchainDB Node
 ==============================================================
 
@@ -7,7 +12,7 @@ Kubernetes Template: Upgrade all Software in a BigchainDB Node
    (three for the master and two for your app's containers).
    Therefore we don't recommend using Kubernetes to run a BigchainDB node
    if that's the only thing the Kubernetes cluster will be running.
-   Instead, see **How to Set Up a BigchainDB Network**.
+   Instead, see our :ref:`simple-deployment-template`.
    If your organization already *has* a big Kubernetes cluster running many containers,
    and your organization has people who know Kubernetes,
    then this Kubernetes deployment template might be helpful.

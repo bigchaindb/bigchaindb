@@ -1,3 +1,8 @@
+
+.. Copyright BigchainDB GmbH and BigchainDB contributors
+   SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+   Code is Apache-2.0 and docs are CC-BY-4.0
+
 BigchainDB Server Documentation
 ===============================
 
@@ -7,9 +12,9 @@ BigchainDB Server Documentation
    ← Back to All BigchainDB Docs <https://docs.bigchaindb.com/en/latest/index.html>
    introduction
    quickstart
-   simple-network-setup
    production-nodes/index
-   clusters
+   networks
+   simple-deployment-template/index
    dev-and-test/index
    server-reference/index
    http-client-server-api

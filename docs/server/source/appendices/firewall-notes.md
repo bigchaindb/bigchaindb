@@ -1,3 +1,9 @@
+<!---
+Copyright BigchainDB GmbH and BigchainDB contributors
+SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+Code is Apache-2.0 and docs are CC-BY-4.0
+--->
+
 # Notes for Firewall Setup
 
 This is a page of notes on the ports potentially used by BigchainDB nodes and the traffic they should expect, to help with firewall setup (or security group setup on cloud providers). This page is _not_ a firewall tutorial or step-by-step guide.
