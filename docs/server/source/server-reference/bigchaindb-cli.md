@@ -110,3 +110,17 @@ $ bigchaindb upsert-validator new B0E42D2589A455EAD339A035D6CE1C8C3E25863F268120
 ```
 
 If the command succeeds, it will create an election and return an `election_id`. Elections consist of one vote token per voting power, issued to the members of the validator set. Validators can cast their votes to approve the change to the validator set by spending their vote tokens. The status of the election can be monitored by providing the `election_id` to the `show` subcommand.
+
+#### upsert-validator approve
+ Approve an election by voting for it.
+ Below is the command line syntax and the return value,
+ ```bash
+$ bigchaindb upsert-validator approve <election_id> --private-key PATH_TO_YOUR_PRIVATE_KEY
+```
+ Here, `<election_id>` is the transaction id of the election the approval should be given for. `--private-key` should be the path to Tendermint's private key which can be generally found at `/home/user/.tendermint/config/priv_validator.json`.
+
+ Example usage,
+ ```bash
+$ bigchaindb upsert-validator approve 04a067582cf03eba2b53b82e4adb5ece424474cbd4f7183780855a93ac5e3caa --private-key /home/user/.tendermint/config/priv_validator.json
+```
+ If the command succeeds, a message will be returned, that the vote was submitted successfully.

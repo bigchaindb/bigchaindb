@@ -9,6 +9,10 @@ from argparse import Namespace
 
 import pytest
 
+from bigchaindb import ValidatorElection
+from bigchaindb.common.exceptions import KeypairMismatchException
+from tests.conftest import node_keys
+
 
 @pytest.mark.tendermint
 def test_make_sure_we_dont_remove_any_command():
@@ -24,6 +28,8 @@ def test_make_sure_we_dont_remove_any_command():
     assert parser.parse_args(['start']).command
     assert parser.parse_args(['upsert-validator', 'new', 'TEMP_PUB_KEYPAIR', '10', 'TEMP_NODE_ID',
                               '--private-key', 'TEMP_PATH_TO_PRIVATE_KEY']).command
+    assert parser.parse_args(['upsert-validator', 'approve', 'ELECTION_ID', '--private-key',
+                              'TEMP_PATH_TO_PRIVATE_KEY']).command
 
 
 @pytest.mark.tendermint
@@ -358,13 +364,6 @@ def test_upsert_validator_new_with_tendermint(b, priv_validator_path, user_sk, m
 
     time.sleep(3)
 
-    def mock_get():
-        return [
-            {'pub_key': {'value': 'zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=',
-                         'type': 'tendermint/PubKeyEd25519'},
-             'voting_power': 10}
-        ]
-
     # b.get_validators = mock_get
     # mock_get_validators = mock_get
     # monkeypatch.setattr('requests.get', mock_get)
@@ -385,15 +384,8 @@ def test_upsert_validator_new_with_tendermint(b, priv_validator_path, user_sk, m
 
 @pytest.mark.tendermint
 @pytest.mark.bdb
-def test_upsert_validator_new_without_tendermint(b, priv_validator_path, user_sk, monkeypatch):
+def test_upsert_validator_new_without_tendermint(b, priv_validator_path, user_sk):
     from bigchaindb.commands.bigchaindb import run_upsert_validator_new
-
-    def mock_get(height):
-        return [
-            {'pub_key': {'data': 'zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=',
-                         'type': 'tendermint/PubKeyEd25519'},
-             'voting_power': 10}
-        ]
 
     def mock_write(tx, mode):
         b.store_bulk_transactions([tx])
@@ -411,3 +403,100 @@ def test_upsert_validator_new_without_tendermint(b, priv_validator_path, user_sk
     resp = run_upsert_validator_new(args, b)
 
     assert b.get_transaction(resp)
+
+
+@pytest.mark.abci
+def test_upsert_validator_approve_with_tendermint(b, priv_validator_path, user_sk, validators):
+    from bigchaindb.commands.bigchaindb import run_upsert_validator_new, \
+        run_upsert_validator_approve
+
+    public_key = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
+    new_args = Namespace(action='new',
+                         public_key=public_key,
+                         power=1,
+                         node_id='12345',
+                         sk=priv_validator_path,
+                         config={})
+
+    election_id = run_upsert_validator_new(new_args, b)
+
+    args = Namespace(action='approve',
+                     election_id=election_id,
+                     sk=priv_validator_path,
+                     config={})
+    approve = run_upsert_validator_approve(args, b)
+
+    assert b.get_transaction(approve)
+
+
+@pytest.mark.bdb
+@pytest.mark.tendermint
+def test_upsert_validator_approve_without_tendermint(b, priv_validator_path, new_validator, node_key):
+    from bigchaindb.commands.bigchaindb import run_upsert_validator_approve
+    from argparse import Namespace
+
+    b, election_id = call_election(b, new_validator, node_key)
+
+    # call run_upsert_validator_approve with args that point to the election
+    args = Namespace(action='approve',
+                     election_id=election_id,
+                     sk=priv_validator_path,
+                     config={})
+
+    approval_id = run_upsert_validator_approve(args, b)
+
+    # assert returned id is in the db
+    assert b.get_transaction(approval_id)
+
+
+@pytest.mark.bdb
+@pytest.mark.tendermint
+def test_upsert_validator_approve_called_with_bad_key(b, bad_validator_path, new_validator, node_key):
+    from bigchaindb.commands.bigchaindb import run_upsert_validator_approve
+    from argparse import Namespace
+
+    b, election_id = call_election(b, new_validator, node_key)
+
+    # call run_upsert_validator_approve with args that point to the election, but a bad signing key
+    args = Namespace(action='approve',
+                     election_id=election_id,
+                     sk=bad_validator_path,
+                     config={})
+
+    with pytest.raises(KeypairMismatchException):
+        run_upsert_validator_approve(args, b)
+
+
+def mock_get(height):
+    keys = node_keys()
+    pub_key = list(keys.keys())[0]
+    return [
+        {'pub_key': {'data': pub_key,
+                     'type': 'tendermint/PubKeyEd25519'},
+         'voting_power': 10}
+    ]
+
+
+def call_election(b, new_validator, node_key):
+
+    def mock_write(tx, mode):
+        b.store_bulk_transactions([tx])
+        return (202, '')
+
+    # patch the validator set. We now have one validator with power 10
+    b.get_validators = mock_get
+    b.write_transaction = mock_write
+
+    # our voters is a list of length 1, populated from our mocked validator
+    voters = ValidatorElection.recipients(b)
+    # and our voter is the public key from the voter list
+    voter = node_key.public_key
+    valid_election = ValidatorElection.generate([voter],
+                                                voters,
+                                                new_validator, None).sign([node_key.private_key])
+
+    # patch in an election with a vote issued to the user
+    election_id = valid_election.id
+    b.store_bulk_transactions([valid_election])
+
+    return b, election_id
