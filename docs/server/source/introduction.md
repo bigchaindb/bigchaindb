@@ -22,7 +22,7 @@ Note that there are a few kinds of nodes:
 
 - [Quickstart](quickstart.html)
 - [Set up a local BigchainDB node for development, experimenting and testing](https://docs.bigchaindb.com/projects/contributing/en/latest/dev-setup-coding-and-contribution-process/index.html)
-- [Set up and run a BigchainDB network](network-operations/index.html)
+- [Set up and run a BigchainDB network](simple-deployment-template/index.html)
 
 ## Can I Help?
 

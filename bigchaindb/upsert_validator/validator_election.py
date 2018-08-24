@@ -41,7 +41,6 @@ class ValidatorElection(Transaction):
         """Return a dictionary of validators with key as `public_key` and
            value as the `voting_power`
         """
-
         validators = {}
         for validator in bigchain.get_validators(height):
             # NOTE: we assume that Tendermint encodes public key in base64

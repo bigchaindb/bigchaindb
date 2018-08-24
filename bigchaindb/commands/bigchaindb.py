@@ -16,9 +16,10 @@ import sys
 from bigchaindb.utils import load_node_key
 from bigchaindb.common.exceptions import (DatabaseAlreadyExists,
                                           DatabaseDoesNotExist,
-                                          OperationError)
+                                          OperationError, KeypairMismatchException)
 import bigchaindb
-from bigchaindb import backend, ValidatorElection, BigchainDB
+from bigchaindb import (backend, ValidatorElection,
+                        BigchainDB, ValidatorElectionVote)
 from bigchaindb.backend import schema
 from bigchaindb.backend import query
 from bigchaindb.backend.query import PRE_COMMIT_ID
@@ -143,6 +144,43 @@ def run_upsert_validator_new(args, bigchain):
         raise OperationError('Failed to commit election')
 
 
+def run_upsert_validator_approve(args, bigchain):
+    """Approve an election to add/update/remove a validator to an existing BigchainDB network
+
+    :param args: dict
+        args = {
+        'election_id': the election_id of the election (str)
+        'sk': the path to the private key of the signer (str)
+        }
+    :param bigchain: an instance of BigchainDB
+    :return: a success message
+    :raises: OperationError if the write transaction fails for any reason
+    """
+
+    key = load_node_key(args.sk)
+    tx = bigchain.get_transaction(args.election_id)
+    voting_powers = [v.amount for v in tx.outputs if key.public_key in v.public_keys]
+    if len(voting_powers) > 0:
+        voting_power = voting_powers[0]
+    else:
+        raise KeypairMismatchException(
+            'The key you provided does not match any of the eligible voters in this election.'
+        )
+
+    inputs = [i for i in tx.to_inputs() if key.public_key in i.owners_before]
+    approval = ValidatorElectionVote.generate(inputs, [
+        ([key.public_key], voting_power)], tx.id).sign([key.private_key])
+    approval.validate(bigchain)
+
+    resp = bigchain.write_transaction(approval, 'broadcast_tx_commit')
+
+    if resp == (202, ''):
+        print('Your vote has been submitted.')
+        return approval.id
+    else:
+        raise OperationError('Failed to vote for election')
+
+
 def _run_init():
     bdb = bigchaindb.BigchainDB()
 
@@ -263,6 +301,14 @@ def create_parser():
     new_election_parser.add_argument('--private-key',
                                      dest='sk',
                                      help='Path to the private key of the election initiator.')
+
+    approve_election_parser = validator_subparser.add_parser('approve',
+                                                             help='Approve the election.')
+    approve_election_parser.add_argument('election_id',
+                                         help='The election_id of the election.')
+    approve_election_parser.add_argument('--private-key',
+                                         dest='sk',
+                                         help='Path to the private key of the election initiator.')
 
     # parsers for showing/exporting config values
     subparsers.add_parser('show-config',

@@ -665,7 +665,7 @@ def ed25519_node_keys(node_keys):
     return node_keys_dict
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture
 def node_keys():
     return {'zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=':
             'cM5oW4J0zmUSZ/+QRoRlincvgCwR0pEjFoY//ZnnjD3Mv8Nqy8q6VdnOFI0XDHhwtFcqRIz0Y8rtjSdngUTKUw==',
@@ -677,7 +677,7 @@ def node_keys():
             'uz8bYgoL4rHErWT1gjjrnA+W7bgD/uDQWSRKDmC8otc95wnnxJo1GxYlmh0OaqOkJaobpu13BcUcvITjRFiVgw=='}
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture
 def priv_validator_path(node_keys):
     (public_key, private_key) = list(node_keys.items())[0]
     priv_validator = {
@@ -699,3 +699,79 @@ def priv_validator_path(node_keys):
     json.dump(priv_validator, socket)
     socket.close()
     return path
+
+
+@pytest.fixture
+def bad_validator_path(node_keys):
+    (public_key, private_key) = list(node_keys.items())[1]
+    priv_validator = {
+        'address': '84F787D95E196DC5DE5F972666CFECCA36801426',
+        'pub_key': {
+            'type': 'AC26791624DE60',
+            'value': public_key
+        },
+        'last_height': 0,
+        'last_round': 0,
+        'last_step': 0,
+        'priv_key': {
+            'type': '954568A3288910',
+            'value': private_key
+        }
+    }
+    fd, path = tempfile.mkstemp()
+    socket = os.fdopen(fd, 'w')
+    json.dump(priv_validator, socket)
+    socket.close()
+    return path
+
+
+@pytest.fixture
+def validators(b, node_keys):
+    from bigchaindb.backend import query
+
+    height = get_block_height(b)
+
+    original_validators = b.get_validators()
+
+    (public_key, private_key) = list(node_keys.items())[0]
+
+    validator_set = [{'address': 'F5426F0980E36E03044F74DD414248D29ABCBDB2',
+                      'pub_key': {
+                          'data': public_key,
+                          'type': 'ed25519'},
+                      'voting_power': 10}]
+
+    validator_update = {'validators': validator_set,
+                        'height': height + 1}
+
+    query.store_validator_set(b.connection, validator_update)
+
+    yield
+
+    height = get_block_height(b)
+
+    validator_update = {'validators': original_validators,
+                        'height': height}
+
+    query.store_validator_set(b.connection, validator_update)
+
+
+def get_block_height(b):
+
+    if b.get_latest_block():
+        height = b.get_latest_block()['height']
+    else:
+        height = 0
+
+    return height
+
+
+@pytest.fixture
+def new_validator():
+    public_key = '1718D2DBFF00158A0852A17A01C78F4DCF3BA8E4FB7B8586807FAC182A535034'
+    power = 1
+    node_id = 'fake_node_id'
+
+    return {'public_key': public_key,
+            'power': power,
+            'node_id': node_id}
