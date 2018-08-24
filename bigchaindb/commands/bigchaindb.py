@@ -168,8 +168,10 @@ def run_upsert_validator_approve(args, bigchain):
         )
 
     inputs = [i for i in tx.to_inputs() if key.public_key in i.owners_before]
-    approval = ValidatorElectionVote.generate(inputs, [
-        ([key.public_key], voting_power)], tx.id).sign([key.private_key])
+    election_pub_key = ValidatorElection.to_public_key(tx.id)
+    approval = ValidatorElectionVote.generate(inputs,
+                                              [([election_pub_key], voting_power)],
+                                              tx.id).sign([key.private_key])
     approval.validate(bigchain)
 
     resp = bigchain.write_transaction(approval, 'broadcast_tx_commit')
