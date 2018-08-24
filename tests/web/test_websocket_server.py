@@ -21,6 +21,33 @@ class MockWebSocket:
         self.received.append(s)
 
 
+def test_eventify_block_works_with_any_transaction():
+    from bigchaindb.web.websocket_server import eventify_block
+
+    block = {
+        'height': 1,
+        'transactions': [{
+            'id': 1
+        }, {
+            'id': 2,
+            'asset': {'id': 1}
+            }]
+        }
+
+    expected_events = [{
+            'height': 1,
+            'asset_id': 1,
+            'transaction_id': 1
+        }, {
+            'height': 1,
+            'asset_id': 1,
+            'transaction_id': 2
+        }]
+
+    for event, expected in zip(eventify_block(block), expected_events):
+        assert event == expected
+
+
 @asyncio.coroutine
 def test_bridge_sync_async_queue(loop):
     from bigchaindb.web.websocket_server import _multiprocessing_to_asyncio
