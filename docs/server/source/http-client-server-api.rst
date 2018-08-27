@@ -135,13 +135,21 @@ Transactions
 
    :query string mode: (Optional) One of the three supported modes to send a transaction: ``async``, ``sync``, ``commit``. The default is ``async``.
 
-   The ``mode`` query parameter inhereted from the mode parameter in Tendermint's
-   `broadcast API
-   <http://tendermint.readthedocs.io/projects/tools/en/master/using-tendermint.html#broadcast-api>`_.
-   ``mode=async`` means the HTTP response will come back immediately, without
-   even checking to see if the transaction is valid.
-   ``mode=sync`` means the HTTP response will come back once the node has
-   checked the validity of the transaction.
+   Once the posted transaction arrives at a BigchainDB node,
+   that node will check to see if the transaction is valid.
+   If it's invalid, the node will return an HTTP 400 (error).
+   Otherwise, the node will send the transaction to Tendermint (in the same node) using the
+   `Tendermint broadcast API
+   <https://tendermint.com/docs/tendermint-core/using-tendermint.html#broadcast-api>`_.
+   
+   The meaning of the ``mode`` query parameter is inherited from the mode parameter in
+   `Tendermint's broadcast API
+   <https://tendermint.com/docs/tendermint-core/using-tendermint.html#broadcast-api>`_.
+   ``mode=async`` means the HTTP response will come back immediately,
+   before Tendermint asks BigchainDB Server to check the validity of the transaction (a second time).
+   ``mode=sync`` means the HTTP response will come back
+   after Tendermint gets a response from BigchainDB Server
+   regarding the validity of the transaction.
    ``mode=commit`` means the HTTP response will come back once the transaction
    is in a committed block.
 

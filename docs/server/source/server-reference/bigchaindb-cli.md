@@ -106,7 +106,7 @@ Here, `E_PUBKEY`, `E_POWER`, and `E_NODE_ID` are the public key, proposed power,
 Example usage,
 
 ```bash
-$ bigchaindb upsert-validator new B0E42D2589A455EAD339A035D6CE1C8C3E25863F268120AA0162AD7D003A4014 1 12345 --private-key /home/user/.tendermint/config/priv_validator.json
+$ bigchaindb upsert-validator new HHG0IQRybpT6nJMIWWFWhMczCLHt6xcm7eP52GnGuPY= 1 fb7140f03a4ffad899fabbbf655b97e0321add66 --private-key /home/user/.tendermint/config/priv_validator.json
 ```
 
 If the command succeeds, it will create an election and return an `election_id`. Elections consist of one vote token per voting power, issued to the members of the validator set. Validators can cast their votes to approve the change to the validator set by spending their vote tokens. The status of the election can be monitored by providing the `election_id` to the `show` subcommand.

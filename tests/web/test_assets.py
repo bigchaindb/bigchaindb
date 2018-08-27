@@ -23,8 +23,7 @@ def test_get_assets_with_missing_text_search(client):
 
 @pytest.mark.bdb
 @pytest.mark.tendermint
-@pytest.mark.localmongodb
-def test_get_assets_tendermint(client, tb, alice):
+def test_get_assets_tendermint(client, b, alice):
     from bigchaindb.models import Transaction
 
     # test returns empty list when no assets are found
@@ -37,7 +36,7 @@ def test_get_assets_tendermint(client, tb, alice):
     tx = Transaction.create([alice.public_key], [([alice.public_key], 1)],
                             asset=asset).sign([alice.private_key])
 
-    tb.store_bulk_transactions([tx])
+    b.store_bulk_transactions([tx])
 
     # test that asset is returned
     res = client.get(ASSETS_ENDPOINT + '?search=abc')
@@ -51,11 +50,9 @@ def test_get_assets_tendermint(client, tb, alice):
 
 @pytest.mark.bdb
 @pytest.mark.tendermint
-@pytest.mark.localmongodb
-def test_get_assets_limit_tendermint(client, tb, alice):
+def test_get_assets_limit_tendermint(client, b, alice):
     from bigchaindb.models import Transaction
 
-    b = tb
     # create two assets
     asset1 = {'msg': 'abc 1'}
     asset2 = {'msg': 'abc 2'}

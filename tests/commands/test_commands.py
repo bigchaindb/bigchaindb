@@ -185,7 +185,7 @@ def test_run_configure_when_config_does_exist(monkeypatch,
                                               mock_bigchaindb_backup_config):
     value = {}
 
-    def mock_write_config(newconfig, filename=None):
+    def mock_write_config(newconfig):
         value['return'] = newconfig
 
     from bigchaindb.commands.bigchaindb import run_configure
@@ -250,11 +250,8 @@ def test_run_start_when_db_already_exists(mocker,
 
 
 @pytest.mark.tendermint
-@patch('argparse.ArgumentParser.parse_args')
-@patch('bigchaindb.commands.utils.base_parser')
 @patch('bigchaindb.commands.utils.start')
-def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
-                      monkeypatch):
+def test_calling_main(start_mock, monkeypatch):
     from bigchaindb.commands.bigchaindb import main
 
     argparser_mock = Mock()
@@ -283,11 +280,9 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
     assert start_mock.called is True
 
 
-@patch('bigchaindb.config_utils.autoconfigure')
 @patch('bigchaindb.commands.bigchaindb.run_recover')
 @patch('bigchaindb.start.start')
-def test_recover_db_on_start(mock_autoconfigure,
-                             mock_run_recover,
+def test_recover_db_on_start(mock_run_recover,
                              mock_start,
                              mocked_setup_logging):
     from bigchaindb.commands.bigchaindb import run_start
