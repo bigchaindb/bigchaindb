@@ -29,6 +29,8 @@ from bigchaindb.commands import utils
 from bigchaindb.commands.utils import (configure_bigchaindb,
                                        input_on_stderr)
 from bigchaindb.log import setup_logging
+from bigchaindb.tendermint_utils import public_key_from_base64
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -126,7 +128,7 @@ def run_upsert_validator_new(args, bigchain):
     """
 
     new_validator = {
-        'public_key': args.public_key,
+        'public_key': public_key_from_base64(args.public_key),
         'power': args.power,
         'node_id': args.node_id
     }

@@ -397,7 +397,7 @@ def test_upsert_validator_new_without_tendermint(b, priv_validator_path, user_sk
     args = Namespace(action='new',
                      public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',
                      power=1,
-                     node_id='12345',
+                     node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
                      sk=priv_validator_path,
                      config={})
     resp = run_upsert_validator_new(args, b)
@@ -410,11 +410,11 @@ def test_upsert_validator_approve_with_tendermint(b, priv_validator_path, user_s
     from bigchaindb.commands.bigchaindb import run_upsert_validator_new, \
         run_upsert_validator_approve
 
-    public_key = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
+    public_key = 'CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg='
     new_args = Namespace(action='new',
                          public_key=public_key,
                          power=1,
-                         node_id='12345',
+                         node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
                          sk=priv_validator_path,
                          config={})
 
