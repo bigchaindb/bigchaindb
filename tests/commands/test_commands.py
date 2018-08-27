@@ -10,7 +10,6 @@ from argparse import Namespace
 import pytest
 
 from bigchaindb import ValidatorElection
-from bigchaindb.common.exceptions import KeypairMismatchException
 from tests.conftest import node_keys
 
 
@@ -481,8 +480,7 @@ def test_upsert_validator_approve_called_with_bad_key(b, bad_validator_path, new
                      sk=bad_validator_path,
                      config={})
 
-    with pytest.raises(KeypairMismatchException):
-        run_upsert_validator_approve(args, b)
+    assert not run_upsert_validator_approve(args, b)
 
 
 def mock_get(height):

@@ -16,9 +16,7 @@ import sys
 from bigchaindb.utils import load_node_key
 from bigchaindb.common.exceptions import (DatabaseAlreadyExists,
                                           DatabaseDoesNotExist,
-                                          ValidationError,
-                                          OperationError,
-                                          KeypairMismatchException)
+                                          ValidationError)
 import bigchaindb
 from bigchaindb import (backend, ValidatorElection,
                         BigchainDB, ValidatorElectionVote)
@@ -152,7 +150,8 @@ def run_upsert_validator_new(args, bigchain):
         print('[SUCCESS] Submitted proposal with id:', election.id)
         return election.id
     else:
-        raise OperationError('Failed to commit election')
+        logger.error('Failed to commit election proposal')
+        return False
 
 
 def run_upsert_validator_approve(args, bigchain):
@@ -174,10 +173,12 @@ def run_upsert_validator_approve(args, bigchain):
     if len(voting_powers) > 0:
         voting_power = voting_powers[0]
     else:
-        raise KeypairMismatchException(
-            'The key you provided does not match any of the eligible voters in this election.'
-        )
+        logger.error('The key you provided does not match any of the eligible voters in this election.')
+        return False
 
+    # NOTE: The code below assumes no vote delegation has taken place. Vote delegation
+    # is a by-product of the transaction state model which hasn't been offered as
+    # feature in current version of upsert-validator
     inputs = [i for i in tx.to_inputs() if key.public_key in i.owners_before]
     election_pub_key = ValidatorElection.to_public_key(tx.id)
     approval = ValidatorElectionVote.generate(inputs,
@@ -191,7 +192,8 @@ def run_upsert_validator_approve(args, bigchain):
         print('Your vote has been submitted.')
         return approval.id
     else:
-        raise OperationError('Failed to vote for election')
+        logger.error('Failed to commit election proposal')
+        return False
 
 
 def _run_init():
