@@ -405,6 +405,29 @@ def test_upsert_validator_new_without_tendermint(b, priv_validator_path, user_sk
     assert b.get_transaction(resp)
 
 
+@pytest.mark.tendermint
+@pytest.mark.bdb
+def test_upsert_validator_new_invalid_election(b, priv_validator_path, user_sk):
+    from bigchaindb.commands.bigchaindb import run_upsert_validator_new
+
+    b.get_validators = mock_get
+    args = Namespace(action='new',
+                     public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',
+                     power=10,
+                     node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
+                     sk=priv_validator_path,
+                     config={})
+    assert not run_upsert_validator_new(args, b)
+
+    args = Namespace(action='new',
+                     public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',
+                     power=10,
+                     node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
+                     sk='/tmp/invalid/path/key.json',
+                     config={})
+    assert not run_upsert_validator_new(args, b)
+
+
 @pytest.mark.abci
 def test_upsert_validator_approve_with_tendermint(b, priv_validator_path, user_sk, validators):
     from bigchaindb.commands.bigchaindb import run_upsert_validator_new, \
