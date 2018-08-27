@@ -142,7 +142,7 @@ Transactions
    `Tendermint broadcast API
    <https://tendermint.com/docs/tendermint-core/using-tendermint.html#broadcast-api>`_.
    
-   The meaning of the ``mode`` query parameter is inhereted from the mode parameter in
+   The meaning of the ``mode`` query parameter is inherited from the mode parameter in
    `Tendermint's broadcast API
    <https://tendermint.com/docs/tendermint-core/using-tendermint.html#broadcast-api>`_.
    ``mode=async`` means the HTTP response will come back immediately,
