@@ -9,7 +9,7 @@ pytestmark = pytest.mark.tendermint
 VALIDATORS_ENDPOINT = '/api/v1/validators/'
 
 
-def test_get_validators_endpoint(b, client, monkeypatch):
+def test_get_validators_endpoint(b, client):
     validator_set = [{'address': 'F5426F0980E36E03044F74DD414248D29ABCBDB2',
                       'pub_key': {'data': '4E2685D9016126864733225BE00F005515200727FBAB1312FC78C8B76831255A',
                                   'type': 'ed25519'},
