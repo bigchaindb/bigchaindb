@@ -16,7 +16,9 @@ import sys
 from bigchaindb.utils import load_node_key
 from bigchaindb.common.exceptions import (DatabaseAlreadyExists,
                                           DatabaseDoesNotExist,
-                                          OperationError, KeypairMismatchException)
+                                          ValidationError,
+                                          OperationError,
+                                          KeypairMismatchException)
 import bigchaindb
 from bigchaindb import (backend, ValidatorElection,
                         BigchainDB, ValidatorElectionVote)
@@ -129,16 +131,23 @@ def run_upsert_validator_new(args, bigchain):
         'node_id': args.node_id
     }
 
-    key = load_node_key(args.sk)
+    try:
+        key = load_node_key(args.sk)
+        voters = ValidatorElection.recipients(bigchain)
+        election = ValidatorElection.generate([key.public_key],
+                                              voters,
+                                              new_validator, None).sign([key.private_key])
+        election.validate(bigchain)
+    except ValidationError as e:
+        logger.error(e)
+        return False
+    except FileNotFoundError as fd_404:
+        logger.error(fd_404)
+        return False
 
-    voters = ValidatorElection.recipients(bigchain)
-
-    election = ValidatorElection.generate([key.public_key],
-                                          voters,
-                                          new_validator, None).sign([key.private_key])
-    election.validate(bigchain)
     resp = bigchain.write_transaction(election, 'broadcast_tx_commit')
     if resp == (202, ''):
+        print('[SUCCESS] Submitted proposal with id:', election.id)
         return election.id
     else:
         raise OperationError('Failed to commit election')

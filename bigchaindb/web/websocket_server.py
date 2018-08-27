@@ -102,7 +102,8 @@ class Dispatcher:
                 block = event.data
 
                 for tx in block['transactions']:
-                    asset_id = tx['id'] if tx['operation'] == 'CREATE' else tx['asset']['id']
+                    asset_id = tx['asset'].get('id', None)
+                    asset_id = tx['id'] if asset_id is None else asset_id
                     data = {'height': block['height'],
                             'asset_id': asset_id,
                             'transaction_id': tx['id']}
