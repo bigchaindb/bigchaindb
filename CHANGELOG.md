@@ -189,7 +189,7 @@ Re-enabled multi-threading. [Pull request #2258](https://github.com/bigchaindb/b
 
 ### Known Issues
 
-Tendermint changed how it responds to a request to store data (via the [Tendermint Broadcast API](http://tendermint.readthedocs.io/projects/tools/en/master/using-tendermint.html#broadcast-api)) between version 0.12 and 0.19.2. We started modifying the code of BigchainDB Server to account for those changes in responses (in [pull request #2239](https://github.com/bigchaindb/bigchaindb/pull/2239)), but we found that there's a difference between what the Tendermint documentation _says_ about those responses and how Tendermint actually responds. We need to determine Tendermint's intent before we can finalize that pull request.
+Tendermint changed how it responds to a request to store data (via the [Tendermint Broadcast API](https://tendermint.com/docs/tendermint-core/using-tendermint.html#broadcast-api)) between version 0.12 and 0.19.2. We started modifying the code of BigchainDB Server to account for those changes in responses (in [pull request #2239](https://github.com/bigchaindb/bigchaindb/pull/2239)), but we found that there's a difference between what the Tendermint documentation _says_ about those responses and how Tendermint actually responds. We need to determine Tendermint's intent before we can finalize that pull request.
 
 ### Notes
 

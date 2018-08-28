@@ -24,7 +24,7 @@ def clean_config(monkeypatch, request):
     monkeypatch.setattr('bigchaindb.config', original_config)
 
 
-def test_bigchain_instance_is_initialized_when_conf_provided(request):
+def test_bigchain_instance_is_initialized_when_conf_provided():
     import bigchaindb
     from bigchaindb import config_utils
     assert 'CONFIGURED' not in bigchaindb.config

@@ -16,7 +16,7 @@ import sys
 from bigchaindb.utils import load_node_key
 from bigchaindb.common.exceptions import (DatabaseAlreadyExists,
                                           DatabaseDoesNotExist,
-                                          OperationError, KeypairMismatchException)
+                                          ValidationError)
 import bigchaindb
 from bigchaindb import (backend, ValidatorElection,
                         BigchainDB, ValidatorElectionVote)
@@ -27,6 +27,8 @@ from bigchaindb.commands import utils
 from bigchaindb.commands.utils import (configure_bigchaindb,
                                        input_on_stderr)
 from bigchaindb.log import setup_logging
+from bigchaindb.tendermint_utils import public_key_from_base64
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -119,29 +121,36 @@ def run_upsert_validator_new(args, bigchain):
         'sk': the path to the private key of the node calling the election (str)
         }
     :param bigchain: an instance of BigchainDB
-    :return: election_id (tx_id)
-    :raises: OperationError if the write transaction fails for any reason
+    :return: election_id or `False` in case of failure
     """
 
     new_validator = {
-        'public_key': args.public_key,
+        'public_key': public_key_from_base64(args.public_key),
         'power': args.power,
         'node_id': args.node_id
     }
 
-    key = load_node_key(args.sk)
+    try:
+        key = load_node_key(args.sk)
+        voters = ValidatorElection.recipients(bigchain)
+        election = ValidatorElection.generate([key.public_key],
+                                              voters,
+                                              new_validator, None).sign([key.private_key])
+        election.validate(bigchain)
+    except ValidationError as e:
+        logger.error(e)
+        return False
+    except FileNotFoundError as fd_404:
+        logger.error(fd_404)
+        return False
 
-    voters = ValidatorElection.recipients(bigchain)
-
-    election = ValidatorElection.generate([key.public_key],
-                                          voters,
-                                          new_validator, None).sign([key.private_key])
-    election.validate(bigchain)
     resp = bigchain.write_transaction(election, 'broadcast_tx_commit')
     if resp == (202, ''):
+        logger.info('[SUCCESS] Submitted proposal with id: {}'.format(election.id))
         return election.id
     else:
-        raise OperationError('Failed to commit election')
+        logger.error('Failed to commit election proposal')
+        return False
 
 
 def run_upsert_validator_approve(args, bigchain):
@@ -153,8 +162,7 @@ def run_upsert_validator_approve(args, bigchain):
         'sk': the path to the private key of the signer (str)
         }
     :param bigchain: an instance of BigchainDB
-    :return: a success message
-    :raises: OperationError if the write transaction fails for any reason
+    :return: success log message or `False` in case of error
     """
 
     key = load_node_key(args.sk)
@@ -163,22 +171,24 @@ def run_upsert_validator_approve(args, bigchain):
     if len(voting_powers) > 0:
         voting_power = voting_powers[0]
     else:
-        raise KeypairMismatchException(
-            'The key you provided does not match any of the eligible voters in this election.'
-        )
+        logger.error('The key you provided does not match any of the eligible voters in this election.')
+        return False
 
     inputs = [i for i in tx.to_inputs() if key.public_key in i.owners_before]
-    approval = ValidatorElectionVote.generate(inputs, [
-        ([key.public_key], voting_power)], tx.id).sign([key.private_key])
+    election_pub_key = ValidatorElection.to_public_key(tx.id)
+    approval = ValidatorElectionVote.generate(inputs,
+                                              [([election_pub_key], voting_power)],
+                                              tx.id).sign([key.private_key])
     approval.validate(bigchain)
 
     resp = bigchain.write_transaction(approval, 'broadcast_tx_commit')
 
     if resp == (202, ''):
-        print('Your vote has been submitted.')
+        logger.info('[SUCCESS] Your vote has been submitted')
         return approval.id
     else:
-        raise OperationError('Failed to vote for election')
+        logger.error('Failed to commit vote')
+        return False
 
 
 def _run_init():

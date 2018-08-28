@@ -69,7 +69,7 @@ The commands are:
 export PATH=${PATH}:${GOPATH}/bin
 ```
 
-Follow [the Tendermint docs](https://tendermint.readthedocs.io/en/master/install.html#from-source) to install Tendermint from source.
+Follow [the Tendermint docs](https://tendermint.com/docs/introduction/install.html#from-source) to install Tendermint from source.
 
 If the installation is successful then Tendermint is installed at `$GOPATH/bin`. To ensure Tendermint's installed fine execute the following command,
 
