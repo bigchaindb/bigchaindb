@@ -55,10 +55,8 @@ def test_get_connection_returns_the_correct_instance(db_host, db_port):
     assert conn.conn._topology_settings.replica_set_name == config['replicaset']
 
 
-@mock.patch('bigchaindb.backend.localmongodb.connection.initialize_replica_set')
 @mock.patch('pymongo.MongoClient.__init__')
-@mock.patch('time.sleep')
-def test_connection_error(mock_sleep, mock_client, mock_init_repl_set):
+def test_connection_error(mock_client):
     from bigchaindb.backend import connect
     from bigchaindb.backend.exceptions import ConnectionError
 
@@ -74,9 +72,7 @@ def test_connection_error(mock_sleep, mock_client, mock_init_repl_set):
     assert mock_client.call_count == 3
 
 
-@mock.patch('bigchaindb.backend.localmongodb.connection.initialize_replica_set')
-@mock.patch('pymongo.MongoClient')
-def test_connection_run_errors(mock_client, mock_init_repl_set):
+def test_connection_run_errors():
     from bigchaindb.backend import connect
     from bigchaindb.backend.exceptions import (DuplicateKeyError,
                                                OperationError,

@@ -7,7 +7,7 @@ from copy import deepcopy
 import pytest
 import pymongo
 
-pytestmark = [pytest.mark.tendermint, pytest.mark.localmongodb, pytest.mark.bdb]
+pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
 
 
 def test_get_txids_filtered(signed_create_tx, signed_transfer_tx):
