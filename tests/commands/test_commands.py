@@ -350,8 +350,6 @@ class MockResponse():
 
 @pytest.mark.abci
 def test_upsert_validator_new_with_tendermint(b, priv_validator_path, user_sk, validators):
-    """WIP: Will be fixed and activated in the next PR
-    """
     from bigchaindb.commands.bigchaindb import run_upsert_validator_new
 
     new_args = Namespace(action='new',
