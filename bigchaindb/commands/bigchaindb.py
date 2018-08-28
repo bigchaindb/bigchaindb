@@ -174,9 +174,6 @@ def run_upsert_validator_approve(args, bigchain):
         logger.error('The key you provided does not match any of the eligible voters in this election.')
         return False
 
-    # NOTE: The code below assumes no vote delegation has taken place. Vote delegation
-    # is a by-product of the transaction state model which hasn't been offered as
-    # feature in current version of upsert-validator
     inputs = [i for i in tx.to_inputs() if key.public_key in i.owners_before]
     election_pub_key = ValidatorElection.to_public_key(tx.id)
     approval = ValidatorElectionVote.generate(inputs,

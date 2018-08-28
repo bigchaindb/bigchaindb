@@ -83,7 +83,7 @@ configuration file as documented under
 
 ## bigchaindb upsert-validator
 
-Manage elections to add, update, or remove a validator from the validators set. The upsert-validator subcommands implement [BEP-21](https://github.com/bigchaindb/BEPs/tree/master/21), please refer the BEP for more details.
+Manage elections to add, update, or remove a validator from the validators set. The upsert-validator subcommands implement [BEP-21](https://github.com/bigchaindb/BEPs/tree/master/21), please refer it for more details.
 
 Election management is broken into several subcommands. Below is the command line syntax for each,
 
@@ -113,7 +113,7 @@ $ bigchaindb upsert-validator new HHG0IQRybpT6nJMIWWFWhMczCLHt6xcm7eP52GnGuPY= 1
 [SUCCESS] Submitted proposal with id: 04a067582cf03eba2b53b82e4adb5ece424474cbd4f7183780855a93ac5e3caa
 ```
 
-If the command succeeds, it will create an election and return an `election_id`. A successful execution of the above command **doesn't** imply that the validator set will be immediately updated but rather it means the proposal has been succcessfully accepted by the network. Once the `election_id` has been generated the node operator should share this `election_id** with other validators in the network and urge them to approve the proposal. Note that the node operator should themsleves also approve the proposal.
+If the command succeeds, it will create an election and return an `election_id`. A successful execution of the above command **doesn't** imply that the validator set will be immediately updated but rather it means the proposal has been succcessfully accepted by the network. Once the `election_id` has been generated the node operator should share this `election_id` with other validators in the network and urge them to approve the proposal. Note that the node operator should themsleves also approve the proposal.
 
 
 **NOTE**: The election proposal consists of vote tokens allocated to each current validator as per their voting power. Validators then cast their votes to approve the change to the validator set by spending their vote tokens.
