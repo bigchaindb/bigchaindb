@@ -124,7 +124,7 @@ class BigchainDB(object):
         txn_metadatas = []
         for transaction_obj in transactions:
             # self.update_utxoset(transaction)
-            transaction = transaction_obj.to_dict()
+            transaction = transaction_obj.tx_dict
             if transaction['operation'] == transaction_obj.CREATE:
                 asset = transaction.pop('asset')
                 asset['id'] = transaction['id']
@@ -224,6 +224,13 @@ class BigchainDB(object):
             return backend.query.delete_unspent_outputs(
                                         self.connection, *unspent_outputs)
 
+    def is_commited(self, transaction_id):
+        transaction = backend.query.get_transaction(self.connection, transaction_id)
+        if transaction:
+            return True
+        else:
+            return False
+        
     def get_transaction(self, transaction_id):
         transaction = backend.query.get_transaction(self.connection, transaction_id)
 
