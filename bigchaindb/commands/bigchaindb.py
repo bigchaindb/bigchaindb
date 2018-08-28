@@ -199,8 +199,9 @@ def run_upsert_validator_show(args, bigchain):
     public_key = new_validator['public_key']
     power = new_validator['power']
     node_id = new_validator['node_id']
+    status = election.get_status(bigchain)
 
-    return f'public_key={public_key}\npower={power}\nnode_id={node_id}'
+    return f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
 
 
 def _run_init():

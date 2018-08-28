@@ -426,12 +426,14 @@ def test_upsert_validator_show(b, priv_validator_path, user_sk, monkeypatch):
                          config={})
     election_id = run_upsert_validator_new(new_args, b)
 
+    status = ValidatorElection.ONGOING
+
     show_args = Namespace(action='show',
                           election_id=election_id)
 
     resp = run_upsert_validator_show(show_args, b)
 
-    assert resp == f'public_key={public_key}\npower={power}\nnode_id={node_id}'
+    assert resp == f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
 
 
 @pytest.mark.abci

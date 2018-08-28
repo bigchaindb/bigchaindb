@@ -57,11 +57,8 @@ def test_upsert_validator_invalid_inputs_election(b_mock, new_validator, node_ke
         election.validate(b_mock)
 
 
-def test_upsert_validator_invalid_election(b_mock, new_validator, node_key):
+def test_upsert_validator_invalid_election(b_mock, new_validator, node_key, valid_election):
     voters = ValidatorElection.recipients(b_mock)
-    valid_election = ValidatorElection.generate([node_key.public_key],
-                                                voters,
-                                                new_validator, None).sign([node_key.private_key])
     duplicate_election = ValidatorElection.generate([node_key.public_key],
                                                     voters,
                                                     new_validator, None).sign([node_key.private_key])
@@ -95,3 +92,50 @@ def test_upsert_validator_invalid_election(b_mock, new_validator, node_key):
 
     with pytest.raises(UnequalValidatorSet):
         tx_election.validate(b_mock)
+
+
+def test_get_status_ongoing(b, ongoing_election, new_validator):
+    status = ValidatorElection.ONGOING
+    resp = ongoing_election.get_status(b)
+    assert resp == status
+
+
+def test_get_status_concluded(b, concluded_election, new_validator):
+    status = ValidatorElection.CONCLUDED
+    resp = concluded_election.get_status(b)
+    assert resp == status
+
+
+def test_get_status_inconclusive(b, inconclusive_election, new_validator):
+    def custom_mock_get_validators(height):
+        if height >= 3:
+            return [{'pub_key': {'data': 'zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=',
+                                 'type': 'AC26791624DE60'},
+                     'voting_power': 15},
+                    {'pub_key': {'data': 'GIijU7GBcVyiVUcB0GwWZbxCxdk2xV6pxdvL24s/AqM=',
+                                 'type': 'AC26791624DE60'},
+                     'voting_power': 7},
+                    {'pub_key': {'data': 'JbfwrLvCVIwOPm8tj8936ki7IYbmGHjPiKb6nAZegRA=',
+                                 'type': 'AC26791624DE60'},
+                     'voting_power': 10},
+                    {'pub_key': {'data': 'PecJ58SaNRsWJZodDmqjpCWqG6btdwXFHLyE40RYlYM=',
+                                 'type': 'AC26791624DE60'},
+                     'voting_power': 8}]
+        else:
+            return [{'pub_key': {'data': 'zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=',
+                                 'type': 'AC26791624DE60'},
+                     'voting_power': 9},
+                    {'pub_key': {'data': 'GIijU7GBcVyiVUcB0GwWZbxCxdk2xV6pxdvL24s/AqM=',
+                                 'type': 'AC26791624DE60'},
+                     'voting_power': 7},
+                    {'pub_key': {'data': 'JbfwrLvCVIwOPm8tj8936ki7IYbmGHjPiKb6nAZegRA=',
+                                 'type': 'AC26791624DE60'},
+                     'voting_power': 10},
+                    {'pub_key': {'data': 'PecJ58SaNRsWJZodDmqjpCWqG6btdwXFHLyE40RYlYM=',
+                                 'type': 'AC26791624DE60'},
+                     'voting_power': 8}]
+
+    b.get_validators = custom_mock_get_validators
+    status = ValidatorElection.INCONCLUSIVE
+    resp = inconclusive_election.get_status(b)
+    assert resp == status

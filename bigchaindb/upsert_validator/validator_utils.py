@@ -21,7 +21,7 @@ def decode_validator(v):
             'voting_power': v.power}
 
 
-def new_validator_set(validators, height, updates):
+def new_validator_set(validators, updates):
     validators_dict = {}
     for v in validators:
         validators_dict[v['pub_key']['data']] = v
