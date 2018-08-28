@@ -147,7 +147,7 @@ def run_upsert_validator_new(args, bigchain):
 
     resp = bigchain.write_transaction(election, 'broadcast_tx_commit')
     if resp == (202, ''):
-        print('[SUCCESS] Submitted proposal with id:', election.id)
+        logger.info('[SUCCESS] Submitted proposal with id: {}'.format(election.id))
         return election.id
     else:
         logger.error('Failed to commit election proposal')
@@ -189,10 +189,10 @@ def run_upsert_validator_approve(args, bigchain):
     resp = bigchain.write_transaction(approval, 'broadcast_tx_commit')
 
     if resp == (202, ''):
-        print('Your vote has been submitted.')
+        logger.info('[SUCCESS] Your vote has been submitted')
         return approval.id
     else:
-        logger.error('Failed to commit election proposal')
+        logger.error('Failed to commit vote')
         return False
 
 
