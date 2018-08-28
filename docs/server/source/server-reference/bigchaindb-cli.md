@@ -153,3 +153,5 @@ power=<e_power>
 node_id=<e_node_id>
 status=<status>
 ```
+
+The `public_key`, `power`, and `node_id` are the same values used in the `upsert-validator new` command that originally triggered the election. `status` takes three possible values, `ongoing`, if the election has not yet reached a 2/3 majority, `concluded`, if the election reached the 2/3 majority needed to pass, or `inconclusive`, if the validator set changed while the election was in process, rendering it undecidable.
