@@ -121,8 +121,7 @@ def run_upsert_validator_new(args, bigchain):
         'sk': the path to the private key of the node calling the election (str)
         }
     :param bigchain: an instance of BigchainDB
-    :return: election_id (tx_id)
-    :raises: OperationError if the write transaction fails for any reason
+    :return: election_id or `False` in case of failure
     """
 
     new_validator = {
@@ -163,8 +162,7 @@ def run_upsert_validator_approve(args, bigchain):
         'sk': the path to the private key of the signer (str)
         }
     :param bigchain: an instance of BigchainDB
-    :return: a success message
-    :raises: OperationError if the write transaction fails for any reason
+    :return: success log message or `False` in case of error
     """
 
     key = load_node_key(args.sk)
