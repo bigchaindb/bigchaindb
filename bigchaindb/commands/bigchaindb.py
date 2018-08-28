@@ -203,6 +203,9 @@ def run_upsert_validator_show(args, bigchain):
     """
 
     election = bigchain.get_transaction(args.election_id)
+    if not election:
+        logger.error(f'No election found with election_id {args.election_id}')
+        return
 
     new_validator = election.asset['data']
 
