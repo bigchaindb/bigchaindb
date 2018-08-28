@@ -12,7 +12,7 @@ Add new query parameter `mode` to the [post transaction api](https://docs.bigcha
 
 ## Problem Description
 When posting a transaction it is broadcast asynchronously to Tendermint which enables the client to return immediately. Furthermore, the transaction status API would allow the client to get the current status for a given transaction. The above workflow seems efficient when the client doesn't need to wait until a transaction gets committed. In case a client wishes to wait until a transaction gets committed it would need to poll the transaction status api. 
-The Tendermint api allows to post a transaction in [three modes](http://tendermint.readthedocs.io/projects/tools/en/master/using-tendermint.html#broadcast-api),
+The Tendermint api allows to post a transaction in [three modes](https://tendermint.com/docs/tendermint-core/using-tendermint.html#broadcast-api),
 
 - `/broadcast_tx_async` post transaction and return
 - `/broadcast_tx_sync` post transaction and return after `checkTx` is executed

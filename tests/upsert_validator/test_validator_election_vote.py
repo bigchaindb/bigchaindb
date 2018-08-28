@@ -310,10 +310,36 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
     b.store_bulk_transactions([tx_vote0, tx_vote1])
 
     update = ValidatorElection.get_validator_update(b, 4, [tx_vote2])
-    print('update', update)
     update_public_key = codecs.encode(update[0].pub_key.data, 'base64').decode().rstrip('\n')
     assert len(update) == 1
     assert update_public_key == public_key64
+
+    # remove validator
+    power = 0
+    new_validator = {'public_key': public_key,
+                     'node_id': 'some_node_id',
+                     'power': power}
+    voters = ValidatorElection.recipients(b)
+    election = ValidatorElection.generate([node_key.public_key],
+                                          voters,
+                                          new_validator).sign([node_key.private_key])
+    # store election
+    b.store_bulk_transactions([election])
+
+    tx_vote0 = gen_vote(election, 0, ed25519_node_keys)
+    tx_vote1 = gen_vote(election, 1, ed25519_node_keys)
+    tx_vote2 = gen_vote(election, 2, ed25519_node_keys)
+
+    b.store_bulk_transactions([tx_vote0, tx_vote1])
+
+    update = ValidatorElection.get_validator_update(b, 9, [tx_vote2])
+    update_public_key = codecs.encode(update[0].pub_key.data, 'base64').decode().rstrip('\n')
+    assert len(update) == 1
+    assert update_public_key == public_key64
+
+    # assert that the public key is not a part of the current validator set
+    for v in b.get_validators(10):
+        assert not v['pub_key']['data'] == public_key64
 
 
 # ============================================================================

@@ -37,13 +37,6 @@ USER_PRIVATE_KEY = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
 USER_PUBLIC_KEY = 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE'
 
 
-def pytest_runtest_setup(item):
-    if isinstance(item, item.Function):
-        backend = item.session.config.getoption('--database-backend')
-        if (item.get_marker('localmongodb') and backend != 'localmongodb'):
-            pytest.skip('Skip tendermint specific tests if not using localmongodb')
-
-
 def pytest_addoption(parser):
     from bigchaindb.backend.connection import BACKENDS
 
@@ -54,19 +47,6 @@ def pytest_addoption(parser):
         default=os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'localmongodb'),
         help='Defines the backend to use (available: {})'.format(backends),
     )
-
-
-def pytest_ignore_collect(path, config):
-    from bigchaindb.backend.connection import BACKENDS
-    path = str(path)
-
-    supported_backends = BACKENDS.keys()
-
-    if os.path.isdir(path):
-        dirname = os.path.split(path)[1]
-        if dirname in supported_backends and dirname != config.getoption('--database-backend'):
-            print('Ignoring unrequested backend test dir: ', path)
-            return True
 
 
 def pytest_configure(config):
@@ -267,23 +247,7 @@ def merlin():
 
 
 @pytest.fixture
-def merlin_privkey(merlin):
-    return merlin.private_key
-
-
-@pytest.fixture
-def merlin_pubkey(merlin):
-    return merlin.public_key
-
-
-@pytest.fixture
 def b():
-    from bigchaindb import BigchainDB
-    return BigchainDB()
-
-
-@pytest.fixture
-def tb():
     from bigchaindb import BigchainDB
     return BigchainDB()
 
@@ -350,24 +314,6 @@ def inputs(user_pk, b, alice):
 
 
 @pytest.fixture
-def inputs_shared(user_pk, user2_pk, alice):
-    from bigchaindb.models import Transaction
-
-    # create blocks with transactions for `USER` to spend
-    for block in range(4):
-        transactions = [
-            Transaction.create(
-                [alice.public_key],
-                [user_pk, user2_pk],
-                metadata={'msg': random.random()},
-            ).sign([alice.private_key]).to_dict()
-            for _ in range(10)
-        ]
-        block = Block(app_hash='', height=_get_height(b), transaction=transactions)
-        b.store_block(block._asdict())
-
-
-@pytest.fixture
 def dummy_db(request):
     from bigchaindb.backend import connect, schema
     from bigchaindb.common.exceptions import (DatabaseDoesNotExist,
@@ -382,26 +328,6 @@ def dummy_db(request):
     except DatabaseAlreadyExists:
         schema.drop_database(conn, dbname)
         schema.init_database(conn, dbname)
-    yield dbname
-    try:
-        schema.drop_database(conn, dbname)
-    except DatabaseDoesNotExist:
-        pass
-
-
-@pytest.fixture
-def not_yet_created_db(request):
-    from bigchaindb.backend import connect, schema
-    from bigchaindb.common.exceptions import DatabaseDoesNotExist
-    conn = connect()
-    dbname = request.fixturename
-    xdist_suffix = getattr(request.config, 'slaveinput', {}).get('slaveid')
-    if xdist_suffix:
-        dbname = '{}_{}'.format(dbname, xdist_suffix)
-    try:
-        schema.drop_database(conn, dbname)
-    except DatabaseDoesNotExist:
-        pass
     yield dbname
     try:
         schema.drop_database(conn, dbname)
@@ -464,29 +390,6 @@ def tendermint_ws_url(tendermint_host, tendermint_port):
     return 'ws://{}:{}/websocket'.format(tendermint_host, tendermint_port)
 
 
-@pytest.fixture
-def tendermint_context(tendermint_host, tendermint_port, tendermint_ws_url):
-    TendermintContext = namedtuple(
-        'TendermintContext', ('host', 'port', 'ws_url'))
-    return TendermintContext(
-        host=tendermint_host,
-        port=tendermint_port,
-        ws_url=tendermint_ws_url,
-    )
-
-
-@pytest.fixture
-def mocked_setup_pub_logger(mocker):
-    return mocker.patch(
-        'bigchaindb.log.setup.setup_pub_logger', autospec=True, spec_set=True)
-
-
-@pytest.fixture
-def mocked_setup_sub_logger(mocker):
-    return mocker.patch(
-        'bigchaindb.log.setup.setup_sub_logger', autospec=True, spec_set=True)
-
-
 @pytest.fixture(autouse=True)
 def _abci_http(request):
     if request.keywords.get('abci', None):
@@ -513,7 +416,7 @@ def abci_http(_setup_database, _configure_bigchaindb, abci_server,
 
 
 @pytest.yield_fixture(scope='session')
-def event_loop(request):
+def event_loop():
     import asyncio
 
     loop = asyncio.get_event_loop_policy().new_event_loop()

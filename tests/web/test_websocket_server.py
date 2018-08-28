@@ -21,6 +21,33 @@ class MockWebSocket:
         self.received.append(s)
 
 
+def test_eventify_block_works_with_any_transaction():
+    from bigchaindb.web.websocket_server import eventify_block
+
+    block = {
+        'height': 1,
+        'transactions': [{
+            'id': 1
+        }, {
+            'id': 2,
+            'asset': {'id': 1}
+            }]
+        }
+
+    expected_events = [{
+            'height': 1,
+            'asset_id': 1,
+            'transaction_id': 1
+        }, {
+            'height': 1,
+            'asset_id': 1,
+            'transaction_id': 2
+        }]
+
+    for event, expected in zip(eventify_block(block), expected_events):
+        assert event == expected
+
+
 @asyncio.coroutine
 def test_bridge_sync_async_queue(loop):
     from bigchaindb.web.websocket_server import _multiprocessing_to_asyncio
@@ -136,7 +163,6 @@ def test_websocket_block_event(b, test_client, loop):
 
 
 @pytest.mark.skip('Processes are not stopping properly, and the whole test suite would hang')
-@pytest.mark.genesis
 def test_integration_from_webapi_to_websocket(monkeypatch, client, loop):
     # XXX: I think that the `pytest-aiohttp` plugin is sparkling too much
     # magic in the `asyncio` module: running this test without monkey-patching
@@ -152,6 +178,8 @@ def test_integration_from_webapi_to_websocket(monkeypatch, client, loop):
     import aiohttp
 
     from bigchaindb.common import crypto
+    # TODO processes does not exist anymore, when reactivating this test it
+    # will fail because of this
     from bigchaindb import processes
     from bigchaindb.models import Transaction
 
