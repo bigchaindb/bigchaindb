@@ -94,7 +94,7 @@ class Input(object):
         """
         try:
             fulfillment = self.fulfillment.serialize_uri()
-        except (TypeError, AttributeError, ASN1EncodeError):
+        except (TypeError, AttributeError, ASN1EncodeError, ASN1DecodeError):
             fulfillment = _fulfillment_to_details(self.fulfillment)
 
         try:
@@ -161,7 +161,7 @@ def _fulfillment_to_details(fulfillment):
     if fulfillment.type_name == 'ed25519-sha-256':
         return {
             'type': 'ed25519-sha-256',
-            'public_key': base58.b58encode(fulfillment.public_key),
+            'public_key': base58.b58encode(fulfillment.public_key).decode(),
         }
 
     if fulfillment.type_name == 'threshold-sha-256':
