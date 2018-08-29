@@ -122,10 +122,10 @@ class BigchainDB(object):
         txns = []
         assets = []
         txn_metadatas = []
-        for transaction_obj in transactions:
+        for t in transactions:
             # self.update_utxoset(transaction)
-            transaction = transaction_obj.tx_dict
-            if transaction['operation'] == transaction_obj.CREATE:
+            transaction = t.tx_dict if t.tx_dict else t.to_dict()
+            if transaction['operation'] == t.CREATE:
                 asset = transaction.pop('asset')
                 asset['id'] = transaction['id']
                 assets.append(asset)

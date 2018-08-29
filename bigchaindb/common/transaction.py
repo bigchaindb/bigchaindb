@@ -12,9 +12,9 @@ Attributes:
 """
 from collections import namedtuple
 from copy import deepcopy
-from functools import reduce
+from functools import reduce, lru_cache
 import functools
-import ujson
+import rapidjson
 
 import base58
 from cryptoconditions import Fulfillment, ThresholdSha256, Ed25519Sha256
@@ -29,6 +29,7 @@ from bigchaindb.common.exceptions import (KeypairMismatchException,
                                           AmountError, AssetIdMismatch,
                                           ThresholdTooDeep)
 from bigchaindb.common.utils import serialize
+from .memoize import memoize_from_dict, memoize_to_dict
 
 
 UnspentOutput = namedtuple(
@@ -42,55 +43,6 @@ UnspentOutput = namedtuple(
         'condition_uri',
     )
 )
-
-
-def memoize(func):
-    cache = func.cache = {}
-
-    @functools.wraps(func)
-    def memoized_func(*args, **kwargs):
-        key = args[1]['id']
-        if key not in cache:
-            cache[key] = func(*args, **kwargs)
-
-        return cache[key]
-
-    return memoized_func
-
-
-def memoize_class(func):
-    cache = func.cache = {}
-
-    @functools.wraps(func)
-    def memoized_func(*args, **kwargs):
-        key = args[0]._id
-        if key is None:
-            result = func(*args, **kwargs)
-            cache[result['id']] = result
-            return result
-        elif key not in cache:
-            cache[key] = func(*args, **kwargs)
-
-        return cache[key]
-
-    return memoized_func
-
-
-def memoize_input_valid(func):
-    cache = func.cache = {}
-
-    @functools.wraps(func)
-    def memoized_func(*args, **kwargs):
-        inp_fulfillment = args[1].fulfillment
-        op = args[2]
-        msg = args[3]
-        key = '{}.{}.{}'.format(inp_fulfillment, op, msg)
-        if key not in cache:
-            cache[key] = func(*args, **kwargs)
-
-        return cache[key]
-
-    return memoized_func
 
 
 class Input(object):
@@ -132,6 +84,11 @@ class Input(object):
     def __eq__(self, other):
         # TODO: If `other !== Fulfillment` return `False`
         return self.to_dict() == other.to_dict()
+
+    # NOTE: This function is used to provide a unique key for a given
+    # Input to suppliment memoization
+    def __hash__(self):
+        return hash((self.fulfillment, self.fulfills))
 
     def to_dict(self):
         """Transforms the object to a Python dictionary.
@@ -1042,7 +999,7 @@ class Transaction(object):
             raise ValueError('Inputs and '
                              'output_condition_uris must have the same count')
 
-        tx_dict = self.tx_dict  # self.to_dict()
+        tx_dict = self.tx_dict if self.tx_dict else self.to_dict()
         tx_dict = Transaction._remove_signatures(tx_dict)
         tx_dict['id'] = None
         tx_serialized = Transaction._to_str(tx_dict)
@@ -1055,7 +1012,8 @@ class Transaction(object):
         return all(validate(i, cond)
                    for i, cond in enumerate(output_condition_uris))
 
-    @memoize_input_valid
+    # @memoize_input_valid
+    @lru_cache(maxsize=16384)
     def _input_valid(self, input_, operation, message, output_condition_uri=None):
         """Validates a single Input against a single Output.
 
@@ -1101,7 +1059,11 @@ class Transaction(object):
         ffill_valid = parsed_ffill.validate(message=message.digest())
         return output_valid and ffill_valid
 
-    @memoize_class
+    # This function is required by `lru_cache` to create a key for memoization
+    def __hash__(self):
+        return hash(self.id)
+
+    @memoize_to_dict
     def to_dict(self):
         """Transforms the object to a Python dictionary.
 
@@ -1205,8 +1167,8 @@ class Transaction(object):
         """
         # NOTE: Remove reference to avoid side effects
         # tx_body = deepcopy(tx_body)
-        # tx_body = rapidjson.loads(rapidjson.dumps(tx_body))
-        tx_body = ujson.loads(ujson.dumps(tx_body))
+        tx_body = rapidjson.loads(rapidjson.dumps(tx_body))
+
         try:
             proposed_tx_id = tx_body['id']
         except KeyError:
@@ -1223,7 +1185,7 @@ class Transaction(object):
             raise InvalidHash(err_msg.format(proposed_tx_id))
 
     @classmethod
-    @memoize
+    @memoize_from_dict
     def from_dict(cls, tx, skip_schema_validation=True):
         """Transforms a Python dictionary to a Transaction object.
 
