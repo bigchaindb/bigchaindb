@@ -104,37 +104,38 @@ def test_init_chain_recognizes_new_chain_after_migration(b):
     validator_set = query.get_validator_set(b.connection)['validators']
 
     # simulate a migration
-    query.store_abci_chain(b.connection, 1, 'chain-XYZ-1', False)
     query.store_block(b.connection, Block(app_hash='', height=1,
                                           transactions=[])._asdict())
+    b.migrate_abci_chain()
 
     # the same or other mismatching requests are ignored
     invalid_requests = [
         request,
         generate_init_chain_request('unknown', validators),
         generate_init_chain_request('chain-XYZ'),
-        generate_init_chain_request('chain-XYZ-1'),
+        generate_init_chain_request('chain-XYZ-migrated-at-height-1'),
     ]
     for r in invalid_requests:
         res = App(b).init_chain(r)
         assert res == ResponseInitChain()
         assert query.get_latest_abci_chain(b.connection) == {
-            'chain_id': 'chain-XYZ-1',
+            'chain_id': 'chain-XYZ-migrated-at-height-1',
             'is_synced': False,
-            'height': 1,
+            'height': 2,
         }
         new_validator_set = query.get_validator_set(b.connection)['validators']
         assert new_validator_set == validator_set
 
     # a request with the matching chain ID and matching validator set
     # completes the migration
-    request = generate_init_chain_request('chain-XYZ-1', validators)
+    request = generate_init_chain_request('chain-XYZ-migrated-at-height-1',
+                                          validators)
     res = App(b).init_chain(request)
     assert res == ResponseInitChain()
     assert query.get_latest_abci_chain(b.connection) == {
-        'chain_id': 'chain-XYZ-1',
+        'chain_id': 'chain-XYZ-migrated-at-height-1',
         'is_synced': True,
-        'height': 1,
+        'height': 2,
     }
     assert query.get_latest_block(b.connection) == {
         'height': 2,
@@ -146,15 +147,15 @@ def test_init_chain_recognizes_new_chain_after_migration(b):
     invalid_requests = [
         request,
         generate_init_chain_request('chain-XYZ', validators),
-        generate_init_chain_request('chain-XYZ-1'),
+        generate_init_chain_request('chain-XYZ-migrated-at-height-1'),
     ]
     for r in invalid_requests:
         res = App(b).init_chain(r)
         assert res == ResponseInitChain()
         assert query.get_latest_abci_chain(b.connection) == {
-            'chain_id': 'chain-XYZ-1',
+            'chain_id': 'chain-XYZ-migrated-at-height-1',
             'is_synced': True,
-            'height': 1,
+            'height': 2,
         }
         new_validator_set = query.get_validator_set(b.connection)['validators']
         assert new_validator_set == validator_set

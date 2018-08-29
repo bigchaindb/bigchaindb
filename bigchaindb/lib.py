@@ -454,6 +454,30 @@ class BigchainDB(object):
     def get_latest_abci_chain(self):
         return backend.query.get_latest_abci_chain(self.connection)
 
+    def migrate_abci_chain(self):
+        """Generate and record a new ABCI chain ID. New blocks are not
+        accepted until we receive an InitChain ABCI request with
+        the matching chain ID and validator set.
+
+        Chain ID is generated based on the current chain and height.
+        `chain-X` => `chain-X-migrated-at-height-5`.
+        `chain-X-migrated-at-height-5` => `chain-X-migrated-at-height-21`.
+
+        If there is no known chain (we are at genesis), the function returns.
+        """
+        latest_chain = self.get_latest_abci_chain()
+        if latest_chain is None:
+            return
+
+        block = self.get_latest_block()
+
+        suffix = '-migrated-at-height-'
+        chain_id = latest_chain['chain_id']
+        block_height_str = str(block['height'])
+        new_chain_id = chain_id.split(suffix)[0] + suffix + block_height_str
+
+        self.store_abci_chain(block['height'] + 1, new_chain_id, False)
+
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))
 
