@@ -216,7 +216,6 @@ def run_upsert_validator_show(args, bigchain):
 
     logger.info(response)
 
-    # TODO: Remove this once tests/commands/test_utils.test_configure_bigchaindb_logging.py is fixed
     return response
 
 

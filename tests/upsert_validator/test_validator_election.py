@@ -155,13 +155,6 @@ def test_upsert_validator_show(caplog, ongoing_election, b):
     show_args = Namespace(action='show',
                           election_id=election_id)
 
-    # TODO: Turn this back on once tests/commands/test_utils.test_configure_bigchaindb_logging.py is fixed
-    # with caplog.at_level(logging.INFO):
-    #     run_upsert_validator_show(show_args, b)
-    #     msg = caplog.records.pop().msg
-    #     assert msg == f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
-
-    # TODO: Remove everything after this once tests/commands/test_utils.test_configure_bigchaindb_logging.py is fixed
     msg = run_upsert_validator_show(show_args, b)
 
     assert msg == f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
