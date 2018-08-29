@@ -429,52 +429,6 @@ def test_upsert_validator_new_election_invalid_power(caplog, b, priv_validator_p
         assert caplog.records[0].msg.__class__ == InvalidPowerChange
 
 
-@pytest.mark.tendermint
-@pytest.mark.bdb
-@pytest.mark.dev
-def test_upsert_validator_show(caplog, b, priv_validator_path, user_sk, monkeypatch):
-    from bigchaindb.commands.bigchaindb import run_upsert_validator_show, run_upsert_validator_new
-
-    def mock_get(height):
-        return [
-            {'pub_key': {'data': 'zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=',
-                         'type': 'tendermint/PubKeyEd25519'},
-             'voting_power': 10}
-        ]
-
-    def mock_write(tx, mode):
-        b.store_bulk_transactions([tx])
-        return 202, ''
-
-    b.get_validators = mock_get
-    b.write_transaction = mock_write
-
-    monkeypatch.setattr('requests.get', mock_get)
-
-    public_key = 'CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg='
-    power = 1
-    node_id = 'unique_node_id_for_test_upsert_validator_show'
-
-    new_args = Namespace(action='new',
-                         public_key=public_key,
-                         power=power,
-                         node_id=node_id,
-                         sk=priv_validator_path,
-                         config={})
-    election_id = run_upsert_validator_new(new_args, b)
-
-    status = ValidatorElection.ONGOING
-
-    show_args = Namespace(action='show',
-                          election_id=election_id)
-
-    run_upsert_validator_show(show_args, b)
-
-    with caplog.at_level(logging.INFO):
-        assert caplog.records.pop().msg == \
-               f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
-
-
 @pytest.mark.abci
 def test_upsert_validator_approve_with_tendermint(b, priv_validator_path, user_sk, validators):
     from bigchaindb.commands.bigchaindb import (run_upsert_validator_new,
