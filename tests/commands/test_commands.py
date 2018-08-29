@@ -432,7 +432,8 @@ def test_upsert_validator_new_election_invalid_power(caplog, b, priv_validator_p
 
 @pytest.mark.tendermint
 @pytest.mark.bdb
-def test_upsert_validator_show(b, priv_validator_path, user_sk, monkeypatch):
+@pytest.mark.dev
+def test_upsert_validator_show(caplog, b, priv_validator_path, user_sk, monkeypatch):
     from bigchaindb.commands.bigchaindb import run_upsert_validator_show, run_upsert_validator_new
 
     def mock_get(height):
@@ -457,7 +458,7 @@ def test_upsert_validator_show(b, priv_validator_path, user_sk, monkeypatch):
 
     new_args = Namespace(action='new',
                          public_key=public_key,
-                         power=1,
+                         power=power,
                          node_id=node_id,
                          sk=priv_validator_path,
                          config={})
@@ -468,10 +469,12 @@ def test_upsert_validator_show(b, priv_validator_path, user_sk, monkeypatch):
     show_args = Namespace(action='show',
                           election_id=election_id)
 
-    resp = run_upsert_validator_show(show_args, b)
+    run_upsert_validator_show(show_args, b)
     ed25519_public_key = public_key_from_base64(public_key)
 
-    assert resp == f'public_key={ed25519_public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
+    with caplog.at_level(logging.INFO):
+        assert caplog.records.pop().msg == \
+               f'public_key={ed25519_public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
 
 
 @pytest.mark.abci
