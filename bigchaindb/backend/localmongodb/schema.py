@@ -59,6 +59,7 @@ def create_transactions_secondary_index(conn, dbname):
 
     # to query the transactions for a transaction id, this field is unique
     conn.conn[dbname]['transactions'].create_index('id',
+                                                   unique=True,
                                                    name='transaction_id')
 
     # secondary index for asset uuid, this field is unique
@@ -93,7 +94,7 @@ def create_assets_secondary_index(conn, dbname):
 
 def create_blocks_secondary_index(conn, dbname):
     conn.conn[dbname]['blocks']\
-        .create_index([('height', DESCENDING)], name='height')
+        .create_index([('height', DESCENDING)], name='height', unique=True)
 
 
 def create_metadata_secondary_index(conn, dbname):

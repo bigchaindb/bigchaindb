@@ -218,9 +218,9 @@ def test_get_spending_transactions(user_pk, user_sk):
     tx1 = Transaction.create([user_pk], out * 3)
     tx1.sign([user_sk])
     inputs = tx1.to_inputs()
-    tx2 = Transaction.transfer([inputs[0]], out, tx1.id)
-    tx3 = Transaction.transfer([inputs[1]], out, tx1.id)
-    tx4 = Transaction.transfer([inputs[2]], out, tx1.id)
+    tx2 = Transaction.transfer([inputs[0]], out, tx1.id).sign([user_sk])
+    tx3 = Transaction.transfer([inputs[1]], out, tx1.id).sign([user_sk])
+    tx4 = Transaction.transfer([inputs[2]], out, tx1.id).sign([user_sk])
     txns = [tx.to_dict() for tx in [tx1, tx2, tx3, tx4]]
     conn.db.transactions.insert_many(txns)
 
