@@ -144,6 +144,7 @@ def test_get_status_inconclusive(b, inconclusive_election, new_validator):
     assert resp == status
 
 
+@pytest.mark.dev
 def test_upsert_validator_show(caplog, ongoing_election, b, priv_validator_path, user_sk, monkeypatch):
     from bigchaindb.commands.bigchaindb import run_upsert_validator_show
 
@@ -160,4 +161,3 @@ def test_upsert_validator_show(caplog, ongoing_election, b, priv_validator_path,
         run_upsert_validator_show(show_args, b)
         msg = caplog.records.pop().msg
         assert msg == f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
-        print("I am here")
