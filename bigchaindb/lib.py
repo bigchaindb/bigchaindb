@@ -285,7 +285,8 @@ class BigchainDB(object):
         current_spent_transactions = []
         for ctxn in current_transactions:
             for ctxn_input in ctxn.inputs:
-                if ctxn_input.fulfills.txid == txid and\
+                if ctxn_input.fulfills and\
+                   ctxn_input.fulfills.txid == txid and\
                    ctxn_input.fulfills.output == output:
                     current_spent_transactions.append(ctxn)
 
