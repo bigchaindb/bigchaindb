@@ -11,7 +11,6 @@ from argparse import Namespace
 import pytest
 
 from bigchaindb import ValidatorElection
-from bigchaindb.tendermint_utils import public_key_from_base64
 from tests.conftest import node_keys
 
 
@@ -470,11 +469,10 @@ def test_upsert_validator_show(caplog, b, priv_validator_path, user_sk, monkeypa
                           election_id=election_id)
 
     run_upsert_validator_show(show_args, b)
-    ed25519_public_key = public_key_from_base64(public_key)
 
     with caplog.at_level(logging.INFO):
         assert caplog.records.pop().msg == \
-               f'public_key={ed25519_public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
+               f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
 
 
 @pytest.mark.abci

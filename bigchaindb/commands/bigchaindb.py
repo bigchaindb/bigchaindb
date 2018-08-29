@@ -27,8 +27,7 @@ from bigchaindb.commands import utils
 from bigchaindb.commands.utils import (configure_bigchaindb,
                                        input_on_stderr)
 from bigchaindb.log import setup_logging
-from bigchaindb.tendermint_utils import public_key_from_base64
-
+from bigchaindb.tendermint_utils import public_key_from_base64, public_key_to_base64
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -209,7 +208,7 @@ def run_upsert_validator_show(args, bigchain):
 
     new_validator = election.asset['data']
 
-    public_key = new_validator['public_key']
+    public_key = public_key_to_base64(new_validator['public_key'])
     power = new_validator['power']
     node_id = new_validator['node_id']
     status = election.get_status(bigchain)
