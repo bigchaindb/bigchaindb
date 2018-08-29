@@ -198,7 +198,6 @@ def run_upsert_validator_show(args, bigchain):
         'election_id': the transaction_id for an election (str)
         }
     :param bigchain: an instance of BigchainDB
-    :return: (public_key, power, node_id) for the proposed change to the validator set
     """
 
     election = bigchain.get_transaction(args.election_id)
