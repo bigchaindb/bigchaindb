@@ -94,7 +94,7 @@ class Input(object):
         """
         try:
             fulfillment = self.fulfillment.serialize_uri()
-        except (TypeError, AttributeError, ASN1EncodeError):
+        except (TypeError, AttributeError, ASN1EncodeError, ASN1DecodeError):
             fulfillment = _fulfillment_to_details(self.fulfillment)
 
         try:
