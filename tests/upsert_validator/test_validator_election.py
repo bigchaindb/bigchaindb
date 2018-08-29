@@ -1,9 +1,12 @@
 # Copyright BigchainDB GmbH and BigchainDB contributors
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
+import logging
+from argparse import Namespace
 
 import pytest
 
+from bigchaindb.tendermint_utils import public_key_to_base64
 from bigchaindb.upsert_validator import ValidatorElection
 from bigchaindb.common.exceptions import (DuplicateTransaction,
                                           UnequalValidatorSet,
@@ -139,3 +142,22 @@ def test_get_status_inconclusive(b, inconclusive_election, new_validator):
     status = ValidatorElection.INCONCLUSIVE
     resp = inconclusive_election.get_status(b)
     assert resp == status
+
+
+def test_upsert_validator_show(caplog, ongoing_election, b, priv_validator_path, user_sk, monkeypatch):
+    from bigchaindb.commands.bigchaindb import run_upsert_validator_show
+
+    election_id = ongoing_election.id
+    public_key = public_key_to_base64(ongoing_election.asset['data']['public_key'])
+    power = ongoing_election.asset['data']['power']
+    node_id = ongoing_election.asset['data']['node_id']
+    status = ValidatorElection.ONGOING
+
+    show_args = Namespace(action='show',
+                          election_id=election_id)
+
+    run_upsert_validator_show(show_args, b)
+
+    with caplog.at_level(logging.INFO):
+        assert caplog.records.pop().msg == \
+               f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
