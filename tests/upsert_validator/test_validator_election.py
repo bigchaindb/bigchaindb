@@ -1,7 +1,6 @@
 # Copyright BigchainDB GmbH and BigchainDB contributors
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
-import logging
 from argparse import Namespace
 
 import pytest
@@ -144,8 +143,7 @@ def test_get_status_inconclusive(b, inconclusive_election, new_validator):
     assert resp == status
 
 
-@pytest.mark.dev
-def test_upsert_validator_show(caplog, ongoing_election, b, priv_validator_path, user_sk, monkeypatch):
+def test_upsert_validator_show(caplog, ongoing_election, b):
     from bigchaindb.commands.bigchaindb import run_upsert_validator_show
 
     election_id = ongoing_election.id
@@ -157,7 +155,13 @@ def test_upsert_validator_show(caplog, ongoing_election, b, priv_validator_path,
     show_args = Namespace(action='show',
                           election_id=election_id)
 
-    with caplog.at_level(logging.INFO):
-        run_upsert_validator_show(show_args, b)
-        msg = caplog.records.pop().msg
-        assert msg == f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
+    # TODO: Turn this back on once tests/commands/test_utils.test_configure_bigchaindb_logging.py is fixed
+    # with caplog.at_level(logging.INFO):
+    #     run_upsert_validator_show(show_args, b)
+    #     msg = caplog.records.pop().msg
+    #     assert msg == f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
+
+    # TODO: Remove everything after this once tests/commands/test_utils.test_configure_bigchaindb_logging.py is fixed
+    msg = run_upsert_validator_show(show_args, b)
+
+    assert msg == f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'

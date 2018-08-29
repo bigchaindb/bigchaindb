@@ -72,6 +72,11 @@ def test_configure_bigchaindb_configures_bigchaindb():
      logging.CRITICAL)
 )))
 def test_configure_bigchaindb_logging(log_level):
+    # TODO: See following comment:
+    # This is a dirty test. If a test *preceding* this test makes use of the logger, and then another test *after* this
+    # test also makes use of the logger, somehow we get logger.disabled == True, and the later test fails. We need to
+    # engineer this somehow to leave the test env in the same state as it finds it.
+
     from bigchaindb.commands.utils import configure_bigchaindb
 
     @configure_bigchaindb

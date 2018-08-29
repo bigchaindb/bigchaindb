@@ -212,7 +212,12 @@ def run_upsert_validator_show(args, bigchain):
     node_id = new_validator['node_id']
     status = election.get_status(bigchain)
 
-    logger.info(f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}')
+    response = f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
+
+    logger.info(response)
+
+    # TODO: Remove this once tests/commands/test_utils.test_configure_bigchaindb_logging.py is fixed
+    return response
 
 
 def _run_init():
