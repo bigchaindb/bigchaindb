@@ -2,17 +2,27 @@
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
+import codecs
 import json
 import pytest
+import random
 
 from abci.types_pb2 import (
+    PubKey,
+    ResponseInitChain,
+    RequestInitChain,
     RequestBeginBlock,
-    RequestEndBlock
+    RequestEndBlock,
+    Validator,
 )
 
+from bigchaindb import App
+from bigchaindb.backend.localmongodb import query
+from bigchaindb.common.crypto import generate_key_pair
 from bigchaindb.core import (CodeTypeOk,
                              CodeTypeError,
                              )
+from bigchaindb.lib import Block
 from bigchaindb.upsert_validator.validator_utils import new_validator_set
 from bigchaindb.tendermint_utils import public_key_to_base64
 
@@ -22,6 +32,137 @@ pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
 
 def encode_tx_to_bytes(transaction):
     return json.dumps(transaction.to_dict()).encode('utf8')
+
+
+def generate_address():
+    return ''.join(random.choices('1,2,3,4,5,6,7,8,9,A,B,C,D,E,F'.split(','),
+                                  k=40)).encode()
+
+
+def generate_validator():
+    addr = codecs.decode(generate_address(), 'hex')
+    pk, _ = generate_key_pair()
+    pub_key = PubKey(type='ed25519', data=pk.encode())
+    val = Validator(address=addr, power=10, pub_key=pub_key)
+    return val
+
+
+def generate_init_chain_request(chain_id, vals=None):
+    vals = vals if vals is not None else [generate_validator()]
+    return RequestInitChain(validators=vals, chain_id=chain_id)
+
+
+def test_init_chain_successfully_registers_chain(b):
+    request = generate_init_chain_request('chain-XYZ')
+    res = App(b).init_chain(request)
+    assert res == ResponseInitChain()
+    chain = query.get_latest_abci_chain(b.connection)
+    assert chain == {'height': 0, 'chain_id': 'chain-XYZ', 'is_synced': True}
+    assert query.get_latest_block(b.connection) == {
+        'height': 0,
+        'app_hash': '',
+        'transactions': [],
+    }
+
+
+def test_init_chain_ignores_invalid_init_chain_requests(b):
+    validators = [generate_validator()]
+    request = generate_init_chain_request('chain-XYZ', validators)
+    res = App(b).init_chain(request)
+    assert res == ResponseInitChain()
+
+    validator_set = query.get_validator_set(b.connection)
+
+    invalid_requests = [
+        request,  # the same request again
+        # different validator set
+        generate_init_chain_request('chain-XYZ'),
+        # different chain ID
+        generate_init_chain_request('chain-ABC', validators),
+    ]
+    for r in invalid_requests:
+        res = App(b).init_chain(r)
+        assert res == ResponseInitChain()
+        # assert nothing changed - neither validator set, nor chain ID
+        new_validator_set = query.get_validator_set(b.connection)
+        assert new_validator_set == validator_set
+        new_chain_id = query.get_latest_abci_chain(b.connection)['chain_id']
+        assert new_chain_id == 'chain-XYZ'
+        assert query.get_latest_block(b.connection) == {
+            'height': 0,
+            'app_hash': '',
+            'transactions': [],
+        }
+
+
+def test_init_chain_recognizes_new_chain_after_migration(b):
+    validators = [generate_validator()]
+    request = generate_init_chain_request('chain-XYZ', validators)
+    res = App(b).init_chain(request)
+    assert res == ResponseInitChain()
+
+    validator_set = query.get_validator_set(b.connection)['validators']
+
+    # simulate a migration
+    query.store_abci_chain(b.connection, 1, 'chain-XYZ-1', False)
+    query.store_block(b.connection, Block(app_hash='', height=1,
+                                          transactions=[])._asdict())
+
+    # the same or other mismatching requests are ignored
+    invalid_requests = [
+        request,
+        generate_init_chain_request('unknown', validators),
+        generate_init_chain_request('chain-XYZ'),
+        generate_init_chain_request('chain-XYZ-1'),
+    ]
+    for r in invalid_requests:
+        res = App(b).init_chain(r)
+        assert res == ResponseInitChain()
+        assert query.get_latest_abci_chain(b.connection) == {
+            'chain_id': 'chain-XYZ-1',
+            'is_synced': False,
+            'height': 1,
+        }
+        new_validator_set = query.get_validator_set(b.connection)['validators']
+        assert new_validator_set == validator_set
+
+    # a request with the matching chain ID and matching validator set
+    # completes the migration
+    request = generate_init_chain_request('chain-XYZ-1', validators)
+    res = App(b).init_chain(request)
+    assert res == ResponseInitChain()
+    assert query.get_latest_abci_chain(b.connection) == {
+        'chain_id': 'chain-XYZ-1',
+        'is_synced': True,
+        'height': 1,
+    }
+    assert query.get_latest_block(b.connection) == {
+        'height': 2,
+        'app_hash': '',
+        'transactions': [],
+    }
+
+    # requests with old chain ID and other requests are ignored
+    invalid_requests = [
+        request,
+        generate_init_chain_request('chain-XYZ', validators),
+        generate_init_chain_request('chain-XYZ-1'),
+    ]
+    for r in invalid_requests:
+        res = App(b).init_chain(r)
+        assert res == ResponseInitChain()
+        assert query.get_latest_abci_chain(b.connection) == {
+            'chain_id': 'chain-XYZ-1',
+            'is_synced': True,
+            'height': 1,
+        }
+        new_validator_set = query.get_validator_set(b.connection)['validators']
+        assert new_validator_set == validator_set
+        assert query.get_latest_block(b.connection) == {
+            'height': 2,
+            'app_hash': '',
+            'transactions': [],
+        }
 
 
 def test_check_tx__signed_create_is_ok(b):

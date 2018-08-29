@@ -7,6 +7,9 @@ from copy import deepcopy
 import pytest
 import pymongo
 
+from bigchaindb.backend import connect, query
+
+
 pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
 
 
@@ -394,3 +397,51 @@ def test_validator_update():
 
     v91 = query.get_validator_set(conn)
     assert v91['height'] == 91
+
+
+@pytest.mark.parametrize('description,stores,expected', [
+    (
+        'Query empty database.',
+        [],
+        None,
+    ),
+    (
+        'Store one chain with the default value for `is_synced`.',
+        [
+            {'height': 0, 'chain_id': 'some-id'},
+        ],
+        {'height': 0, 'chain_id': 'some-id', 'is_synced': True},
+    ),
+    (
+        'Store one chain with a custom value for `is_synced`.',
+        [
+            {'height': 0, 'chain_id': 'some-id', 'is_synced': False},
+        ],
+        {'height': 0, 'chain_id': 'some-id', 'is_synced': False},
+    ),
+    (
+        'Store one chain, then update it.',
+        [
+            {'height': 0, 'chain_id': 'some-id', 'is_synced': True},
+            {'height': 0, 'chain_id': 'new-id', 'is_synced': False},
+        ],
+        {'height': 0, 'chain_id': 'new-id', 'is_synced': False},
+    ),
+    (
+        'Store a chain, update it, store another chain.',
+        [
+            {'height': 0, 'chain_id': 'some-id', 'is_synced': True},
+            {'height': 0, 'chain_id': 'some-id', 'is_synced': False},
+            {'height': 10, 'chain_id': 'another-id', 'is_synced': True},
+        ],
+        {'height': 10, 'chain_id': 'another-id', 'is_synced': True},
+    ),
+])
+def test_store_abci_chain(description, stores, expected):
+    conn = connect()
+
+    for store in stores:
+        query.store_abci_chain(conn, **store)
+
+    actual = query.get_latest_abci_chain(conn)
+    assert expected == actual, description

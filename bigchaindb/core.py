@@ -49,12 +49,51 @@ class App(BaseApplication):
         self.new_height = None
 
     def init_chain(self, genesis):
-        """Initialize chain with block of height 0"""
+        """Initialize chain upon genesis or a migration"""
 
-        validator_set = [vutils.decode_validator(v) for v in genesis.validators]
-        block = Block(app_hash='', height=0, transactions=[])
+        app_hash = ''
+        height = 0
+
+        known_chain = self.bigchaindb.get_latest_abci_chain()
+        if known_chain is not None:
+            chain_id = known_chain['chain_id']
+
+            if known_chain['is_synced']:
+                msg = f'Ignoring the InitChain ABCI request ({genesis}) - ' + \
+                      'the chain {chain_id} is already synced.'
+
+                logger.error(msg)
+                return ResponseInitChain()
+
+            if chain_id != genesis.chain_id:
+                msg = f'Got mismatching chain ID in the InitChain ' + \
+                      'ABCI request - you need to migrate the ABCI client ' + \
+                      'and set new chain ID: {chain_id}.'
+                logger.error(msg)
+                return ResponseInitChain()
+
+            # set migration values for app hash and height
+            block = self.bigchaindb.get_latest_block()
+            app_hash = '' if block is None else block['app_hash']
+            height = 0 if block is None else block['height'] + 1
+
+        known_validators = self.bigchaindb.get_validators()
+        validator_set = [vutils.decode_validator(v)
+                         for v in genesis.validators]
+
+        if known_validators and known_validators != validator_set:
+            msg = f'Got mismatching validator set in the InitChain ' + \
+                  'ABCI request - you need to migrate the ABCI client ' + \
+                  'and set new validator set: {known_validators}.'
+            logger.error(msg)
+            return ResponseInitChain()
+
+        block = Block(app_hash=app_hash, height=height, transactions=[])
         self.bigchaindb.store_block(block._asdict())
-        self.bigchaindb.store_validator_set(1, validator_set, None)
+        self.bigchaindb.store_validator_set(height + 1, validator_set, None)
+        abci_chain_height = 0 if known_chain is None else known_chain['height']
+        self.bigchaindb.store_abci_chain(abci_chain_height,
+                                         genesis.chain_id, True)
         return ResponseInitChain()
 
     def info(self, request):

@@ -322,3 +322,23 @@ def get_asset_tokens_for_public_key(conn, asset_id, public_key):
             {'$project': {'_id': False}}
         ]))
     return cursor
+
+
+@register_query(LocalMongoDBConnection)
+def store_abci_chain(conn, height, chain_id, is_synced=True):
+    return conn.run(
+        conn.collection('abci_chains').replace_one(
+            {'height': height},
+            {'height': height, 'chain_id': chain_id,
+             'is_synced': is_synced},
+            upsert=True,
+        )
+    )
+
+
+@register_query(LocalMongoDBConnection)
+def get_latest_abci_chain(conn):
+    return conn.run(
+        conn.collection('abci_chains')
+            .find_one(projection={'_id': False}, sort=[('height', DESCENDING)])
+    )

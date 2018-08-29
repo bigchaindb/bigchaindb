@@ -447,6 +447,13 @@ class BigchainDB(object):
                                                                    'validators': validators,
                                                                    'election_id': election_id})
 
+    def store_abci_chain(self, height, chain_id, is_synced=True):
+        return backend.query.store_abci_chain(self.connection, height,
+                                              chain_id, is_synced)
+
+    def get_latest_abci_chain(self):
+        return backend.query.get_latest_abci_chain(self.connection)
+
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))
 
