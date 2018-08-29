@@ -426,8 +426,7 @@ class BigchainDB(object):
 
     def get_validators(self, height=None):
         result = self.get_validator_change(height)
-        validators = result['validators']
-        return validators
+        return [] if result is None else result['validators']
 
     def get_validators_by_election_id(self, election_id):
         result = backend.query.get_validator_set_by_election_id(self.connection, election_id)

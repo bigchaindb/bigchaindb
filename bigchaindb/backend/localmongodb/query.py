@@ -296,7 +296,7 @@ def get_validator_set(conn, height=None):
         .limit(1)
     )
 
-    return list(cursor)[0]
+    return next(cursor, None)
 
 
 @register_query(LocalMongoDBConnection)
