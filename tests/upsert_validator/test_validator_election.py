@@ -156,8 +156,8 @@ def test_upsert_validator_show(caplog, ongoing_election, b, priv_validator_path,
     show_args = Namespace(action='show',
                           election_id=election_id)
 
-    run_upsert_validator_show(show_args, b)
-
     with caplog.at_level(logging.INFO):
-        assert caplog.records.pop().msg == \
-               f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
+        run_upsert_validator_show(show_args, b)
+        msg = caplog.records.pop().msg
+        assert msg == f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
+        print("I am here")
