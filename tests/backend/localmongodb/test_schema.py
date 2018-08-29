@@ -110,7 +110,6 @@ def test_create_secondary_indexes():
     assert set(indexes) == {'_id_', 'height'}
     assert index_info['height']['unique']
 
-
     index_info = conn.conn[dbname]['utxos'].index_information()
     assert set(index_info.keys()) == {'_id_', 'utxo'}
     assert index_info['utxo']['unique']
