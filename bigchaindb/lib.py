@@ -225,13 +225,10 @@ class BigchainDB(object):
             return backend.query.delete_unspent_outputs(
                                         self.connection, *unspent_outputs)
 
-    def is_commited(self, transaction_id):
+    def is_committed(self, transaction_id):
         transaction = backend.query.get_transaction(self.connection, transaction_id)
-        if transaction:
-            return True
-        else:
-            return False
-        
+        return bool(transaction)
+
     def get_transaction(self, transaction_id):
         transaction = backend.query.get_transaction(self.connection, transaction_id)
 
