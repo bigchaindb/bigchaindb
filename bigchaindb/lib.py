@@ -421,10 +421,17 @@ class BigchainDB(object):
     def fastquery(self):
         return fastquery.FastQuery(self.connection)
 
+    def get_validator_change(self, height=None):
+        return backend.query.get_validator_set(self.connection, height)
+
     def get_validators(self, height=None):
-        result = backend.query.get_validator_set(self.connection, height)
+        result = self.get_validator_change(height)
         validators = result['validators']
         return validators
+
+    def get_validators_by_election_id(self, election_id):
+        result = backend.query.get_validator_set_by_election_id(self.connection, election_id)
+        return result
 
     def delete_validator_update(self):
         return backend.query.delete_validator_update(self.connection)

@@ -300,6 +300,23 @@ def get_validator_set(conn, height=None):
 
 
 @register_query(LocalMongoDBConnection)
+def get_validator_set_by_election_id(conn, election_id):
+    query = {'election_id': election_id}
+
+    cursor = conn.run(
+        conn.collection('validators')
+        .find(query, projection={'_id': False})
+    )
+
+    results = list(cursor)
+
+    if len(results) > 0:
+        return results[0]
+    else:
+        return None
+
+
+@register_query(LocalMongoDBConnection)
 def get_asset_tokens_for_public_key(conn, asset_id, public_key):
     query = {'outputs.public_keys': [public_key],
              'asset.id': asset_id}
