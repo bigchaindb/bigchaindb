@@ -308,12 +308,7 @@ def get_validator_set_by_election_id(conn, election_id):
         .find(query, projection={'_id': False})
     )
 
-    results = list(cursor)
-
-    if len(results) > 0:
-        return results[0]
-    else:
-        return None
+    return next(cursor, None)
 
 
 @register_query(LocalMongoDBConnection)
