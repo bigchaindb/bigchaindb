@@ -14,6 +14,19 @@ BigchainDB Server requires Python 3.5+ and Python 3.5+ [will run on any modern O
 
 _Don't use macOS_ (formerly OS X, formerly Mac OS X), because it's not a server-grade operating system. Also, BigchaindB Server uses the Python multiprocessing package and [some functionality in the multiprocessing package doesn't work on Mac OS X](https://docs.python.org/3.6/library/multiprocessing.html#multiprocessing.Queue.qsize).
 
+## Using Hosted MongoDB
+
+If you are using already existing MongoDB deployment or hosted MongoDB service (e.g. MongoDB Atlas) you should create a new database (e.g. `bigchain`) and create a user with `readWrite` access. You can perform above steps through MongoDB shell as follows:
+
+Login to your MongoDB deployment as Admin and run following commands
+
+```
+use <databse_name>
+db.createUser({user: "<username>", pwd: "<password>", roles: [{role: "readWrite", db: "<database_name>"}]})
+```
+
+Now configure the details of your database and newly created user in your BigchainDB configs before starting BigchainDB
+
 ## General Considerations
 
 BigchainDB Server runs many concurrent processes, so more RAM and more CPU cores is better.
