@@ -256,7 +256,8 @@ def b():
 def create_tx(alice, user_pk):
     from bigchaindb.models import Transaction
     name = f'I am created by the create_tx fixture. My random identifier is {random.random()}.'
-    return Transaction.create([alice.public_key], [([user_pk], 1)], asset={'name': name})
+    return Transaction.create([alice.public_key], [([user_pk], 1)], asset={'name': name})\
+                      .sign([alice.private_key])
 
 
 @pytest.fixture

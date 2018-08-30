@@ -77,10 +77,11 @@ class BigchainDB(object):
             raise ValidationError('Mode must be one of the following {}.'
                                   .format(', '.join(self.mode_list)))
 
+        tx_dict = transaction.tx_dict if transaction.tx_dict else transaction.to_dict()
         payload = {
             'method': mode,
             'jsonrpc': '2.0',
-            'params': [encode_transaction(transaction.to_dict())],
+            'params': [encode_transaction(tx_dict)],
             'id': str(uuid4())
         }
         # TODO: handle connection errors!
