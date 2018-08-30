@@ -419,3 +419,25 @@ def test_get_spent_transaction_critical_double_spend(b, alice, bob, carol):
 
     with pytest.raises(CriticalDoubleSpend):
         b.get_spent(tx.id, tx_transfer.inputs[0].fulfills.output)
+
+
+def test_validation_with_transaction_buffer(b):
+    from bigchaindb.common.crypto import generate_key_pair
+    from bigchaindb.models import Transaction
+
+    priv_key, pub_key = generate_key_pair()
+
+    create_tx = Transaction.create([pub_key], [([pub_key], 10)]).sign([priv_key])
+    transfer_tx = Transaction.transfer(create_tx.to_inputs(),
+                                       [([pub_key], 10)],
+                                       asset_id=create_tx.id).sign([priv_key])
+    double_spend = Transaction.transfer(create_tx.to_inputs(),
+                                        [([pub_key], 10)],
+                                        asset_id=create_tx.id).sign([priv_key])
+
+    assert b.is_valid_transaction(create_tx)
+    assert b.is_valid_transaction(transfer_tx, [create_tx])
+
+    assert not b.is_valid_transaction(create_tx, [create_tx])
+    assert not b.is_valid_transaction(transfer_tx, [create_tx, transfer_tx])
+    assert not b.is_valid_transaction(double_spend, [create_tx, transfer_tx])
