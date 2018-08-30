@@ -81,8 +81,8 @@ def test_init_chain_ignores_invalid_init_chain_requests(b):
         generate_init_chain_request('chain-ABC', validators),
     ]
     for r in invalid_requests:
-        res = App(b).init_chain(r)
-        assert res == ResponseInitChain()
+        with pytest.raises(SystemExit):
+            App(b).init_chain(r)
         # assert nothing changed - neither validator set, nor chain ID
         new_validator_set = query.get_validator_set(b.connection)
         assert new_validator_set == validator_set
@@ -116,8 +116,8 @@ def test_init_chain_recognizes_new_chain_after_migration(b):
         generate_init_chain_request('chain-XYZ-migrated-at-height-1'),
     ]
     for r in invalid_requests:
-        res = App(b).init_chain(r)
-        assert res == ResponseInitChain()
+        with pytest.raises(SystemExit):
+            App(b).init_chain(r)
         assert query.get_latest_abci_chain(b.connection) == {
             'chain_id': 'chain-XYZ-migrated-at-height-1',
             'is_synced': False,
@@ -150,8 +150,8 @@ def test_init_chain_recognizes_new_chain_after_migration(b):
         generate_init_chain_request('chain-XYZ-migrated-at-height-1'),
     ]
     for r in invalid_requests:
-        res = App(b).init_chain(r)
-        assert res == ResponseInitChain()
+        with pytest.raises(SystemExit):
+            App(b).init_chain(r)
         assert query.get_latest_abci_chain(b.connection) == {
             'chain_id': 'chain-XYZ-migrated-at-height-1',
             'is_synced': True,

@@ -6,6 +6,7 @@
 with Tendermint.
 """
 import logging
+import sys
 
 from abci.application import BaseApplication
 from abci.types_pb2 import (
@@ -63,14 +64,14 @@ class App(BaseApplication):
                       'the chain {chain_id} is already synced.'
 
                 logger.error(msg)
-                return ResponseInitChain()
+                sys.exit(1)
 
             if chain_id != genesis.chain_id:
                 msg = f'Got mismatching chain ID in the InitChain ' + \
                       'ABCI request - you need to migrate the ABCI client ' + \
                       'and set new chain ID: {chain_id}.'
                 logger.error(msg)
-                return ResponseInitChain()
+                sys.exit(1)
 
             # set migration values for app hash and height
             block = self.bigchaindb.get_latest_block()
@@ -86,7 +87,7 @@ class App(BaseApplication):
                   'ABCI request - you need to migrate the ABCI client ' + \
                   'and set new validator set: {known_validators}.'
             logger.error(msg)
-            return ResponseInitChain()
+            sys.exit(1)
 
         block = Block(app_hash=app_hash, height=height, transactions=[])
         self.bigchaindb.store_block(block._asdict())
