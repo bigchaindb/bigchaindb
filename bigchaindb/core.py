@@ -48,18 +48,19 @@ class App(BaseApplication):
         self.block_transactions = []
         self.validators = None
         self.new_height = None
+        self.chain = self.bigchaindb.get_latest_abci_chain()
 
     def log_abci_migration_error(self, chain_id, validators):
         logger.error(f'An ABCI chain migration is in process. ' +
                      'Download the new ABCI client and configure it with ' +
                      'chain_id={chain_id} and validators={validators}.')
 
-    def abort_if_abci_chain_is_not_synced(self, chain):
-        if chain is None or chain['is_synced']:
+    def abort_if_abci_chain_is_not_synced(self):
+        if self.chain is None or self.chain['is_synced']:
             return
 
         validators = self.bigchaindb.get_validators()
-        self.log_abci_migration_error(chain['chain_id'], validators)
+        self.log_abci_migration_error(self.chain['chain_id'], validators)
         sys.exit(1)
 
     def init_chain(self, genesis):
@@ -103,18 +104,19 @@ class App(BaseApplication):
         abci_chain_height = 0 if known_chain is None else known_chain['height']
         self.bigchaindb.store_abci_chain(abci_chain_height,
                                          genesis.chain_id, True)
+        self.chain = {'height': abci_chain_height, 'is_synced': True,
+                      'chain_id': genesis.chain_id}
         return ResponseInitChain()
 
     def info(self, request):
         """Return height of the latest committed block."""
 
-        chain = self.bigchaindb.get_latest_abci_chain()
-        self.abort_if_abci_chain_is_not_synced(chain)
+        self.abort_if_abci_chain_is_not_synced()
 
         r = ResponseInfo()
         block = self.bigchaindb.get_latest_block()
         if block:
-            chain_shift = 0 if chain is None else chain['height']
+            chain_shift = 0 if self.chain is None else self.chain['height']
             r.last_block_height = block['height'] - chain_shift
             r.last_block_app_hash = block['app_hash'].encode('utf-8')
         else:
@@ -130,8 +132,7 @@ class App(BaseApplication):
             raw_tx: a raw string (in bytes) transaction.
         """
 
-        chain = self.bigchaindb.get_latest_abci_chain()
-        self.abort_if_abci_chain_is_not_synced(chain)
+        self.abort_if_abci_chain_is_not_synced()
 
         logger.benchmark('CHECK_TX_INIT')
         logger.debug('check_tx: %s', raw_transaction)
@@ -151,10 +152,9 @@ class App(BaseApplication):
             req_begin_block: block object which contains block header
             and block hash.
         """
-        chain = self.bigchaindb.get_latest_abci_chain()
-        self.abort_if_abci_chain_is_not_synced(chain)
+        self.abort_if_abci_chain_is_not_synced()
 
-        chain_shift = 0 if chain is None else chain['height']
+        chain_shift = 0 if self.chain is None else self.chain['height']
         logger.benchmark('BEGIN BLOCK, height:%s, num_txs:%s',
                          req_begin_block.header.height + chain_shift,
                          req_begin_block.header.num_txs)
@@ -170,8 +170,7 @@ class App(BaseApplication):
             raw_tx: a raw string (in bytes) transaction.
         """
 
-        chain = self.bigchaindb.get_latest_abci_chain()
-        self.abort_if_abci_chain_is_not_synced(chain)
+        self.abort_if_abci_chain_is_not_synced()
 
         logger.debug('deliver_tx: %s', raw_transaction)
         transaction = self.bigchaindb.is_valid_transaction(
@@ -194,10 +193,9 @@ class App(BaseApplication):
             height (int): new height of the chain.
         """
 
-        chain = self.bigchaindb.get_latest_abci_chain()
-        self.abort_if_abci_chain_is_not_synced(chain)
+        self.abort_if_abci_chain_is_not_synced()
 
-        chain_shift = 0 if chain is None else chain['height']
+        chain_shift = 0 if self.chain is None else self.chain['height']
 
         height = request_end_block.height + chain_shift
         self.new_height = height
@@ -227,8 +225,7 @@ class App(BaseApplication):
     def commit(self):
         """Store the new height and along with block hash."""
 
-        chain = self.bigchaindb.get_latest_abci_chain()
-        self.abort_if_abci_chain_is_not_synced(chain)
+        self.abort_if_abci_chain_is_not_synced()
 
         data = self.block_txn_hash.encode('utf-8')
 

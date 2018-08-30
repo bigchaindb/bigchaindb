@@ -182,6 +182,7 @@ def test_info(b):
 
     # simulate a migration and assert the height is shifted
     b.store_abci_chain(2, 'chain-XYZ')
+    app = App(b)
     b.store_block(Block(app_hash='2', height=2, transactions=[])._asdict())
     res = app.info(r)
     assert res.last_block_height == 0
@@ -194,6 +195,7 @@ def test_info(b):
 
     # it's always the latest migration that is taken into account
     b.store_abci_chain(4, 'chain-XYZ-new')
+    app = App(b)
     b.store_block(Block(app_hash='4', height=4, transactions=[])._asdict())
     res = app.info(r)
     assert res.last_block_height == 0
@@ -402,6 +404,7 @@ def test_store_pre_commit_state_in_end_block(b, alice, init_chain_request):
 
     # simulate a chain migration and assert the height is shifted
     b.store_abci_chain(100, 'new-chain')
+    app = App(b)
     app.begin_block(begin_block)
     app.deliver_tx(encode_tx_to_bytes(tx))
     app.end_block(RequestEndBlock(height=1))
