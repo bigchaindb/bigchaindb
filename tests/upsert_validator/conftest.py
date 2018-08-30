@@ -71,7 +71,8 @@ def inconclusive_election(b, concluded_election, new_validator):
     validators = b.get_validators(height=1)
     validators[0]['voting_power'] = 15
     validator_update = {'validators': validators,
-                        'height': 3}
+                        'height': 3,
+                        'election_id': 'some_other_election'}
 
     query.store_validator_set(b.connection, validator_update)
     return concluded_election

@@ -368,4 +368,4 @@ def reset_validator_set(b, node_keys, height):
         validators.append({'pub_key': {'type': 'ed25519',
                                        'data': node_pub},
                            'voting_power': 10})
-    b.store_validator_set(height, validators)
+    b.store_validator_set(height, validators, 'election_id')
