@@ -11,6 +11,7 @@ from abci.types_pb2 import (
     PubKey,
     ResponseInitChain,
     RequestInitChain,
+    RequestInfo,
     RequestBeginBlock,
     RequestEndBlock,
     Validator,
@@ -166,6 +167,39 @@ def test_init_chain_recognizes_new_chain_after_migration(b):
         }
 
 
+def test_info(b):
+    r = RequestInfo()
+    app = App(b)
+
+    res = app.info(r)
+    assert res.last_block_height == 0
+    assert res.last_block_app_hash == b''
+
+    b.store_block(Block(app_hash='1', height=1, transactions=[])._asdict())
+    res = app.info(r)
+    assert res.last_block_height == 1
+    assert res.last_block_app_hash == b'1'
+
+    # simulate a migration and assert the height is shifted
+    b.store_abci_chain(2, 'chain-XYZ')
+    b.store_block(Block(app_hash='2', height=2, transactions=[])._asdict())
+    res = app.info(r)
+    assert res.last_block_height == 0
+    assert res.last_block_app_hash == b'2'
+
+    b.store_block(Block(app_hash='3', height=3, transactions=[])._asdict())
+    res = app.info(r)
+    assert res.last_block_height == 1
+    assert res.last_block_app_hash == b'3'
+
+    # it's always the latest migration that is taken into account
+    b.store_abci_chain(4, 'chain-XYZ-new')
+    b.store_block(Block(app_hash='4', height=4, transactions=[])._asdict())
+    res = app.info(r)
+    assert res.last_block_height == 0
+    assert res.last_block_app_hash == b'4'
+
+
 def test_check_tx__signed_create_is_ok(b):
     from bigchaindb import App
     from bigchaindb.models import Transaction
@@ -199,7 +233,6 @@ def test_check_tx__unsigned_create_is_error(b):
     assert result.code == CodeTypeError
 
 
-@pytest.mark.bdb
 def test_deliver_tx__valid_create_updates_db(b, init_chain_request):
     from bigchaindb import App
     from bigchaindb.models import Transaction
@@ -367,6 +400,16 @@ def test_store_pre_commit_state_in_end_block(b, alice, init_chain_request):
     assert resp['height'] == 100
     assert resp['transactions'] == [tx.id]
 
+    # simulate a chain migration and assert the height is shifted
+    b.store_abci_chain(100, 'new-chain')
+    app.begin_block(begin_block)
+    app.deliver_tx(encode_tx_to_bytes(tx))
+    app.end_block(RequestEndBlock(height=1))
+    resp = query.get_pre_commit_state(b.connection, PRE_COMMIT_ID)
+    assert resp['commit_id'] == PRE_COMMIT_ID
+    assert resp['height'] == 101
+    assert resp['transactions'] == [tx.id]
+
 
 def test_new_validator_set(b):
     node1 = {'pub_key': {'type': 'ed25519',
@@ -389,3 +432,45 @@ def test_new_validator_set(b):
                                    'voting_power':  u['power']})
 
     assert updated_validator_set == updated_validators
+
+
+def test_info_aborts_if_chain_is_not_synced(b):
+    b.store_abci_chain(0, 'chain-XYZ', False)
+
+    with pytest.raises(SystemExit):
+        App(b).info(RequestInfo())
+
+
+def test_check_tx_aborts_if_chain_is_not_synced(b):
+    b.store_abci_chain(0, 'chain-XYZ', False)
+
+    with pytest.raises(SystemExit):
+        App(b).check_tx('some bytes')
+
+
+def test_begin_aborts_if_chain_is_not_synced(b):
+    b.store_abci_chain(0, 'chain-XYZ', False)
+
+    with pytest.raises(SystemExit):
+        App(b).info(RequestBeginBlock())
+
+
+def test_deliver_tx_aborts_if_chain_is_not_synced(b):
+    b.store_abci_chain(0, 'chain-XYZ', False)
+
+    with pytest.raises(SystemExit):
+        App(b).deliver_tx('some bytes')
+
+
+def test_end_block_aborts_if_chain_is_not_synced(b):
+    b.store_abci_chain(0, 'chain-XYZ', False)
+
+    with pytest.raises(SystemExit):
+        App(b).info(RequestEndBlock())
+
+
+def test_commit_aborts_if_chain_is_not_synced(b):
+    b.store_abci_chain(0, 'chain-XYZ', False)
+
+    with pytest.raises(SystemExit):
+        App(b).commit()
