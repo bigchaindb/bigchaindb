@@ -238,7 +238,7 @@ def test_new_validator_set(b):
     validators = [node1]
     updates = [node1_new_power, node2]
     b.store_validator_set(1, validators)
-    updated_validator_set = new_validator_set(b.get_validators(1), 1, updates)
+    updated_validator_set = new_validator_set(b.get_validators(1), updates)
 
     updated_validators = []
     for u in updates:

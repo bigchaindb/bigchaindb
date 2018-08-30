@@ -347,34 +347,20 @@ class MockResponse():
         return {'result': {'latest_block_height': self.height}}
 
 
-# @pytest.mark.execute
-# @patch('bigchaindb.lib.BigchainDB.get_validators')
-# @pytest.mark.abci
-@pytest.mark.skip
-def test_upsert_validator_new_with_tendermint(b, priv_validator_path, user_sk, monkeypatch):
-    """WIP: Will be fixed and activated in the next PR
-    """
+@pytest.mark.abci
+def test_upsert_validator_new_with_tendermint(b, priv_validator_path, user_sk, validators):
     from bigchaindb.commands.bigchaindb import run_upsert_validator_new
-    import time
 
-    time.sleep(3)
+    new_args = Namespace(action='new',
+                         public_key='8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie',
+                         power=1,
+                         node_id='unique_node_id_for_test_upsert_validator_new_with_tendermint',
+                         sk=priv_validator_path,
+                         config={})
 
-    # b.get_validators = mock_get
-    # mock_get_validators = mock_get
-    # monkeypatch.setattr('requests.get', mock_get)
+    election_id = run_upsert_validator_new(new_args, b)
 
-    proposer_key = b.get_validators()[0]['pub_key']['value']
-
-    args = Namespace(action='new',
-                     public_key=proposer_key,
-                     power=1,
-                     node_id='12345',
-                     sk=priv_validator_path,
-                     config={})
-    resp = run_upsert_validator_new(args, b)
-    time.sleep(3)
-
-    assert b.get_transaction(resp)
+    assert b.get_transaction(election_id)
 
 
 @pytest.mark.tendermint
@@ -386,7 +372,7 @@ def test_upsert_validator_new_without_tendermint(caplog, b, priv_validator_path,
         b.store_bulk_transactions([tx])
         return (202, '')
 
-    b.get_validators = mock_get
+    b.get_validators = mock_get_validators
     b.write_transaction = mock_write
 
     args = Namespace(action='new',
@@ -430,7 +416,7 @@ def test_upsert_validator_new_election_invalid_power(caplog, b, priv_validator_p
         return (400, '')
 
     b.write_transaction = mock_write
-    b.get_validators = mock_get
+    b.get_validators = mock_get_validators
     args = Namespace(action='new',
                      public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',
                      power=10,
@@ -533,7 +519,7 @@ def test_upsert_validator_approve_called_with_bad_key(caplog, b, bad_validator_p
             'the eligible voters in this election.'
 
 
-def mock_get(height):
+def mock_get_validators(height):
     keys = node_keys()
     pub_key = list(keys.keys())[0]
     return [
@@ -550,7 +536,7 @@ def call_election(b, new_validator, node_key):
         return (202, '')
 
     # patch the validator set. We now have one validator with power 10
-    b.get_validators = mock_get
+    b.get_validators = mock_get_validators
     b.write_transaction = mock_write
 
     # our voters is a list of length 1, populated from our mocked validator
