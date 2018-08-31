@@ -7,6 +7,7 @@
 from pymongo import DESCENDING
 
 from bigchaindb import backend
+from bigchaindb.backend import exceptions
 from bigchaindb.backend.exceptions import DuplicateKeyError
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
@@ -227,8 +228,10 @@ def store_unspent_outputs(conn, *unspent_outputs):
                     ordered=False,
                 )
             )
-        except DuplicateKeyError:
-            # TODO log warning at least
+        except DuplicateKeyError as err:
+            raise exceptions.DuplicateKeyError(
+                f'Duplicate key in transactions list {unspent_outputs}. Exception raised with error {err}'
+            )
             pass
 
 

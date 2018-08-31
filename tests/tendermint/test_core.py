@@ -84,13 +84,6 @@ def test_deliver_tx__valid_create_updates_db(b, init_chain_request):
     app.commit()
     assert b.get_transaction(tx.id).id == tx.id
 
-    # unspent_outputs = b.get_unspent_outputs()
-    # unspent_output = next(unspent_outputs)
-    # expected_unspent_output = next(tx.unspent_outputs)._asdict()
-    # assert unspent_output == expected_unspent_output
-    # with pytest.raises(StopIteration):
-    #     next(unspent_outputs)
-
 
 def test_deliver_tx__double_spend_fails(b, init_chain_request):
     from bigchaindb import App
