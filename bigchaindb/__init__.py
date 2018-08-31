@@ -98,5 +98,5 @@ from bigchaindb.upsert_validator import ValidatorElectionVote  # noqa
 
 Transaction.register_type(Transaction.CREATE, models.Transaction)
 Transaction.register_type(Transaction.TRANSFER, models.Transaction)
-Transaction.register_type(ValidatorElection.VALIDATOR_ELECTION, ValidatorElection)
+Transaction.register_type(ValidatorElection.ELECTION_TYPE, ValidatorElection)
 Transaction.register_type(ValidatorElectionVote.VALIDATOR_ELECTION_VOTE, ValidatorElectionVote)

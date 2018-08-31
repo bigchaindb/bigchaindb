@@ -429,12 +429,9 @@ class BigchainDB(object):
         validators = result['validators']
         return validators
 
-    def get_validators_by_election_id(self, election_id):
-        result = backend.query.get_validator_set_by_election_id(self.connection, election_id)
+    def get_result_by_election_id(self, election_id, table):
+        result = backend.query.get_result_by_election_id(self.connection, election_id, table)
         return result
-
-    def delete_validator_update(self):
-        return backend.query.delete_validator_update(self.connection)
 
     def store_pre_commit_state(self, state):
         return backend.query.store_pre_commit_state(self.connection, state)

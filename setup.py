@@ -91,7 +91,7 @@ install_requires = [
     'pyyaml~=3.12',
     'aiohttp~=3.0',
     'bigchaindb-abci==0.5.1',
-    'setproctitle~=1.1.0',
+    'setproctitle~=1.1.0', 'base58'
 ]
 
 setup(

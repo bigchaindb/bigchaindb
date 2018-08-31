@@ -299,17 +299,17 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
     assert not ValidatorElection.has_concluded(b, election.id, [tx_vote0, tx_vote1])
     assert ValidatorElection.has_concluded(b, election.id, [tx_vote0, tx_vote1, tx_vote2])
 
-    assert ValidatorElection.get_validator_update(b, 4, [tx_vote0]) == []
-    assert ValidatorElection.get_validator_update(b, 4, [tx_vote0, tx_vote1]) == []
+    assert ValidatorElection.is_approved(b, 4, [tx_vote0]) == []
+    assert ValidatorElection.is_approved(b, 4, [tx_vote0, tx_vote1]) == []
 
-    update = ValidatorElection.get_validator_update(b, 4, [tx_vote0, tx_vote1, tx_vote2])
+    update = ValidatorElection.is_approved(b, 4, [tx_vote0, tx_vote1, tx_vote2])
     update_public_key = codecs.encode(update[0].pub_key.data, 'base64').decode().rstrip('\n')
     assert len(update) == 1
     assert update_public_key == public_key64
 
     b.store_bulk_transactions([tx_vote0, tx_vote1])
 
-    update = ValidatorElection.get_validator_update(b, 4, [tx_vote2])
+    update = ValidatorElection.is_approved(b, 4, [tx_vote2])
     update_public_key = codecs.encode(update[0].pub_key.data, 'base64').decode().rstrip('\n')
     assert len(update) == 1
     assert update_public_key == public_key64
@@ -332,7 +332,7 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
 
     b.store_bulk_transactions([tx_vote0, tx_vote1])
 
-    update = ValidatorElection.get_validator_update(b, 9, [tx_vote2])
+    update = ValidatorElection.is_approved(b, 9, [tx_vote2])
     update_public_key = codecs.encode(update[0].pub_key.data, 'base64').decode().rstrip('\n')
     assert len(update) == 1
     assert update_public_key == public_key64
