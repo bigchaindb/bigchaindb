@@ -39,7 +39,7 @@ The settings with names of the form `database.*` are for the backend database
 * `database.name` is a user-chosen name for the database inside MongoDB, e.g. `bigchain`.
 * `database.connection_timeout` is the maximum number of milliseconds that BigchainDB will wait before giving up on one attempt to connect to the backend database.
 * `database.max_tries` is the maximum number of times that BigchainDB will try to establish a connection with the backend database. If 0, then it will try forever.
-* `database.replicaset` is the name of the MongoDB replica set. The default value is `null` because in BighainDB 2.0+, each BigchainDB node has its own independent MongoDB database and no replica set is necessary.
+* `database.replicaset` is the name of the MongoDB replica set. The default value is `null` because in BighainDB 2.0+, each BigchainDB node has its own independent MongoDB database and no replica set is necessary. Replica set must already exist if this option is configured, BigchainDB will not create it.
 * `database.login` and `database.password` are the login and password used to authenticate to the backend database, specified in plaintext.
 * `database.ssl` determines if BigchainDB connects to MongoDB over TLS/SSL or not. It can be set to `true` or `false`.
 * `database.ca_cert`, `database.certfile`, `database.keyfile` and `database.crlfile` are the paths to the CA, signed certificate, private key and certificate revocation list files respectively.
