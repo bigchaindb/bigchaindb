@@ -631,6 +631,10 @@ def bad_validator_path(node_keys):
 @pytest.fixture
 def validators(b, node_keys):
     from bigchaindb.backend import query
+    import time
+
+    def timestamp():  # we need this to force unique election_ids for setup and teardown of fixtures
+        return str(time.time())
 
     height = get_block_height(b)
 
@@ -645,7 +649,8 @@ def validators(b, node_keys):
                       'voting_power': 10}]
 
     validator_update = {'validators': validator_set,
-                        'height': height + 1}
+                        'height': height + 1,
+                        'election_id': f'setup_at_{timestamp()}'}
 
     query.store_validator_set(b.connection, validator_update)
 
@@ -654,7 +659,8 @@ def validators(b, node_keys):
     height = get_block_height(b)
 
     validator_update = {'validators': original_validators,
-                        'height': height}
+                        'height': height,
+                        'election_id': f'teardown_at_{timestamp()}'}
 
     query.store_validator_set(b.connection, validator_update)
 

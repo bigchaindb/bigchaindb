@@ -5,7 +5,6 @@
 import base58
 
 from bigchaindb import backend
-from bigchaindb.backend.localmongodb.query import get_asset_tokens_for_public_key
 from bigchaindb.common.exceptions import (InvalidSignature,
                                           MultipleInputsError,
                                           InvalidProposer,
@@ -41,6 +40,21 @@ class ValidatorElection(Transaction):
         # operation `CREATE` is being passed as argument as `VALIDATOR_ELECTION` is an extension
         # of `CREATE` and any validation on `CREATE` in the parent class should apply to it
         super().__init__(operation, asset, inputs, outputs, metadata, version, hash_id)
+
+    @classmethod
+    def get_validator_change(cls, bigchain, height=None):
+        """Return the latest change to the validator set
+
+        :return: {
+            'height': <block_height>,
+            'asset': {
+                'height': <block_height>,
+                'validators': <validator_set>,
+                'election_id': <election_id_that_approved_the_change>
+            }
+        }
+        """
+        return bigchain.get_validator_change(height)
 
     @classmethod
     def get_validators(cls, bigchain, height=None):
@@ -227,55 +241,24 @@ class ValidatorElection(Transaction):
                                                           validator_updates)
 
                 updated_validator_set = [v for v in updated_validator_set if v['voting_power'] > 0]
-                bigchain.store_validator_set(new_height+1, updated_validator_set)
+                bigchain.store_validator_set(new_height+1, updated_validator_set, election.id)
                 return [encode_validator(election.asset['data'])]
         return []
 
-    def _vote_ratio(self, bigchain, height):
-        cast_votes = self._get_vote_ids(bigchain)
-        votes = [(tx['outputs'][0]['amount'], bigchain.get_block_containing_tx(tx['id'])[0]) for tx in cast_votes]
-        votes_cast = [int(vote[0]) for vote in votes if vote[1] <= height]
-        total_votes_cast = sum(votes_cast)
-        total_votes = sum([voter.amount for voter in self.outputs])
-        vote_ratio = total_votes_cast/total_votes
-        return vote_ratio
+    def get_validator_update_by_election_id(self, election_id, bigchain):
+        result = bigchain.get_validators_by_election_id(election_id)
+        return result
 
-    def _get_vote_ids(self, bigchain):
-        election_key = self.to_public_key(self.id)
-        votes = get_asset_tokens_for_public_key(bigchain.connection, self.id, election_key)
-        return votes
-
-    def initial_height(self, bigchain):
-        heights = bigchain.get_block_containing_tx(self.id)
-        initial_height = 0
-        if len(heights) != 0:
-            initial_height = min(bigchain.get_block_containing_tx(self.id))
-        return initial_height
-
-    def get_status(self, bigchain, height=None):
-
-        initial_validators = self.get_validators(bigchain, height=self.initial_height(bigchain))
-
-        # get all heights where a vote was cast
-        vote_heights = set([bigchain.get_block_containing_tx(tx['id'])[0] for tx in self._get_vote_ids(bigchain)])
-
-        # find the least height where the vote succeeds
-        confirmation_height = None
-        confirmed_heights = [h for h in vote_heights if self._vote_ratio(bigchain, h) > self.ELECTION_THRESHOLD]
-        if height:
-            confirmed_heights = [h for h in confirmed_heights if h <= height]
-        if len(confirmed_heights) > 0:
-            confirmation_height = min(confirmed_heights)
-
-        # get the validator set at the confirmation height/current height
-        if confirmation_height:
-            final_validators = self.get_validators(bigchain, height=confirmation_height)
-        else:
-            final_validators = self.get_validators(bigchain)
-
-        if initial_validators != final_validators:
-            return self.INCONCLUSIVE
-        elif confirmation_height:
+    def get_status(self, bigchain):
+        concluded = self.get_validator_update_by_election_id(self.id, bigchain)
+        if concluded:
             return self.CONCLUDED
+
+        latest_change = self.get_validator_change(bigchain)
+        latest_change_height = latest_change['height']
+        election_height = bigchain.get_block_containing_tx(self.id)[0]
+
+        if latest_change_height >= election_height:
+            return self.INCONCLUSIVE
         else:
             return self.ONGOING
