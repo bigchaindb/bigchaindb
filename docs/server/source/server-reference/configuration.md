@@ -40,8 +40,34 @@ The settings with names of the form `database.*` are for the backend database
 * `database.connection_timeout` is the maximum number of milliseconds that BigchainDB will wait before giving up on one attempt to connect to the backend database.
 * `database.max_tries` is the maximum number of times that BigchainDB will try to establish a connection with the backend database. If 0, then it will try forever.
 * `database.replicaset` is the name of the MongoDB replica set. The default value is `null` because in BighainDB 2.0+, each BigchainDB node has its own independent MongoDB database and no replica set is necessary.
-* `database.login` and `database.password` are the login and password used to authenticate to the backend database, specified in plaintext.
-* `database.ssl` determines if BigchainDB connects to MongoDB over TLS/SSL or not. It can be set to `true` or `false`.
+
+There are three ways for BigchainDB Server to authenticate itself with MongoDB (or a specific MongoDB database): no authentication, username/password, and x.509 certificate authentication.
+
+**No Authentication**
+
+If you use all the default BigchainDB configuration settings, then no authentication will be used.
+
+**Username/Password Authentication**
+
+To use username/password authentication, a MongoDB instance must already be running somewhere (maybe in another machine), it must already have a database for use by BigchainDB (usually named `bigchain`, which is the default `database.name`), and that database must already have a "readWrite" user with associated username and password. To create such a user, login to your MongoDB instance as Admin and run the following commands:
+
+```text
+use <database.name>
+db.createUser({user: "<database.login>", pwd: "<database.password>", roles: [{role: "readWrite", db: "<database.name>"}]})
+```
+
+* `database.login` is the user's username.
+* `database.password` is the user's password, given in plaintext.
+* `database.ssl` must be `false` (the default value).
+* `database.ca_cert`, `database.certfile`, `database.keyfile`, `database.crlfile`, and `database.keyfile_passphrase` are not used so they can have their default values.
+
+**x.509 Certificate Authentication**
+
+To use x.509 certificate authentication, a MongoDB instance must be running somewhere (maybe in another machine), it must already have a database for use by BigchainDB (usually named `bigchain`, which is the default `database.name`), and that database must be set up to use x.509 authentication. See the MongoDB docs about how to do that.
+
+* `database.login` is the user's username.
+* `database.password` isn't used so the default value (`null`) is fine.
+* `database.ssl` must be `true`.
 * `database.ca_cert`, `database.certfile`, `database.keyfile` and `database.crlfile` are the paths to the CA, signed certificate, private key and certificate revocation list files respectively.
 * `database.keyfile_passphrase` is the private key decryption passphrase, specified in plaintext.
 
