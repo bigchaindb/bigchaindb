@@ -7,7 +7,6 @@ from unittest import mock
 import pytest
 import pymongo
 from pymongo import MongoClient
-from pymongo.database import Database
 
 
 pytestmark = [pytest.mark.bdb, pytest.mark.tendermint]
@@ -109,87 +108,3 @@ def test_connection_with_credentials(mock_authenticate):
                                   password='secret')
     conn.connect()
     assert mock_authenticate.call_count == 1
-
-
-def test_check_replica_set_not_enabled(mongodb_connection):
-    from bigchaindb.backend.localmongodb.connection import _check_replica_set
-    from bigchaindb.common.exceptions import ConfigurationError
-
-    # no replSet option set
-    cmd_line_opts = {'argv': ['mongod', '--dbpath=/data'],
-                     'ok': 1.0,
-                     'parsed': {'storage': {'dbPath': '/data'}}}
-    with mock.patch.object(Database, 'command', return_value=cmd_line_opts):
-        with pytest.raises(ConfigurationError):
-            _check_replica_set(mongodb_connection)
-
-
-def test_check_replica_set_command_line(mongodb_connection,
-                                        mock_cmd_line_opts):
-    from bigchaindb.backend.localmongodb.connection import _check_replica_set
-
-    # replSet option set through the command line
-    with mock.patch.object(Database, 'command',
-                           return_value=mock_cmd_line_opts):
-        assert _check_replica_set(mongodb_connection) is None
-
-
-def test_check_replica_set_config_file(mongodb_connection, mock_config_opts):
-    from bigchaindb.backend.localmongodb.connection import _check_replica_set
-
-    # replSet option set through the config file
-    with mock.patch.object(Database, 'command', return_value=mock_config_opts):
-        assert _check_replica_set(mongodb_connection) is None
-
-
-def test_check_replica_set_name_mismatch(mongodb_connection,
-                                         mock_cmd_line_opts):
-    from bigchaindb.backend.localmongodb.connection import _check_replica_set
-    from bigchaindb.common.exceptions import ConfigurationError
-
-    # change the replica set name so it does not match the bigchaindb config
-    mock_cmd_line_opts['parsed']['replication']['replSet'] = 'rs0'
-
-    with mock.patch.object(Database, 'command',
-                           return_value=mock_cmd_line_opts):
-        with pytest.raises(ConfigurationError):
-            _check_replica_set(mongodb_connection)
-
-
-def test_wait_for_replica_set_initialization(mongodb_connection):
-    from bigchaindb.backend.localmongodb.connection import _wait_for_replica_set_initialization  # noqa
-
-    with mock.patch.object(Database, 'command') as mock_command:
-        mock_command.side_effect = [
-            {'log': ['a line']},
-            {'log': ['database writes are now permitted']},
-        ]
-
-        # check that it returns
-        assert _wait_for_replica_set_initialization(mongodb_connection) is None
-
-
-def test_initialize_replica_set(mock_cmd_line_opts):
-    from bigchaindb.backend.localmongodb.connection import initialize_replica_set
-
-    with mock.patch.object(Database, 'command') as mock_command:
-        mock_command.side_effect = [
-            mock_cmd_line_opts,
-            None,
-            {'log': ['database writes are now permitted']},
-        ]
-
-        # check that it returns
-        assert initialize_replica_set('host', 1337, 1000, 'dbname', False, None, None,
-                                      None, None, None, None, None) is None
-
-    # test it raises OperationError if anything wrong
-    with mock.patch.object(Database, 'command') as mock_command:
-        mock_command.side_effect = [
-            mock_cmd_line_opts,
-            pymongo.errors.OperationFailure(None, details={'codeName': ''})
-        ]
-
-        with pytest.raises(pymongo.errors.OperationFailure):
-            initialize_replica_set('host', 1337, 1000, 'dbname', False, None,
-                                   None, None, None, None, None, None) is None
