@@ -144,10 +144,14 @@ def _bdb(_setup_database, _configure_bigchaindb):
     from bigchaindb import config
     from bigchaindb.backend import connect
     from .utils import flush_db
+    from bigchaindb.common.memoize import to_dict, from_dict
     conn = connect()
     yield
     dbname = config['database']['name']
     flush_db(conn, dbname)
+
+    to_dict.cache_clear()
+    from_dict.cache_clear()
 
 
 # We need this function to avoid loading an existing
@@ -256,8 +260,7 @@ def b():
 def create_tx(alice, user_pk):
     from bigchaindb.models import Transaction
     name = f'I am created by the create_tx fixture. My random identifier is {random.random()}.'
-    return Transaction.create([alice.public_key], [([user_pk], 1)], asset={'name': name})\
-                      .sign([alice.private_key])
+    return Transaction.create([alice.public_key], [([user_pk], 1)], asset={'name': name})
 
 
 @pytest.fixture

@@ -1012,7 +1012,6 @@ class Transaction(object):
         return all(validate(i, cond)
                    for i, cond in enumerate(output_condition_uris))
 
-    # @memoize_input_valid
     @lru_cache(maxsize=16384)
     def _input_valid(self, input_, operation, message, output_condition_uri=None):
         """Validates a single Input against a single Output.
@@ -1063,7 +1062,7 @@ class Transaction(object):
     def __hash__(self):
         return hash(self.id)
 
-    @memoize_to_dict
+    # @memoize_to_dict
     def to_dict(self):
         """Transforms the object to a Python dictionary.
 
@@ -1185,7 +1184,7 @@ class Transaction(object):
             raise InvalidHash(err_msg.format(proposed_tx_id))
 
     @classmethod
-    @memoize_from_dict
+    # @memoize_from_dict
     def from_dict(cls, tx, skip_schema_validation=True):
         """Transforms a Python dictionary to a Transaction object.
 

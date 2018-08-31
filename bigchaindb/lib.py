@@ -9,6 +9,7 @@ MongoDB.
 import logging
 from collections import namedtuple
 from uuid import uuid4
+import rapidjson
 
 try:
     from hashlib import sha3_256
@@ -124,8 +125,7 @@ class BigchainDB(object):
         assets = []
         txn_metadatas = []
         for t in transactions:
-            # self.update_utxoset(transaction)
-            transaction = t.tx_dict if t.tx_dict else t.to_dict()
+            transaction = t.tx_dict if t.tx_dict else rapidjson.loads(rapidjson.dumps(t.to_dict()))
             if transaction['operation'] == t.CREATE:
                 asset = transaction.pop('asset')
                 asset['id'] = transaction['id']
