@@ -421,10 +421,17 @@ class BigchainDB(object):
     def fastquery(self):
         return fastquery.FastQuery(self.connection)
 
+    def get_validator_change(self, height=None):
+        return backend.query.get_validator_set(self.connection, height)
+
     def get_validators(self, height=None):
-        result = backend.query.get_validator_set(self.connection, height)
+        result = self.get_validator_change(height)
         validators = result['validators']
         return validators
+
+    def get_validators_by_election_id(self, election_id):
+        result = backend.query.get_validator_set_by_election_id(self.connection, election_id)
+        return result
 
     def delete_validator_update(self):
         return backend.query.delete_validator_update(self.connection)
@@ -432,13 +439,14 @@ class BigchainDB(object):
     def store_pre_commit_state(self, state):
         return backend.query.store_pre_commit_state(self.connection, state)
 
-    def store_validator_set(self, height, validators):
+    def store_validator_set(self, height, validators, election_id):
         """Store validator set at a given `height`.
            NOTE: If the validator set already exists at that `height` then an
            exception will be raised.
         """
         return backend.query.store_validator_set(self.connection, {'height': height,
-                                                                   'validators': validators})
+                                                                   'validators': validators,
+                                                                   'election_id': election_id})
 
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))

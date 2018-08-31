@@ -380,7 +380,7 @@ def test_validator_update():
     conn = connect()
 
     def gen_validator_update(height):
-        return {'data': 'somedata', 'height': height}
+        return {'data': 'somedata', 'height': height, 'election_id': f'election_id_at_height_{height}'}
 
     for i in range(1, 100, 10):
         value = gen_validator_update(i)

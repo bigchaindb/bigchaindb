@@ -48,33 +48,39 @@ def valid_election_b(b, node_key, new_validator):
 
 @pytest.fixture
 def ongoing_election(b, valid_election, ed25519_node_keys):
+    validators = b.get_validators(height=1)
+    genesis_validators = {'validators': validators,
+                          'height': 0,
+                          'election_id': None}
+    query.store_validator_set(b.connection, genesis_validators)
+
     b.store_bulk_transactions([valid_election])
     block_1 = Block(app_hash='hash_1', height=1, transactions=[valid_election.id])
-    vote_0 = vote(valid_election, 0, ed25519_node_keys, b)
-    vote_1 = vote(valid_election, 1, ed25519_node_keys, b)
-    block_2 = Block(app_hash='hash_2', height=2, transactions=[vote_0.id, vote_1.id])
     b.store_block(block_1._asdict())
-    b.store_block(block_2._asdict())
     return valid_election
 
 
 @pytest.fixture
 def concluded_election(b, ongoing_election, ed25519_node_keys):
-    vote_2 = vote(ongoing_election, 2, ed25519_node_keys, b)
-    block_4 = Block(app_hash='hash_4', height=4, transactions=[vote_2.id])
-    b.store_block(block_4._asdict())
+    validators = b.get_validators(height=1)
+    validator_update = {'validators': validators,
+                        'height': 2,
+                        'election_id': ongoing_election.id}
+
+    query.store_validator_set(b.connection, validator_update)
     return ongoing_election
 
 
 @pytest.fixture
-def inconclusive_election(b, concluded_election, new_validator):
+def inconclusive_election(b, ongoing_election, new_validator):
     validators = b.get_validators(height=1)
     validators[0]['voting_power'] = 15
     validator_update = {'validators': validators,
-                        'height': 3}
+                        'height': 2,
+                        'election_id': 'some_other_election'}
 
     query.store_validator_set(b.connection, validator_update)
-    return concluded_election
+    return ongoing_election
 
 
 def vote(election, voter, keys, b):

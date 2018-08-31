@@ -54,7 +54,7 @@ class App(BaseApplication):
         validator_set = [vutils.decode_validator(v) for v in genesis.validators]
         block = Block(app_hash='', height=0, transactions=[])
         self.bigchaindb.store_block(block._asdict())
-        self.bigchaindb.store_validator_set(1, validator_set)
+        self.bigchaindb.store_validator_set(1, validator_set, None)
         return ResponseInitChain()
 
     def info(self, request):
