@@ -39,7 +39,8 @@ The settings with names of the form `database.*` are for the backend database
 * `database.name` is a user-chosen name for the database inside MongoDB, e.g. `bigchain`.
 * `database.connection_timeout` is the maximum number of milliseconds that BigchainDB will wait before giving up on one attempt to connect to the backend database.
 * `database.max_tries` is the maximum number of times that BigchainDB will try to establish a connection with the backend database. If 0, then it will try forever.
-* `database.replicaset` is the name of the MongoDB replica set. The default value is `null` because in BighainDB 2.0+, each BigchainDB node has its own independent MongoDB database and no replica set is necessary. Replica set must already exist if this option is configured, BigchainDB will not create it.
+* `database.replicaset` is the name of the MongoDB replica set. The default value is `null` because in BigchainDB 2.0+, each BigchainDB node has its own independent MongoDB database and no replica set is necessary. Replica set must already exist if this option is configured, BigchainDB will not create it.
+* `database.ssl` must be `true` or `false`. It tells BigchainDB Server whether it should connect to MongoDB using TLS/SSL or not. The default value is `false`.
 
 There are three ways for BigchainDB Server to authenticate itself with MongoDB (or a specific MongoDB database): no authentication, username/password, and x.509 certificate authentication.
 
@@ -58,7 +59,6 @@ db.createUser({user: "<database.login>", pwd: "<database.password>", roles: [{ro
 
 * `database.login` is the user's username.
 * `database.password` is the user's password, given in plaintext.
-* `database.ssl` must be `false` (the default value).
 * `database.ca_cert`, `database.certfile`, `database.keyfile`, `database.crlfile`, and `database.keyfile_passphrase` are not used so they can have their default values.
 
 **x.509 Certificate Authentication**
@@ -67,7 +67,6 @@ To use x.509 certificate authentication, a MongoDB instance must be running some
 
 * `database.login` is the user's username.
 * `database.password` isn't used so the default value (`null`) is fine.
-* `database.ssl` must be `true`.
 * `database.ca_cert`, `database.certfile`, `database.keyfile` and `database.crlfile` are the paths to the CA, signed certificate, private key and certificate revocation list files respectively.
 * `database.keyfile_passphrase` is the private key decryption passphrase, specified in plaintext.
 
