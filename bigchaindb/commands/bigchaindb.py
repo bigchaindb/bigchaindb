@@ -27,8 +27,7 @@ from bigchaindb.commands import utils
 from bigchaindb.commands.utils import (configure_bigchaindb,
                                        input_on_stderr)
 from bigchaindb.log import setup_logging
-from bigchaindb.tendermint_utils import public_key_from_base64
-
+from bigchaindb.tendermint_utils import public_key_from_base64, public_key_to_base64
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -191,6 +190,35 @@ def run_upsert_validator_approve(args, bigchain):
         return False
 
 
+def run_upsert_validator_show(args, bigchain):
+    """Retrieves information about an upsert-validator election
+
+    :param args: dict
+        args = {
+        'election_id': the transaction_id for an election (str)
+        }
+    :param bigchain: an instance of BigchainDB
+    """
+
+    election = bigchain.get_transaction(args.election_id)
+    if not election:
+        logger.error(f'No election found with election_id {args.election_id}')
+        return
+
+    new_validator = election.asset['data']
+
+    public_key = public_key_to_base64(new_validator['public_key'])
+    power = new_validator['power']
+    node_id = new_validator['node_id']
+    status = election.get_status(bigchain)
+
+    response = f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
+
+    logger.info(response)
+
+    return response
+
+
 def _run_init():
     bdb = bigchaindb.BigchainDB()
 
@@ -319,6 +347,12 @@ def create_parser():
     approve_election_parser.add_argument('--private-key',
                                          dest='sk',
                                          help='Path to the private key of the election initiator.')
+
+    show_election_parser = validator_subparser.add_parser('show',
+                                                          help='Provides information about an election.')
+
+    show_election_parser.add_argument('election_id',
+                                      help='The transaction id of the election you wish to query.')
 
     # parsers for showing/exporting config values
     subparsers.add_parser('show-config',

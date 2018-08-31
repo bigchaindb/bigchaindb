@@ -44,7 +44,7 @@ def test_init_creates_db_tables_and_indexes():
     assert set(indexes) == {'_id_', 'pre_commit_id'}
 
     indexes = conn.conn[dbname]['validators'].index_information().keys()
-    assert set(indexes) == {'_id_', 'height'}
+    assert set(indexes) == {'_id_', 'height', 'election_id'}
 
 
 def test_init_database_fails_if_db_exists():
@@ -99,12 +99,16 @@ def test_create_secondary_indexes():
     indexes = conn.conn[dbname]['assets'].index_information().keys()
     assert set(indexes) == {'_id_', 'asset_id', 'text'}
 
-    indexes = conn.conn[dbname]['transactions'].index_information().keys()
+    index_info = conn.conn[dbname]['transactions'].index_information()
+    indexes = index_info.keys()
     assert set(indexes) == {
             '_id_', 'transaction_id', 'asset_id', 'outputs', 'inputs'}
+    assert index_info['transaction_id']['unique']
 
-    indexes = conn.conn[dbname]['blocks'].index_information().keys()
+    index_info = conn.conn[dbname]['blocks'].index_information()
+    indexes = index_info.keys()
     assert set(indexes) == {'_id_', 'height'}
+    assert index_info['height']['unique']
 
     index_info = conn.conn[dbname]['utxos'].index_information()
     assert set(index_info.keys()) == {'_id_', 'utxo'}

@@ -234,7 +234,7 @@ def test_upsert_validator(b, node_key, node_keys, ed25519_node_keys):
 
     latest_block = b.get_latest_block()
     # reset the validator set
-    b.store_validator_set(latest_block['height'], validators)
+    b.store_validator_set(latest_block['height'], validators, 'previous_election_id')
 
     power = 1
     public_key = '9B3119650DF82B9A5D8A12E38953EA47475C09F0C48A4E6A0ECE182944B24403'
@@ -368,4 +368,4 @@ def reset_validator_set(b, node_keys, height):
         validators.append({'pub_key': {'type': 'ed25519',
                                        'data': node_pub},
                            'voting_power': 10})
-    b.store_validator_set(height, validators)
+    b.store_validator_set(height, validators, 'election_id')
