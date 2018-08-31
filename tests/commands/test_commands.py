@@ -30,6 +30,7 @@ def test_make_sure_we_dont_remove_any_command():
                               '--private-key', 'TEMP_PATH_TO_PRIVATE_KEY']).command
     assert parser.parse_args(['upsert-validator', 'approve', 'ELECTION_ID', '--private-key',
                               'TEMP_PATH_TO_PRIVATE_KEY']).command
+    assert parser.parse_args(['upsert-validator', 'show', 'ELECTION_ID']).command
 
 
 @pytest.mark.tendermint
