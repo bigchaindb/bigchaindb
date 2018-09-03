@@ -44,7 +44,7 @@ def test_init_creates_db_tables_and_indexes():
     assert set(indexes) == {'_id_', 'pre_commit_id'}
 
     indexes = conn.conn[dbname]['validators'].index_information().keys()
-    assert set(indexes) == {'_id_', 'height', 'election_id'}
+    assert set(indexes) == {'_id_', 'height'}
 
 
 def test_init_database_fails_if_db_exists():
