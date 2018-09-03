@@ -643,9 +643,8 @@ def validators(b, node_keys):
     (public_key, private_key) = list(node_keys.items())[0]
 
     validator_set = [{'address': 'F5426F0980E36E03044F74DD414248D29ABCBDB2',
-                      'pub_key': {
-                          'data': public_key,
-                          'type': 'ed25519'},
+                      'public_key': {'value': public_key,
+                                     'type': 'ed25519-base64'},
                       'voting_power': 10}]
 
     validator_update = {'validators': validator_set,

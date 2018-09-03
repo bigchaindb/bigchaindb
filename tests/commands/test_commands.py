@@ -523,8 +523,8 @@ def mock_get_validators(height):
     keys = node_keys()
     pub_key = list(keys.keys())[0]
     return [
-        {'pub_key': {'value': pub_key,
-                     'type': 'ed25519-base64'},
+        {'public_key': {'value': pub_key,
+                        'type': 'ed25519-base64'},
          'voting_power': 10}
     ]
 

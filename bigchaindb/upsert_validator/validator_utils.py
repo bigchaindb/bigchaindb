@@ -16,21 +16,21 @@ def encode_validator(v):
 
 
 def decode_validator(v):
-    return {'pub_key': {'type': v.pub_key.type,
-                        'value': codecs.encode(v.pub_key.data, 'base64').decode().rstrip('\n')},
+    return {'public_key': {'type': v.pub_key.type,
+                           'value': codecs.encode(v.pub_key.data, 'base64').decode().rstrip('\n')},
             'voting_power': v.power}
 
 
 def new_validator_set(validators, updates):
     validators_dict = {}
     for v in validators:
-        validators_dict[v['pub_key']['value']] = v
+        validators_dict[v['public_key']['value']] = v
 
     updates_dict = {}
     for u in updates:
         public_key64 = public_key_to_base64(u['public_key']['value'])
-        updates_dict[public_key64] = {'pub_key': {'type': 'ed25519-base64',
-                                                  'value': public_key64},
+        updates_dict[public_key64] = {'public_key': {'type': 'ed25519-base64',
+                                                     'value': public_key64},
                                       'voting_power': u['power']}
 
     new_validators_dict = {**validators_dict, **updates_dict}
