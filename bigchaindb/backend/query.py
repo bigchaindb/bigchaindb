@@ -361,6 +361,14 @@ def get_validator_set(conn, height):
 
 
 @singledispatch
+def get_validator_set_by_election_id(conn, election_id):
+    """Return a validator set change with the specified election_id
+    """
+
+    raise NotImplementedError
+
+
+@singledispatch
 def get_asset_tokens_for_public_key(connection, asset_id,
                                     public_key, operation):
     """Retrieve a list of tokens of type `asset_id` that are owned by the `public_key`.

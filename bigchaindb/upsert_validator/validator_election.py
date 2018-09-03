@@ -29,12 +29,32 @@ class ValidatorElection(Transaction):
     # by renaming CREATE to VALIDATOR_ELECTION
     CREATE = VALIDATOR_ELECTION
     ALLOWED_OPERATIONS = (VALIDATOR_ELECTION,)
+    # Election Statuses:
+    ONGOING = 'ongoing'
+    CONCLUDED = 'concluded'
+    INCONCLUSIVE = 'inconclusive'
+    ELECTION_THRESHOLD = 2 / 3
 
     def __init__(self, operation, asset, inputs, outputs,
                  metadata=None, version=None, hash_id=None):
         # operation `CREATE` is being passed as argument as `VALIDATOR_ELECTION` is an extension
         # of `CREATE` and any validation on `CREATE` in the parent class should apply to it
         super().__init__(operation, asset, inputs, outputs, metadata, version, hash_id)
+
+    @classmethod
+    def get_validator_change(cls, bigchain, height=None):
+        """Return the latest change to the validator set
+
+        :return: {
+            'height': <block_height>,
+            'asset': {
+                'height': <block_height>,
+                'validators': <validator_set>,
+                'election_id': <election_id_that_approved_the_change>
+            }
+        }
+        """
+        return bigchain.get_validator_change(height)
 
     @classmethod
     def get_validators(cls, bigchain, height=None):
@@ -218,9 +238,27 @@ class ValidatorElection(Transaction):
                 validator_updates = [election.asset['data']]
                 curr_validator_set = bigchain.get_validators(new_height)
                 updated_validator_set = new_validator_set(curr_validator_set,
-                                                          new_height, validator_updates)
+                                                          validator_updates)
 
                 updated_validator_set = [v for v in updated_validator_set if v['voting_power'] > 0]
-                bigchain.store_validator_set(new_height+1, updated_validator_set)
+                bigchain.store_validator_set(new_height+1, updated_validator_set, election.id)
                 return [encode_validator(election.asset['data'])]
         return []
+
+    def get_validator_update_by_election_id(self, election_id, bigchain):
+        result = bigchain.get_validators_by_election_id(election_id)
+        return result
+
+    def get_status(self, bigchain):
+        concluded = self.get_validator_update_by_election_id(self.id, bigchain)
+        if concluded:
+            return self.CONCLUDED
+
+        latest_change = self.get_validator_change(bigchain)
+        latest_change_height = latest_change['height']
+        election_height = bigchain.get_block_containing_tx(self.id)[0]
+
+        if latest_change_height >= election_height:
+            return self.INCONCLUSIVE
+        else:
+            return self.ONGOING
