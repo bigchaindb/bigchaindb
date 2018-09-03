@@ -172,7 +172,7 @@ class ValidatorElection(Transaction):
 
     @classmethod
     def to_public_key(cls, election_id):
-        return base58.b58encode(bytes.fromhex(election_id))
+        return base58.b58encode(bytes.fromhex(election_id)).decode()
 
     @classmethod
     def count_votes(cls, election_pk, transactions, getter=getattr):
