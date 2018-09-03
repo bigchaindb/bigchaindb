@@ -133,6 +133,3 @@ def create_validators_secondary_index(conn, dbname):
     conn.conn[dbname]['validators'].create_index('height',
                                                  name='height',
                                                  unique=True,)
-    conn.conn[dbname]['validators'].create_index('election_id',
-                                                 name='election_id',
-                                                 unique=True,)
