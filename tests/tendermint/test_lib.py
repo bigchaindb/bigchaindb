@@ -15,6 +15,7 @@ import pytest
 from pymongo import MongoClient
 
 from bigchaindb import backend
+from bigchaindb.lib import Block
 
 
 pytestmark = pytest.mark.tendermint
@@ -441,3 +442,35 @@ def test_validation_with_transaction_buffer(b):
     assert not b.is_valid_transaction(create_tx, [create_tx])
     assert not b.is_valid_transaction(transfer_tx, [create_tx, transfer_tx])
     assert not b.is_valid_transaction(double_spend, [create_tx, transfer_tx])
+
+
+@pytest.mark.bdb
+def test_migrate_abci_chain_yields_on_genesis(b):
+    b.migrate_abci_chain()
+    latest_chain = b.get_latest_abci_chain()
+    assert latest_chain is None
+
+
+@pytest.mark.bdb
+@pytest.mark.parametrize('chain,block_height,expected', [
+    (
+        (1, 'chain-XYZ', True),
+        4,
+        {'height': 5, 'chain_id': 'chain-XYZ-migrated-at-height-4',
+         'is_synced': False},
+    ),
+    (
+        (5, 'chain-XYZ-migrated-at-height-4', True),
+        13,
+        {'height': 14, 'chain_id': 'chain-XYZ-migrated-at-height-13',
+         'is_synced': False},
+    ),
+])
+def test_migrate_abci_chain_generates_new_chains(b, chain, block_height,
+                                                 expected):
+    b.store_abci_chain(*chain)
+    b.store_block(Block(app_hash='', height=block_height,
+                        transactions=[])._asdict())
+    b.migrate_abci_chain()
+    latest_chain = b.get_latest_abci_chain()
+    assert latest_chain == expected

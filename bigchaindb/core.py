@@ -6,6 +6,7 @@
 with Tendermint.
 """
 import logging
+import sys
 
 from abci.application import BaseApplication
 from abci.types_pb2 import (
@@ -47,22 +48,76 @@ class App(BaseApplication):
         self.block_transactions = []
         self.validators = None
         self.new_height = None
+        self.chain = self.bigchaindb.get_latest_abci_chain()
+
+    def log_abci_migration_error(self, chain_id, validators):
+        logger.error(f'An ABCI chain migration is in process. ' +
+                     'Download the new ABCI client and configure it with ' +
+                     'chain_id={chain_id} and validators={validators}.')
+
+    def abort_if_abci_chain_is_not_synced(self):
+        if self.chain is None or self.chain['is_synced']:
+            return
+
+        validators = self.bigchaindb.get_validators()
+        self.log_abci_migration_error(self.chain['chain_id'], validators)
+        sys.exit(1)
 
     def init_chain(self, genesis):
-        """Initialize chain with block of height 0"""
+        """Initialize chain upon genesis or a migration"""
 
-        validator_set = [vutils.decode_validator(v) for v in genesis.validators]
-        block = Block(app_hash='', height=0, transactions=[])
+        app_hash = ''
+        height = 0
+
+        known_chain = self.bigchaindb.get_latest_abci_chain()
+        if known_chain is not None:
+            chain_id = known_chain['chain_id']
+
+            if known_chain['is_synced']:
+                msg = f'Got invalid InitChain ABCI request ({genesis}) - ' + \
+                      'the chain {chain_id} is already synced.'
+                logger.error(msg)
+                sys.exit(1)
+
+            if chain_id != genesis.chain_id:
+                validators = self.bigchaindb.get_validators()
+                self.log_abci_migration_error(chain_id, validators)
+                sys.exit(1)
+
+            # set migration values for app hash and height
+            block = self.bigchaindb.get_latest_block()
+            app_hash = '' if block is None else block['app_hash']
+            height = 0 if block is None else block['height'] + 1
+
+        known_validators = self.bigchaindb.get_validators()
+        validator_set = [vutils.decode_validator(v)
+                         for v in genesis.validators]
+
+        if known_validators and known_validators != validator_set:
+            self.log_abci_migration_error(known_chain['chain_id'],
+                                          known_validators)
+            sys.exit(1)
+
+        block = Block(app_hash=app_hash, height=height, transactions=[])
         self.bigchaindb.store_block(block._asdict())
-        self.bigchaindb.store_validator_set(1, validator_set, None)
+        self.bigchaindb.store_validator_set(height + 1, validator_set, None)
+        abci_chain_height = 0 if known_chain is None else known_chain['height']
+        self.bigchaindb.store_abci_chain(abci_chain_height,
+                                         genesis.chain_id, True)
+        self.chain = {'height': abci_chain_height, 'is_synced': True,
+                      'chain_id': genesis.chain_id}
         return ResponseInitChain()
 
     def info(self, request):
         """Return height of the latest committed block."""
+
+        self.abort_if_abci_chain_is_not_synced()
+
         r = ResponseInfo()
         block = self.bigchaindb.get_latest_block()
         if block:
-            r.last_block_height = block['height']
+            chain_shift = 0 if self.chain is None else self.chain['height']
+            r.last_block_height = block['height'] - chain_shift
             r.last_block_app_hash = block['app_hash'].encode('utf-8')
         else:
             r.last_block_height = 0
@@ -76,6 +131,8 @@ class App(BaseApplication):
         Args:
             raw_tx: a raw string (in bytes) transaction.
         """
+
+        self.abort_if_abci_chain_is_not_synced()
 
         logger.benchmark('CHECK_TX_INIT')
         logger.debug('check_tx: %s', raw_transaction)
@@ -95,8 +152,11 @@ class App(BaseApplication):
             req_begin_block: block object which contains block header
             and block hash.
         """
+        self.abort_if_abci_chain_is_not_synced()
+
+        chain_shift = 0 if self.chain is None else self.chain['height']
         logger.benchmark('BEGIN BLOCK, height:%s, num_txs:%s',
-                         req_begin_block.header.height,
+                         req_begin_block.header.height + chain_shift,
                          req_begin_block.header.num_txs)
 
         self.block_txn_ids = []
@@ -109,6 +169,9 @@ class App(BaseApplication):
         Args:
             raw_tx: a raw string (in bytes) transaction.
         """
+
+        self.abort_if_abci_chain_is_not_synced()
+
         logger.debug('deliver_tx: %s', raw_transaction)
         transaction = self.bigchaindb.is_valid_transaction(
             decode_transaction(raw_transaction), self.block_transactions)
@@ -130,7 +193,11 @@ class App(BaseApplication):
             height (int): new height of the chain.
         """
 
-        height = request_end_block.height
+        self.abort_if_abci_chain_is_not_synced()
+
+        chain_shift = 0 if self.chain is None else self.chain['height']
+
+        height = request_end_block.height + chain_shift
         self.new_height = height
         block_txn_hash = calculate_hash(self.block_txn_ids)
         block = self.bigchaindb.get_latest_block()
@@ -157,6 +224,8 @@ class App(BaseApplication):
 
     def commit(self):
         """Store the new height and along with block hash."""
+
+        self.abort_if_abci_chain_is_not_synced()
 
         data = self.block_txn_hash.encode('utf-8')
 

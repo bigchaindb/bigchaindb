@@ -2,17 +2,28 @@
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
+import codecs
 import json
 import pytest
+import random
 
 from abci.types_pb2 import (
+    PubKey,
+    ResponseInitChain,
+    RequestInitChain,
+    RequestInfo,
     RequestBeginBlock,
-    RequestEndBlock
+    RequestEndBlock,
+    Validator,
 )
 
+from bigchaindb import App
+from bigchaindb.backend.localmongodb import query
+from bigchaindb.common.crypto import generate_key_pair
 from bigchaindb.core import (CodeTypeOk,
                              CodeTypeError,
                              )
+from bigchaindb.lib import Block
 from bigchaindb.upsert_validator.validator_utils import new_validator_set
 from bigchaindb.tendermint_utils import public_key_to_base64
 
@@ -22,6 +33,173 @@ pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
 
 def encode_tx_to_bytes(transaction):
     return json.dumps(transaction.to_dict()).encode('utf8')
+
+
+def generate_address():
+    return ''.join(random.choices('1,2,3,4,5,6,7,8,9,A,B,C,D,E,F'.split(','),
+                                  k=40)).encode()
+
+
+def generate_validator():
+    addr = codecs.decode(generate_address(), 'hex')
+    pk, _ = generate_key_pair()
+    pub_key = PubKey(type='ed25519', data=pk.encode())
+    val = Validator(address=addr, power=10, pub_key=pub_key)
+    return val
+
+
+def generate_init_chain_request(chain_id, vals=None):
+    vals = vals if vals is not None else [generate_validator()]
+    return RequestInitChain(validators=vals, chain_id=chain_id)
+
+
+def test_init_chain_successfully_registers_chain(b):
+    request = generate_init_chain_request('chain-XYZ')
+    res = App(b).init_chain(request)
+    assert res == ResponseInitChain()
+    chain = query.get_latest_abci_chain(b.connection)
+    assert chain == {'height': 0, 'chain_id': 'chain-XYZ', 'is_synced': True}
+    assert query.get_latest_block(b.connection) == {
+        'height': 0,
+        'app_hash': '',
+        'transactions': [],
+    }
+
+
+def test_init_chain_ignores_invalid_init_chain_requests(b):
+    validators = [generate_validator()]
+    request = generate_init_chain_request('chain-XYZ', validators)
+    res = App(b).init_chain(request)
+    assert res == ResponseInitChain()
+
+    validator_set = query.get_validator_set(b.connection)
+
+    invalid_requests = [
+        request,  # the same request again
+        # different validator set
+        generate_init_chain_request('chain-XYZ'),
+        # different chain ID
+        generate_init_chain_request('chain-ABC', validators),
+    ]
+    for r in invalid_requests:
+        with pytest.raises(SystemExit):
+            App(b).init_chain(r)
+        # assert nothing changed - neither validator set, nor chain ID
+        new_validator_set = query.get_validator_set(b.connection)
+        assert new_validator_set == validator_set
+        new_chain_id = query.get_latest_abci_chain(b.connection)['chain_id']
+        assert new_chain_id == 'chain-XYZ'
+        assert query.get_latest_block(b.connection) == {
+            'height': 0,
+            'app_hash': '',
+            'transactions': [],
+        }
+
+
+def test_init_chain_recognizes_new_chain_after_migration(b):
+    validators = [generate_validator()]
+    request = generate_init_chain_request('chain-XYZ', validators)
+    res = App(b).init_chain(request)
+    assert res == ResponseInitChain()
+
+    validator_set = query.get_validator_set(b.connection)['validators']
+
+    # simulate a migration
+    query.store_block(b.connection, Block(app_hash='', height=1,
+                                          transactions=[])._asdict())
+    b.migrate_abci_chain()
+
+    # the same or other mismatching requests are ignored
+    invalid_requests = [
+        request,
+        generate_init_chain_request('unknown', validators),
+        generate_init_chain_request('chain-XYZ'),
+        generate_init_chain_request('chain-XYZ-migrated-at-height-1'),
+    ]
+    for r in invalid_requests:
+        with pytest.raises(SystemExit):
+            App(b).init_chain(r)
+        assert query.get_latest_abci_chain(b.connection) == {
+            'chain_id': 'chain-XYZ-migrated-at-height-1',
+            'is_synced': False,
+            'height': 2,
+        }
+        new_validator_set = query.get_validator_set(b.connection)['validators']
+        assert new_validator_set == validator_set
+
+    # a request with the matching chain ID and matching validator set
+    # completes the migration
+    request = generate_init_chain_request('chain-XYZ-migrated-at-height-1',
+                                          validators)
+    res = App(b).init_chain(request)
+    assert res == ResponseInitChain()
+    assert query.get_latest_abci_chain(b.connection) == {
+        'chain_id': 'chain-XYZ-migrated-at-height-1',
+        'is_synced': True,
+        'height': 2,
+    }
+    assert query.get_latest_block(b.connection) == {
+        'height': 2,
+        'app_hash': '',
+        'transactions': [],
+    }
+
+    # requests with old chain ID and other requests are ignored
+    invalid_requests = [
+        request,
+        generate_init_chain_request('chain-XYZ', validators),
+        generate_init_chain_request('chain-XYZ-migrated-at-height-1'),
+    ]
+    for r in invalid_requests:
+        with pytest.raises(SystemExit):
+            App(b).init_chain(r)
+        assert query.get_latest_abci_chain(b.connection) == {
+            'chain_id': 'chain-XYZ-migrated-at-height-1',
+            'is_synced': True,
+            'height': 2,
+        }
+        new_validator_set = query.get_validator_set(b.connection)['validators']
+        assert new_validator_set == validator_set
+        assert query.get_latest_block(b.connection) == {
+            'height': 2,
+            'app_hash': '',
+            'transactions': [],
+        }
+
+
+def test_info(b):
+    r = RequestInfo()
+    app = App(b)
+
+    res = app.info(r)
+    assert res.last_block_height == 0
+    assert res.last_block_app_hash == b''
+
+    b.store_block(Block(app_hash='1', height=1, transactions=[])._asdict())
+    res = app.info(r)
+    assert res.last_block_height == 1
+    assert res.last_block_app_hash == b'1'
+
+    # simulate a migration and assert the height is shifted
+    b.store_abci_chain(2, 'chain-XYZ')
+    app = App(b)
+    b.store_block(Block(app_hash='2', height=2, transactions=[])._asdict())
+    res = app.info(r)
+    assert res.last_block_height == 0
+    assert res.last_block_app_hash == b'2'
+
+    b.store_block(Block(app_hash='3', height=3, transactions=[])._asdict())
+    res = app.info(r)
+    assert res.last_block_height == 1
+    assert res.last_block_app_hash == b'3'
+
+    # it's always the latest migration that is taken into account
+    b.store_abci_chain(4, 'chain-XYZ-new')
+    app = App(b)
+    b.store_block(Block(app_hash='4', height=4, transactions=[])._asdict())
+    res = app.info(r)
+    assert res.last_block_height == 0
+    assert res.last_block_app_hash == b'4'
 
 
 def test_check_tx__signed_create_is_ok(b):
@@ -57,7 +235,6 @@ def test_check_tx__unsigned_create_is_error(b):
     assert result.code == CodeTypeError
 
 
-@pytest.mark.bdb
 def test_deliver_tx__valid_create_updates_db(b, init_chain_request):
     from bigchaindb import App
     from bigchaindb.models import Transaction
@@ -225,6 +402,17 @@ def test_store_pre_commit_state_in_end_block(b, alice, init_chain_request):
     assert resp['height'] == 100
     assert resp['transactions'] == [tx.id]
 
+    # simulate a chain migration and assert the height is shifted
+    b.store_abci_chain(100, 'new-chain')
+    app = App(b)
+    app.begin_block(begin_block)
+    app.deliver_tx(encode_tx_to_bytes(tx))
+    app.end_block(RequestEndBlock(height=1))
+    resp = query.get_pre_commit_state(b.connection, PRE_COMMIT_ID)
+    assert resp['commit_id'] == PRE_COMMIT_ID
+    assert resp['height'] == 101
+    assert resp['transactions'] == [tx.id]
+
 
 def test_new_validator_set(b):
     node1 = {'pub_key': {'type': 'ed25519',
@@ -247,3 +435,45 @@ def test_new_validator_set(b):
                                    'voting_power':  u['power']})
 
     assert updated_validator_set == updated_validators
+
+
+def test_info_aborts_if_chain_is_not_synced(b):
+    b.store_abci_chain(0, 'chain-XYZ', False)
+
+    with pytest.raises(SystemExit):
+        App(b).info(RequestInfo())
+
+
+def test_check_tx_aborts_if_chain_is_not_synced(b):
+    b.store_abci_chain(0, 'chain-XYZ', False)
+
+    with pytest.raises(SystemExit):
+        App(b).check_tx('some bytes')
+
+
+def test_begin_aborts_if_chain_is_not_synced(b):
+    b.store_abci_chain(0, 'chain-XYZ', False)
+
+    with pytest.raises(SystemExit):
+        App(b).info(RequestBeginBlock())
+
+
+def test_deliver_tx_aborts_if_chain_is_not_synced(b):
+    b.store_abci_chain(0, 'chain-XYZ', False)
+
+    with pytest.raises(SystemExit):
+        App(b).deliver_tx('some bytes')
+
+
+def test_end_block_aborts_if_chain_is_not_synced(b):
+    b.store_abci_chain(0, 'chain-XYZ', False)
+
+    with pytest.raises(SystemExit):
+        App(b).info(RequestEndBlock())
+
+
+def test_commit_aborts_if_chain_is_not_synced(b):
+    b.store_abci_chain(0, 'chain-XYZ', False)
+
+    with pytest.raises(SystemExit):
+        App(b).commit()
