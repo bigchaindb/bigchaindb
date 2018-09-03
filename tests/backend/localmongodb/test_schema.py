@@ -46,6 +46,9 @@ def test_init_creates_db_tables_and_indexes():
     indexes = conn.conn[dbname]['validators'].index_information().keys()
     assert set(indexes) == {'_id_', 'height'}
 
+    indexes = conn.conn[dbname]['abci_chains'].index_information().keys()
+    assert set(indexes) == {'_id_', 'height', 'chain_id'}
+
 
 def test_init_database_fails_if_db_exists():
     import bigchaindb
