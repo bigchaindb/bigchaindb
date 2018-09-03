@@ -13,7 +13,6 @@ Attributes:
 from collections import namedtuple
 from copy import deepcopy
 from functools import reduce, lru_cache
-import functools
 import rapidjson
 
 import base58
@@ -29,7 +28,7 @@ from bigchaindb.common.exceptions import (KeypairMismatchException,
                                           AmountError, AssetIdMismatch,
                                           ThresholdTooDeep)
 from bigchaindb.common.utils import serialize
-from .memoize import memoize_from_dict, memoize_to_dict
+from .memoize import memoize_from_dict  # , memoize_to_dict
 
 
 UnspentOutput = namedtuple(
@@ -1184,7 +1183,7 @@ class Transaction(object):
             raise InvalidHash(err_msg.format(proposed_tx_id))
 
     @classmethod
-    # @memoize_from_dict
+    @memoize_from_dict
     def from_dict(cls, tx, skip_schema_validation=True):
         """Transforms a Python dictionary to a Transaction object.
 
