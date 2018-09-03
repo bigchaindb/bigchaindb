@@ -681,6 +681,7 @@ def new_validator():
     power = 1
     node_id = 'fake_node_id'
 
-    return {'public_key': public_key,
+    return {'public_key': {'value': public_key,
+                           'type': 'ed25519-base58'},
             'power': power,
             'node_id': node_id}

@@ -23,7 +23,16 @@ properties:
           node_id:
             type: string
           public_key:
-            type: string
+            type: object
+            additionalProperties: false
+            required:
+            - value
+            - type
+            properties:
+              value:
+                type: string
+              type:
+                type: string
           power:
             "$ref": "#/definitions/positiveInteger"
         required:

@@ -147,7 +147,7 @@ def test_upsert_validator_show(caplog, ongoing_election, b):
     from bigchaindb.commands.bigchaindb import run_upsert_validator_show
 
     election_id = ongoing_election.id
-    public_key = public_key_to_base64(ongoing_election.asset['data']['public_key'])
+    public_key = public_key_to_base64(ongoing_election.asset['data']['public_key']['value'])
     power = ongoing_election.asset['data']['power']
     node_id = ongoing_election.asset['data']['node_id']
     status = ValidatorElection.ONGOING
