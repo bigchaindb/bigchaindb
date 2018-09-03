@@ -361,7 +361,7 @@ def get_validator_set(conn, height):
 
 
 @singledispatch
-def get_result_by_election_id(conn, election_id, table):
+def get_election_result_by_id(conn, election_id, table):
     """Return a validator set change with the specified election_id
     """
 

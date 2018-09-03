@@ -300,7 +300,7 @@ def get_validator_set(conn, height=None):
 
 
 @register_query(LocalMongoDBConnection)
-def get_result_by_election_id(conn, election_id, table):
+def get_election_result_by_id(conn, election_id, table):
     query = {'election_id': election_id}
 
     cursor = conn.run(

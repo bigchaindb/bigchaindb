@@ -221,7 +221,7 @@ class Election(Transaction):
             return self.ONGOING
 
     def get_election_result(self, election_id, bigchain):
-        result = bigchain.get_result_by_election_id(election_id, self.DB_TABLE)
+        result = bigchain.get_election_result_by_id(election_id, self.DB_TABLE)
         return result
 
     @classmethod
