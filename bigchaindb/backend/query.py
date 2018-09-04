@@ -352,6 +352,13 @@ def store_validator_set(conn, validator_update):
 
 
 @singledispatch
+def store_election(conn, validator_update):
+    """Store election results"""
+
+    raise NotImplementedError
+
+
+@singledispatch
 def get_validator_set(conn, height):
     """Get validator set for a given `height`, if `height` is not specified
     then return the latest validator set
@@ -361,7 +368,7 @@ def get_validator_set(conn, height):
 
 
 @singledispatch
-def get_election_result_by_id(conn, election_id, table):
+def get_election(conn, election_id):
     """Return a validator set change with the specified election_id
     """
 

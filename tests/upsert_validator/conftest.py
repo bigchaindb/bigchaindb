@@ -62,12 +62,10 @@ def ongoing_election(b, valid_election, ed25519_node_keys):
 
 @pytest.fixture
 def concluded_election(b, ongoing_election, ed25519_node_keys):
-    validators = b.get_validators(height=1)
-    validator_update = {'validators': validators,
-                        'height': 2,
-                        'election_id': ongoing_election.id}
+    election_result = {'height': 2,
+                       'election_id': ongoing_election.id}
 
-    query.store_validator_set(b.connection, validator_update)
+    query.store_election(b.connection, election_result)
     return ongoing_election
 
 

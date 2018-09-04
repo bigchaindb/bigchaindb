@@ -428,8 +428,8 @@ class BigchainDB(object):
         result = self.get_validator_change(height)
         return [] if result is None else result['validators']
 
-    def get_election_result_by_id(self, election_id, table):
-        result = backend.query.get_election_result_by_id(self.connection, election_id, table)
+    def get_election(self, election_id):
+        result = backend.query.get_election(self.connection, election_id)
         return result
 
     def store_pre_commit_state(self, state):
@@ -474,6 +474,14 @@ class BigchainDB(object):
         new_chain_id = chain_id.split(suffix)[0] + suffix + block_height_str
 
         self.store_abci_chain(block['height'] + 1, new_chain_id, False)
+
+    def store_election(self, height, election):
+        """Store election results
+        :param height: the block height at which the election concluded
+        :param election: a concluded election
+        """
+        return backend.query.store_election(self.connection, {'height': height,
+                                                              'election_id': election.id})
 
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))

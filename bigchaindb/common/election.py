@@ -23,8 +23,6 @@ class Election(Transaction):
     # NOTE: this transaction class extends create so the operation inheritance is achieved
     # by setting an ELECTION_TYPE and renaming CREATE = ELECTION_TYPE and ALLOWED_OPERATIONS = (ELECTION_TYPE,)
     ELECTION_TYPE = None
-    # the name of the mongodb table managed by the election
-    DB_TABLE = None
     # the model for votes issued by the election
     VOTE_TYPE = None
     # Election Statuses:
@@ -160,7 +158,7 @@ class Election(Transaction):
 
     @classmethod
     def to_public_key(cls, election_id):
-        return base58.b58encode(bytes.fromhex(election_id))
+        return base58.b58encode(bytes.fromhex(election_id)).decode()
 
     @classmethod
     def count_votes(cls, election_pk, transactions, getter=getattr):
@@ -207,7 +205,7 @@ class Election(Transaction):
         return False
 
     def get_status(self, bigchain):
-        concluded = self.get_election_result(self.id, bigchain)
+        concluded = self.get_election(self.id, bigchain)
         if concluded:
             return self.CONCLUDED
 
@@ -220,9 +218,13 @@ class Election(Transaction):
         else:
             return self.ONGOING
 
-    def get_election_result(self, election_id, bigchain):
-        result = bigchain.get_election_result_by_id(election_id, self.DB_TABLE)
+    def get_election(self, election_id, bigchain):
+        result = bigchain.get_election(election_id)
         return result
+
+    @classmethod
+    def store_election(cls, bigchain, election, height):
+        bigchain.store_election(height, election)
 
     @classmethod
     def is_approved(cls, bigchain, new_height, txns):
@@ -240,6 +242,7 @@ class Election(Transaction):
             # Once an election concludes any other conclusion for the same
             # or any other election is invalidated
             if election:
+                cls.store_election(bigchain, election, new_height)
                 return cls.on_approval(bigchain, election, new_height)
         return []
 
