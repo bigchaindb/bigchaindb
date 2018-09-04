@@ -9,13 +9,13 @@ from bigchaindb.common.schema import (_validate_schema,
                                       TX_SCHEMA_VALIDATOR_ELECTION_VOTE)
 
 
-class ValidatorElectionVote(Transaction):
+class Vote(Transaction):
 
-    VALIDATOR_ELECTION_VOTE = 'VALIDATOR_ELECTION_VOTE'
+    VOTE = 'VOTE'
     # NOTE: This class inherits TRANSFER txn type. The `TRANSFER` property is
     # overriden to re-use methods from parent class
-    TRANSFER = VALIDATOR_ELECTION_VOTE
-    ALLOWED_OPERATIONS = (VALIDATOR_ELECTION_VOTE,)
+    TRANSFER = VOTE
+    ALLOWED_OPERATIONS = (VOTE,)
 
     def validate(self, bigchain, current_transactions=[]):
         """Validate election vote transaction
@@ -28,7 +28,7 @@ class ValidatorElectionVote(Transaction):
             bigchain (BigchainDB): an instantiated bigchaindb.lib.BigchainDB object.
 
         Returns:
-            ValidatorElectionVote object
+            Vote object
 
         Raises:
             ValidationError: If the election vote is invalid
@@ -39,7 +39,7 @@ class ValidatorElectionVote(Transaction):
     @classmethod
     def generate(cls, inputs, recipients, election_id, metadata=None):
         (inputs, outputs) = cls.validate_transfer(inputs, recipients, election_id, metadata)
-        election_vote = cls(cls.VALIDATOR_ELECTION_VOTE, {'id': election_id}, inputs, outputs, metadata)
+        election_vote = cls(cls.VOTE, {'id': election_id}, inputs, outputs, metadata)
         cls.validate_schema(election_vote.to_dict(), skip_id=True)
         return election_vote
 

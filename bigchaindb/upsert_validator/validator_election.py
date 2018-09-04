@@ -6,7 +6,6 @@ from bigchaindb.common.exceptions import InvalidPowerChange
 from bigchaindb.common.election import Election
 from bigchaindb.common.schema import (_validate_schema,
                                       TX_SCHEMA_VALIDATOR_ELECTION)
-from . import ValidatorElectionVote
 from .validator_utils import (new_validator_set, encode_validator)
 
 
@@ -17,8 +16,6 @@ class ValidatorElection(Election):
     # by renaming CREATE to VALIDATOR_ELECTION
     CREATE = ELECTION_TYPE
     ALLOWED_OPERATIONS = (ELECTION_TYPE,)
-    DB_TABLE = 'validators'
-    VOTE_TYPE = ValidatorElectionVote
 
     def validate(self, bigchain, current_transactions=[]):
         """For more details refer BEP-21: https://github.com/bigchaindb/BEPs/tree/master/21

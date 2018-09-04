@@ -4,7 +4,7 @@
 
 import pytest
 
-from bigchaindb import ValidatorElectionVote
+from bigchaindb import Vote
 from bigchaindb.backend.localmongodb import query
 from bigchaindb.lib import Block
 from bigchaindb.upsert_validator import ValidatorElection
@@ -89,9 +89,9 @@ def vote(election, voter, keys, b):
 
     election_pub_key = ValidatorElection.to_public_key(election.id)
 
-    v = ValidatorElectionVote.generate([election_input],
-                                       [([election_pub_key], votes)],
-                                       election_id=election.id)\
-                             .sign([key.private_key])
+    v = Vote.generate([election_input],
+                      [([election_pub_key], votes)],
+                      election_id=election.id)\
+        .sign([key.private_key])
     b.store_bulk_transactions([v])
     return v

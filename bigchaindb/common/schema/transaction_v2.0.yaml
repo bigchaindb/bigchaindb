@@ -63,7 +63,7 @@ definitions:
     - CREATE
     - TRANSFER
     - VALIDATOR_ELECTION
-    - VALIDATOR_ELECTION_VOTE
+    - VOTE
   asset:
     type: object
     additionalProperties: false

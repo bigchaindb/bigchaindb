@@ -5,6 +5,7 @@
 import base58
 
 from bigchaindb import backend
+from bigchaindb.common.vote import Vote
 from bigchaindb.common.exceptions import (InvalidSignature,
                                           MultipleInputsError,
                                           InvalidProposer,
@@ -24,7 +25,7 @@ class Election(Transaction):
     # by setting an ELECTION_TYPE and renaming CREATE = ELECTION_TYPE and ALLOWED_OPERATIONS = (ELECTION_TYPE,)
     ELECTION_TYPE = None
     # the model for votes issued by the election
-    VOTE_TYPE = None
+    VOTE_TYPE = Vote
     # Election Statuses:
     ONGOING = 'ongoing'
     CONCLUDED = 'concluded'
@@ -164,7 +165,7 @@ class Election(Transaction):
     def count_votes(cls, election_pk, transactions, getter=getattr):
         votes = 0
         for txn in transactions:
-            if getter(txn, 'operation') == 'VALIDATOR_ELECTION_VOTE':
+            if getter(txn, 'operation') == 'VOTE':
                 for output in getter(txn, 'outputs'):
                     # NOTE: We enforce that a valid vote to election id will have only
                     # election_pk in the output public keys, including any other public key
