@@ -35,12 +35,6 @@ class ValidatorElection(Transaction):
     INCONCLUSIVE = 'inconclusive'
     ELECTION_THRESHOLD = 2 / 3
 
-    def __init__(self, operation, asset, inputs, outputs,
-                 metadata=None, version=None, hash_id=None):
-        # operation `CREATE` is being passed as argument as `VALIDATOR_ELECTION` is an extension
-        # of `CREATE` and any validation on `CREATE` in the parent class should apply to it
-        super().__init__(operation, asset, inputs, outputs, metadata, version, hash_id)
-
     @classmethod
     def get_validator_change(cls, bigchain, height=None):
         """Return the latest change to the validator set

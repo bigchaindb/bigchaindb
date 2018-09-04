@@ -12,7 +12,8 @@ Attributes:
 """
 from collections import namedtuple
 from copy import deepcopy
-from functools import reduce
+from functools import reduce, lru_cache
+import rapidjson
 
 import base58
 from cryptoconditions import Fulfillment, ThresholdSha256, Ed25519Sha256
@@ -27,6 +28,7 @@ from bigchaindb.common.exceptions import (KeypairMismatchException,
                                           AmountError, AssetIdMismatch,
                                           ThresholdTooDeep)
 from bigchaindb.common.utils import serialize
+from .memoize import memoize_from_dict, memoize_to_dict
 
 
 UnspentOutput = namedtuple(
@@ -81,6 +83,11 @@ class Input(object):
     def __eq__(self, other):
         # TODO: If `other !== Fulfillment` return `False`
         return self.to_dict() == other.to_dict()
+
+    # NOTE: This function is used to provide a unique key for a given
+    # Input to suppliment memoization
+    def __hash__(self):
+        return hash((self.fulfillment, self.fulfills))
 
     def to_dict(self):
         """Transforms the object to a Python dictionary.
@@ -500,7 +507,7 @@ class Transaction(object):
     VERSION = '2.0'
 
     def __init__(self, operation, asset, inputs=None, outputs=None,
-                 metadata=None, version=None, hash_id=None):
+                 metadata=None, version=None, hash_id=None, tx_dict=None):
         """The constructor allows to create a customizable Transaction.
 
             Note:
@@ -553,6 +560,7 @@ class Transaction(object):
         self.outputs = outputs or []
         self.metadata = metadata
         self._id = hash_id
+        self.tx_dict = tx_dict
 
     @property
     def unspent_outputs(self):
@@ -990,7 +998,7 @@ class Transaction(object):
             raise ValueError('Inputs and '
                              'output_condition_uris must have the same count')
 
-        tx_dict = self.to_dict()
+        tx_dict = self.tx_dict if self.tx_dict else self.to_dict()
         tx_dict = Transaction._remove_signatures(tx_dict)
         tx_dict['id'] = None
         tx_serialized = Transaction._to_str(tx_dict)
@@ -1003,6 +1011,7 @@ class Transaction(object):
         return all(validate(i, cond)
                    for i, cond in enumerate(output_condition_uris))
 
+    @lru_cache(maxsize=16384)
     def _input_valid(self, input_, operation, message, output_condition_uri=None):
         """Validates a single Input against a single Output.
 
@@ -1048,6 +1057,11 @@ class Transaction(object):
         ffill_valid = parsed_ffill.validate(message=message.digest())
         return output_valid and ffill_valid
 
+    # This function is required by `lru_cache` to create a key for memoization
+    def __hash__(self):
+        return hash(self.id)
+
+    @memoize_to_dict
     def to_dict(self):
         """Transforms the object to a Python dictionary.
 
@@ -1150,7 +1164,9 @@ class Transaction(object):
                 tx_body (dict): The Transaction to be transformed.
         """
         # NOTE: Remove reference to avoid side effects
-        tx_body = deepcopy(tx_body)
+        # tx_body = deepcopy(tx_body)
+        tx_body = rapidjson.loads(rapidjson.dumps(tx_body))
+
         try:
             proposed_tx_id = tx_body['id']
         except KeyError:
@@ -1167,6 +1183,7 @@ class Transaction(object):
             raise InvalidHash(err_msg.format(proposed_tx_id))
 
     @classmethod
+    @memoize_from_dict
     def from_dict(cls, tx, skip_schema_validation=True):
         """Transforms a Python dictionary to a Transaction object.
 
@@ -1184,7 +1201,7 @@ class Transaction(object):
         inputs = [Input.from_dict(input_) for input_ in tx['inputs']]
         outputs = [Output.from_dict(output) for output in tx['outputs']]
         return cls(tx['operation'], tx['asset'], inputs, outputs,
-                   tx['metadata'], tx['version'], hash_id=tx['id'])
+                   tx['metadata'], tx['version'], hash_id=tx['id'], tx_dict=tx)
 
     @classmethod
     def from_db(cls, bigchain, tx_dict_list):

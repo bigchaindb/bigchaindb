@@ -27,7 +27,7 @@ class Transaction(Transaction):
 
         if self.operation == Transaction.CREATE:
             duplicates = any(txn for txn in current_transactions if txn.id == self.id)
-            if bigchain.get_transaction(self.to_dict()['id']) or duplicates:
+            if bigchain.is_committed(self.id) or duplicates:
                 raise DuplicateTransaction('transaction `{}` already exists'
                                            .format(self.id))
 

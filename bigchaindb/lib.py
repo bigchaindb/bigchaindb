@@ -9,6 +9,7 @@ MongoDB.
 import logging
 from collections import namedtuple
 from uuid import uuid4
+import rapidjson
 
 try:
     from hashlib import sha3_256
@@ -77,10 +78,11 @@ class BigchainDB(object):
             raise ValidationError('Mode must be one of the following {}.'
                                   .format(', '.join(self.mode_list)))
 
+        tx_dict = transaction.tx_dict if transaction.tx_dict else transaction.to_dict()
         payload = {
             'method': mode,
             'jsonrpc': '2.0',
-            'params': [encode_transaction(transaction.to_dict())],
+            'params': [encode_transaction(tx_dict)],
             'id': str(uuid4())
         }
         # TODO: handle connection errors!
@@ -122,10 +124,9 @@ class BigchainDB(object):
         txns = []
         assets = []
         txn_metadatas = []
-        for transaction_obj in transactions:
-            # self.update_utxoset(transaction)
-            transaction = transaction_obj.to_dict()
-            if transaction['operation'] == transaction_obj.CREATE:
+        for t in transactions:
+            transaction = t.tx_dict if t.tx_dict else rapidjson.loads(rapidjson.dumps(t.to_dict()))
+            if transaction['operation'] == t.CREATE:
                 asset = transaction.pop('asset')
                 asset['id'] = transaction['id']
                 assets.append(asset)
@@ -223,6 +224,10 @@ class BigchainDB(object):
         if unspent_outputs:
             return backend.query.delete_unspent_outputs(
                                         self.connection, *unspent_outputs)
+
+    def is_committed(self, transaction_id):
+        transaction = backend.query.get_transaction(self.connection, transaction_id)
+        return bool(transaction)
 
     def get_transaction(self, transaction_id):
         transaction = backend.query.get_transaction(self.connection, transaction_id)
