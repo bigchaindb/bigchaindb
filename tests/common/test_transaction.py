@@ -93,7 +93,7 @@ def test_output_serialization(user_Ed25519, user_pub):
             'uri': user_Ed25519.condition_uri,
             'details': {
                 'type': 'ed25519-sha-256',
-                'public_key': b58encode(user_Ed25519.public_key),
+                'public_key': b58encode(user_Ed25519.public_key).decode(),
             },
         },
         'public_keys': [user_pub],
@@ -114,7 +114,7 @@ def test_output_deserialization(user_Ed25519, user_pub):
             'uri': user_Ed25519.condition_uri,
             'details': {
                 'type': 'ed25519-sha-256',
-                'public_key': b58encode(user_Ed25519.public_key),
+                'public_key': b58encode(user_Ed25519.public_key).decode(),
             },
         },
         'public_keys': [user_pub],
