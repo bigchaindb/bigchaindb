@@ -12,6 +12,7 @@ except ImportError:
 
 import pytest
 
+
 pytestmark = pytest.mark.tendermint
 
 

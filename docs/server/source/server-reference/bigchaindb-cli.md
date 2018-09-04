@@ -139,3 +139,19 @@ $ bigchaindb upsert-validator approve 04a067582cf03eba2b53b82e4adb5ece424474cbd4
 ```
 
 If the command succeeds a message will be returned stating that the vote was submitted successfully. Once a proposal has been approved by sufficent validators (more than `2/3` of the total voting power) then the proposed change is applied to the network. For example, consider a network wherein the total power is `90` then the proposed changed applied only after `60` (`2/3 * 90`) have been received.
+
+#### upsert-validator show
+
+Retrieves information about an election initiated by `upsert-validator new`.
+
+Below is the command line syntax and the return value,
+
+```bash
+$ bigchaindb upsert-validator show ELECTION_ID
+public_key=<e_pub_key>
+power=<e_power>
+node_id=<e_node_id>
+status=<status>
+```
+
+The `public_key`, `power`, and `node_id` are the same values used in the `upsert-validator new` command that originally triggered the election. `status` takes three possible values, `ongoing`, if the election has not yet reached a 2/3 majority, `concluded`, if the election reached the 2/3 majority needed to pass, or `inconclusive`, if the validator set changed while the election was in process, rendering it undecidable.
