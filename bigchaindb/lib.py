@@ -429,7 +429,7 @@ class BigchainDB(object):
         validators = result['validators']
         return validators
 
-    def get_result_by_election_id(self, election_id, table):
+    def get_election_result_by_id(self, election_id, table):
         result = backend.query.get_election_result_by_id(self.connection, election_id, table)
         return result
 
