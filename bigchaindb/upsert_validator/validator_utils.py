@@ -16,7 +16,7 @@ def encode_validator(v):
 
 
 def decode_validator(v):
-    return {'public_key': {'type': v.pub_key.type,
+    return {'public_key': {'type': 'ed25519-base64',
                            'value': codecs.encode(v.pub_key.data, 'base64').decode().rstrip('\n')},
             'voting_power': v.power}
 
