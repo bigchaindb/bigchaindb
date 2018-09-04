@@ -65,3 +65,29 @@ def test_memoize_from_dict(b):
 
     assert from_dict.cache_info().hits == 2
     assert from_dict.cache_info().misses == 1
+
+
+def test_memoize_input_valid(b):
+    alice = generate_key_pair()
+    asset = {
+        'data': {'id': 'test_id'},
+    }
+
+    assert Transaction._input_valid.cache_info().hits == 0
+    assert Transaction._input_valid.cache_info().misses == 0
+
+    tx = Transaction.create([alice.public_key],
+                            [([alice.public_key], 1)],
+                            asset=asset,)\
+                    .sign([alice.private_key])
+
+    tx.inputs_valid()
+
+    assert Transaction._input_valid.cache_info().hits == 0
+    assert Transaction._input_valid.cache_info().misses == 1
+
+    tx.inputs_valid()
+    tx.inputs_valid()
+
+    assert Transaction._input_valid.cache_info().hits == 2
+    assert Transaction._input_valid.cache_info().misses == 1

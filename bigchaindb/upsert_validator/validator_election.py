@@ -30,12 +30,6 @@ class ValidatorElection(Transaction):
     CREATE = VALIDATOR_ELECTION
     ALLOWED_OPERATIONS = (VALIDATOR_ELECTION,)
 
-    # def __init__(self, operation, asset, inputs, outputs,
-    #              metadata=None, version=None, hash_id=None, tx_):
-    #     # operation `CREATE` is being passed as argument as `VALIDATOR_ELECTION` is an extension
-    #     # of `CREATE` and any validation on `CREATE` in the parent class should apply to it
-    #     super().__init__(operation, asset, inputs, outputs, metadata, version, hash_id)
-
     @classmethod
     def get_validators(cls, bigchain, height=None):
         """Return a dictionary of validators with key as `public_key` and
