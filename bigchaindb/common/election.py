@@ -39,11 +39,8 @@ class Election(Transaction):
 
         :return: {
             'height': <block_height>,
-            'asset': {
-                'height': <block_height>,
-                'validators': <validator_set>,
-                'election_id': <election_id_that_approved_the_change>
-            }
+            'validators': <validator_set>,
+            'election_id': <election_id_that_approved_the_change>
         }
         """
         return bigchain.get_validator_change(height)
