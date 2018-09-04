@@ -27,7 +27,6 @@ def test_memoize_to_dict(b):
                             asset=asset,)\
                     .sign([alice.private_key])
 
-
     tx.to_dict()
 
     assert to_dict.cache_info().hits == 0
