@@ -23,6 +23,8 @@ class Election(Transaction):
     # NOTE: this transaction class extends create so the operation inheritance is achieved
     # by setting an ELECTION_TYPE and renaming CREATE = ELECTION_TYPE and ALLOWED_OPERATIONS = (ELECTION_TYPE,)
     ELECTION_TYPE = None
+    # the name of the mongodb table managed by the election
+    DB_TABLE = None
     # the model for votes issued by the election
     VOTE_TYPE = None
     # Election Statuses:
@@ -219,7 +221,7 @@ class Election(Transaction):
             return self.ONGOING
 
     def get_election_result(self, election_id, bigchain):
-        result = bigchain.get_election_result_by_id(election_id)
+        result = bigchain.get_election_result_by_id(election_id, self.DB_TABLE)
         return result
 
     @classmethod

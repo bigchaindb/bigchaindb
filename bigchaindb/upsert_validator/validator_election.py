@@ -17,6 +17,7 @@ class ValidatorElection(Election):
     # by renaming CREATE to VALIDATOR_ELECTION
     CREATE = ELECTION_TYPE
     ALLOWED_OPERATIONS = (ELECTION_TYPE,)
+    DB_TABLE = 'validators'
     VOTE_TYPE = ValidatorElectionVote
 
     def validate(self, bigchain, current_transactions=[]):
