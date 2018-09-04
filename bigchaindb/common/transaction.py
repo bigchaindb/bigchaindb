@@ -28,7 +28,7 @@ from bigchaindb.common.exceptions import (KeypairMismatchException,
                                           AmountError, AssetIdMismatch,
                                           ThresholdTooDeep)
 from bigchaindb.common.utils import serialize
-from .memoize import memoize_from_dict  # , memoize_to_dict
+from .memoize import memoize_from_dict, memoize_to_dict
 
 
 UnspentOutput = namedtuple(
@@ -1061,7 +1061,7 @@ class Transaction(object):
     def __hash__(self):
         return hash(self.id)
 
-    # @memoize_to_dict
+    @memoize_to_dict
     def to_dict(self):
         """Transforms the object to a Python dictionary.
 
