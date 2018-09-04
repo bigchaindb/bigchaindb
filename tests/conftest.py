@@ -145,6 +145,7 @@ def _bdb(_setup_database, _configure_bigchaindb):
     from bigchaindb.backend import connect
     from .utils import flush_db
     from bigchaindb.common.memoize import to_dict, from_dict
+    from bigchaindb.models import Transaction
     conn = connect()
     yield
     dbname = config['database']['name']
@@ -152,6 +153,7 @@ def _bdb(_setup_database, _configure_bigchaindb):
 
     to_dict.cache_clear()
     from_dict.cache_clear()
+    Transaction._input_valid.cache_clear()
 
 
 # We need this function to avoid loading an existing
