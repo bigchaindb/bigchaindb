@@ -24,6 +24,51 @@ For reference, the possible headings are:
 * **Known Issues**
 * **Notes**
 
+## [2.0 Beta 6] - 2018-09-???????????????????????
+
+Tag name: v2.0.0b6
+
+### Added
+
+* Created an all-in-one Docker image containing BigchainDB Server, Tendermint and MongoDB. It was created for a particular user and is not recommended for production use unless you really know what you're doing. [Pull request #2424](https://github.com/bigchaindb/bigchaindb/pull/2424)
+* [New documentation about privacy and handling private data](https://docs.bigchaindb.com/en/latest/private-data.html). [Pull request #2437](https://github.com/bigchaindb/bigchaindb/pull/2437)
+* Began implementing one of the migration strategies outlined in [BEP-42](https://github.com/bigchaindb/BEPs/tree/master/42). [Pull request #2488](https://github.com/bigchaindb/bigchaindb/pull/2488)
+
+### Changed
+
+* The process to add, remove or update the voting power of a validator at run time (using the `bigchaindb upsert-validator` subcommands) was completely changed and is now fully working. See [issue #2372](https://github.com/bigchaindb/bigchaindb/issues/2372) and all the pull requests it references. Pull requests [#2439](https://github.com/bigchaindb/bigchaindb/pull/2439) and [#2440](https://github.com/bigchaindb/bigchaindb/pull/2440)
+* The license on the documentation was changed from CC-BY-SA-4 to CC-BY-4. [Pull request #2427](https://github.com/bigchaindb/bigchaindb/pull/2427)
+* Re-activated and/or updated some unit tests that had been deacivated during the migration to Tendermint. Pull requests [#2390](https://github.com/bigchaindb/bigchaindb/pull/2390), [#2415](https://github.com/bigchaindb/bigchaindb/pull/2415), [#2452](https://github.com/bigchaindb/bigchaindb/pull/24), [#2456](https://github.com/bigchaindb/bigchaindb/pull/2456)
+* Updated RapidJSON to a newer, faster version. [Pull request #2470](https://github.com/bigchaindb/bigchaindb/pull/2470)
+* The Java driver is now officially supported. [Pull request #2478](https://github.com/bigchaindb/bigchaindb/pull/2478)
+* The MongoDB indexes on transaction id and block height were changed to be [unique indexes](https://docs.mongodb.com/manual/core/index-unique/). [Pull request #2492](https://github.com/bigchaindb/bigchaindb/pull/2492)
+* Updated the required `cryptoconditions` package to a newer one. [Pull request #2494](https://github.com/bigchaindb/bigchaindb/pull/2494)
+
+### Removed
+
+* Removed some old code and tests. Pull requests
+  [#2374](https://github.com/bigchaindb/bigchaindb/pull/2374),
+  [#2452](https://github.com/bigchaindb/bigchaindb/pull/2452),
+  [#2474](https://github.com/bigchaindb/bigchaindb/pull/2474),
+  [#2476](https://github.com/bigchaindb/bigchaindb/pull/2476),
+  [#2491](https://github.com/bigchaindb/bigchaindb/pull/2491)
+
+### Fixed
+
+* Fixed a unit test that was failing randomly. [Pull request #2423](https://github.com/bigchaindb/bigchaindb/pull/2423)
+* Fixed the validator curl port. [Pull request #2447](https://github.com/bigchaindb/bigchaindb/pull/2447)
+* Fixed an error in the docs about the HTTP POST /transactions endpoint. [Pull request #2481](https://github.com/bigchaindb/bigchaindb/pull/2481)
+* Fixed a bug when validating a CREATE + TRANSFER. [Pull request #2487](https://github.com/bigchaindb/bigchaindb/pull/2487)
+* Fixed a unit test that could loop forever. [Pull requqest #2486](https://github.com/bigchaindb/bigchaindb/pull/2486)
+
+### External Contributors
+
+@danacr - [Pull request #2447](https://github.com/bigchaindb/bigchaindb/pull/2447)
+
+### Notes
+
+The docs section titled "Production Deployment Template" was renamed to "Kubernetes Deployment Template" and we no longer consider it the go-to deployment template. The "Simple Deployment Template" is simpler, easier to understand, and less expensive (unless you are with an organization that already has a big Kubernetes cluster).
+
 ## [2.0 Beta 5] - 2018-08-01
 
 Tag name: v2.0.0b5
