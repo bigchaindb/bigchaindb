@@ -47,6 +47,7 @@ def create_indexes(conn, dbname):
     create_utxos_secondary_index(conn, dbname)
     create_pre_commit_secondary_index(conn, dbname)
     create_validators_secondary_index(conn, dbname)
+    create_elections_secondary_index(conn, dbname)
 
 
 @register_schema(LocalMongoDBConnection)
@@ -133,6 +134,11 @@ def create_validators_secondary_index(conn, dbname):
     conn.conn[dbname]['validators'].create_index('height',
                                                  name='height',
                                                  unique=True,)
-    conn.conn[dbname]['validators'].create_index('election_id',
-                                                 name='election_id',
-                                                 unique=True,)
+
+
+def create_elections_secondary_index(conn, dbname):
+    logger.info('Create `elections` secondary index.')
+
+    conn.conn[dbname]['elections'].create_index('election_id',
+                                                name='election_id',
+                                                unique=True,)
