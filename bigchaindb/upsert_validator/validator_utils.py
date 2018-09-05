@@ -4,7 +4,6 @@ import binascii
 
 from abci.types_pb2 import (Validator,
                             PubKey)
-from bigchaindb.tendermint_utils import public_key_to_base64
 from bigchaindb.common.exceptions import InvalidPublicKey
 
 
@@ -63,7 +62,6 @@ def validate_asset_public_key(pk):
 
 
 def get_public_key_decoder(pk):
-    pk_binary = pk['value'].encode('utf-8')
     encoding = pk['type']
     decoder = base64.b64decode
 
