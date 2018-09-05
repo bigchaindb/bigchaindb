@@ -33,6 +33,10 @@ properties:
                 type: string
               type:
                 type: string
+                enum:
+                  - ed25519-base16
+                  - ed25519-base32
+                  - ed25519-base64
           power:
             "$ref": "#/definitions/positiveInteger"
         required:

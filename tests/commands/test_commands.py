@@ -429,7 +429,6 @@ def test_upsert_validator_new_election_invalid_power(caplog, b, priv_validator_p
         assert caplog.records[0].msg.__class__ == InvalidPowerChange
 
 
-@pytest.mark.google
 @pytest.mark.abci
 def test_upsert_validator_approve_with_tendermint(b, priv_validator_path, user_sk, validators):
     from bigchaindb.commands.bigchaindb import (run_upsert_validator_new,

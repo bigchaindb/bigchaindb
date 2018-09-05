@@ -115,4 +115,4 @@ class InvalidPowerChange(ValidationError):
 
 
 class InvalidPublicKey(ValidationError):
-    """Raised if proposed power change in validator set is >=1/3 total power"""
+    """Raised if public key doesn't match the encoding type"""

@@ -21,6 +21,7 @@ from bigchaindb.common.schema import (_validate_schema,
 from . import ValidatorElectionVote
 from .validator_utils import (new_validator_set,
                               encode_validator,
+                              encode_pk_to_base16,
                               validate_asset_public_key)
 
 
@@ -239,7 +240,10 @@ class ValidatorElection(Transaction):
 
                 updated_validator_set = [v for v in updated_validator_set if v['voting_power'] > 0]
                 bigchain.store_validator_set(new_height+1, updated_validator_set, election.id)
-                return [encode_validator(election.asset['data'])]
+
+                validator16 = encode_pk_to_base16(election.asset['data'])
+                return [encode_validator(validator16)]
+
         return []
 
     def get_validator_update_by_election_id(self, election_id, bigchain):

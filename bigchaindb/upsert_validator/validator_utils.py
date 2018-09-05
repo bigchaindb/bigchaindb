@@ -31,7 +31,8 @@ def new_validator_set(validators, updates):
 
     updates_dict = {}
     for u in updates:
-        public_key64 = public_key_to_base64(u['public_key']['value'])
+        decoder = get_public_key_decoder(u['public_key'])
+        public_key64 = base64.b64encode(decoder(u['public_key']['value'])).decode('utf-8')
         updates_dict[public_key64] = {'public_key': {'type': 'ed25519-base64',
                                                      'value': public_key64},
                                       'voting_power': u['power']}
@@ -40,7 +41,28 @@ def new_validator_set(validators, updates):
     return list(new_validators_dict.values())
 
 
+def encode_pk_to_base16(validator):
+    pk = validator['public_key']
+    decoder = get_public_key_decoder(pk)
+    public_key16 = base64.b16encode(decoder(pk['value'])).decode('utf-8')
+
+    validator['public_key']['value'] = public_key16
+    return validator
+
+
 def validate_asset_public_key(pk):
+    pk_binary = pk['value'].encode('utf-8')
+    decoder = get_public_key_decoder(pk)
+    try:
+        pk_decoded = decoder(pk_binary)
+        if len(pk_decoded) != 32:
+            raise InvalidPublicKey('Public key should be of size 32 bytes')
+
+    except binascii.Error as e:
+        raise InvalidPublicKey('Invalid `type` specified for public key `value`')
+
+
+def get_public_key_decoder(pk):
     pk_binary = pk['value'].encode('utf-8')
     encoding = pk['type']
     decoder = base64.b64decode
@@ -51,11 +73,7 @@ def validate_asset_public_key(pk):
         decoder = base64.b32decode
     elif encoding == 'ed25519-base64':
         decoder = base64.b64decode
-
-    try:
-        pk_decoded = decoder(pk_binary)
-        if len(pk_decoded) != 32:
-            raise InvalidPublicKey('Public key should be of size 32 bytes')
-
-    except binascii.Error as e:
+    else:
         raise InvalidPublicKey('Invalid `type` specified for public key `value`')
+
+    return decoder
