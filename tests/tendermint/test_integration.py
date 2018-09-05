@@ -136,6 +136,7 @@ def test_post_transaction_responses(tendermint_ws_url, b):
         [([carly.public_key], 1)],
         asset_id=tx.id,
     ).sign([alice.private_key])
-    code, message = b.write_transaction(double_spend, 'broadcast_tx_commit')
-    assert code == 500
-    assert message == 'Transaction validation failed'
+    for mode in ('broadcast_tx_sync', 'broadcast_tx_commit'):
+        code, message = b.write_transaction(double_spend, mode)
+        assert code == 500
+        assert message == 'Transaction validation failed'
