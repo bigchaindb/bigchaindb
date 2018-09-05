@@ -380,3 +380,23 @@ def get_asset_tokens_for_public_key(connection, asset_id,
         Iterator of transaction that list given owner in conditions.
     """
     raise NotImplementedError
+
+
+@singledispatch
+def store_abci_chain(conn, height, chain_id, is_synced=True):
+    """Create or update an ABCI chain at the given height.
+    Usually invoked in the beginning of the ABCI communications (height=0)
+    or when ABCI client (like Tendermint) is migrated (any height).
+
+    Args:
+        is_synced: True if the chain is known by both ABCI client and server
+    """
+    raise NotImplementedError
+
+
+@singledispatch
+def get_latest_abci_chain(conn):
+    """Returns the ABCI chain stored at the biggest height, if any,
+    None otherwise.
+    """
+    raise NotImplementedError

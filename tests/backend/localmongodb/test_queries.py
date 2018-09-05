@@ -7,6 +7,9 @@ from copy import deepcopy
 import pytest
 import pymongo
 
+from bigchaindb.backend import connect, query
+
+
 pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
 
 
@@ -202,7 +205,7 @@ def test_get_owned_ids(signed_create_tx, user_pk):
     conn = connect()
 
     # insert a transaction
-    conn.db.transactions.insert_one(signed_create_tx.to_dict())
+    conn.db.transactions.insert_one(deepcopy(signed_create_tx.to_dict()))
 
     txns = list(query.get_owned_ids(conn, user_pk))
 
@@ -221,7 +224,7 @@ def test_get_spending_transactions(user_pk, user_sk):
     tx2 = Transaction.transfer([inputs[0]], out, tx1.id).sign([user_sk])
     tx3 = Transaction.transfer([inputs[1]], out, tx1.id).sign([user_sk])
     tx4 = Transaction.transfer([inputs[2]], out, tx1.id).sign([user_sk])
-    txns = [tx.to_dict() for tx in [tx1, tx2, tx3, tx4]]
+    txns = [deepcopy(tx.to_dict()) for tx in [tx1, tx2, tx3, tx4]]
     conn.db.transactions.insert_many(txns)
 
     links = [inputs[0].fulfills.to_dict(), inputs[2].fulfills.to_dict()]
@@ -394,3 +397,51 @@ def test_validator_update():
 
     v91 = query.get_validator_set(conn)
     assert v91['height'] == 91
+
+
+@pytest.mark.parametrize('description,stores,expected', [
+    (
+        'Query empty database.',
+        [],
+        None,
+    ),
+    (
+        'Store one chain with the default value for `is_synced`.',
+        [
+            {'height': 0, 'chain_id': 'some-id'},
+        ],
+        {'height': 0, 'chain_id': 'some-id', 'is_synced': True},
+    ),
+    (
+        'Store one chain with a custom value for `is_synced`.',
+        [
+            {'height': 0, 'chain_id': 'some-id', 'is_synced': False},
+        ],
+        {'height': 0, 'chain_id': 'some-id', 'is_synced': False},
+    ),
+    (
+        'Store one chain, then update it.',
+        [
+            {'height': 0, 'chain_id': 'some-id', 'is_synced': True},
+            {'height': 0, 'chain_id': 'new-id', 'is_synced': False},
+        ],
+        {'height': 0, 'chain_id': 'new-id', 'is_synced': False},
+    ),
+    (
+        'Store a chain, update it, store another chain.',
+        [
+            {'height': 0, 'chain_id': 'some-id', 'is_synced': True},
+            {'height': 0, 'chain_id': 'some-id', 'is_synced': False},
+            {'height': 10, 'chain_id': 'another-id', 'is_synced': True},
+        ],
+        {'height': 10, 'chain_id': 'another-id', 'is_synced': True},
+    ),
+])
+def test_store_abci_chain(description, stores, expected):
+    conn = connect()
+
+    for store in stores:
+        query.store_abci_chain(conn, **store)
+
+    actual = query.get_latest_abci_chain(conn)
+    assert expected == actual, description
