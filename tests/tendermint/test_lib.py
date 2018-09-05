@@ -15,6 +15,7 @@ import pytest
 from pymongo import MongoClient
 
 from bigchaindb import backend
+from bigchaindb.lib import Block
 
 
 pytestmark = pytest.mark.tendermint
@@ -419,3 +420,57 @@ def test_get_spent_transaction_critical_double_spend(b, alice, bob, carol):
 
     with pytest.raises(CriticalDoubleSpend):
         b.get_spent(tx.id, tx_transfer.inputs[0].fulfills.output)
+
+
+def test_validation_with_transaction_buffer(b):
+    from bigchaindb.common.crypto import generate_key_pair
+    from bigchaindb.models import Transaction
+
+    priv_key, pub_key = generate_key_pair()
+
+    create_tx = Transaction.create([pub_key], [([pub_key], 10)]).sign([priv_key])
+    transfer_tx = Transaction.transfer(create_tx.to_inputs(),
+                                       [([pub_key], 10)],
+                                       asset_id=create_tx.id).sign([priv_key])
+    double_spend = Transaction.transfer(create_tx.to_inputs(),
+                                        [([pub_key], 10)],
+                                        asset_id=create_tx.id).sign([priv_key])
+
+    assert b.is_valid_transaction(create_tx)
+    assert b.is_valid_transaction(transfer_tx, [create_tx])
+
+    assert not b.is_valid_transaction(create_tx, [create_tx])
+    assert not b.is_valid_transaction(transfer_tx, [create_tx, transfer_tx])
+    assert not b.is_valid_transaction(double_spend, [create_tx, transfer_tx])
+
+
+@pytest.mark.bdb
+def test_migrate_abci_chain_yields_on_genesis(b):
+    b.migrate_abci_chain()
+    latest_chain = b.get_latest_abci_chain()
+    assert latest_chain is None
+
+
+@pytest.mark.bdb
+@pytest.mark.parametrize('chain,block_height,expected', [
+    (
+        (1, 'chain-XYZ', True),
+        4,
+        {'height': 5, 'chain_id': 'chain-XYZ-migrated-at-height-4',
+         'is_synced': False},
+    ),
+    (
+        (5, 'chain-XYZ-migrated-at-height-4', True),
+        13,
+        {'height': 14, 'chain_id': 'chain-XYZ-migrated-at-height-13',
+         'is_synced': False},
+    ),
+])
+def test_migrate_abci_chain_generates_new_chains(b, chain, block_height,
+                                                 expected):
+    b.store_abci_chain(*chain)
+    b.store_block(Block(app_hash='', height=block_height,
+                        transactions=[])._asdict())
+    b.migrate_abci_chain()
+    latest_chain = b.get_latest_abci_chain()
+    assert latest_chain == expected

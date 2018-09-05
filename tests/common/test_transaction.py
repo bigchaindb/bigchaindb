@@ -13,7 +13,7 @@ from cryptoconditions import Ed25519Sha256
 from pytest import mark, raises
 from sha3 import sha3_256
 
-pytestmark = mark.tendermint
+pytestmark = [mark.tendermint, mark.bdb]
 
 
 def test_input_serialization(ffill_uri, user_pub):
@@ -93,7 +93,7 @@ def test_output_serialization(user_Ed25519, user_pub):
             'uri': user_Ed25519.condition_uri,
             'details': {
                 'type': 'ed25519-sha-256',
-                'public_key': b58encode(user_Ed25519.public_key),
+                'public_key': b58encode(user_Ed25519.public_key).decode(),
             },
         },
         'public_keys': [user_pub],
@@ -114,7 +114,7 @@ def test_output_deserialization(user_Ed25519, user_pub):
             'uri': user_Ed25519.condition_uri,
             'details': {
                 'type': 'ed25519-sha-256',
-                'public_key': b58encode(user_Ed25519.public_key),
+                'public_key': b58encode(user_Ed25519.public_key).decode(),
             },
         },
         'public_keys': [user_pub],
@@ -533,7 +533,7 @@ def test_validate_input_with_invalid_parameters(utx):
     input_conditions = [out.fulfillment.condition_uri for out in utx.outputs]
     tx_dict = utx.to_dict()
     tx_serialized = Transaction._to_str(tx_dict)
-    valid = utx._input_valid(utx.inputs[0], tx_serialized, input_conditions)
+    valid = utx._input_valid(utx.inputs[0], tx_serialized, input_conditions[0])
     assert not valid
 
 

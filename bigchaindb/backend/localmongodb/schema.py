@@ -47,6 +47,7 @@ def create_indexes(conn, dbname):
     create_utxos_secondary_index(conn, dbname)
     create_pre_commit_secondary_index(conn, dbname)
     create_validators_secondary_index(conn, dbname)
+    create_abci_chains_indexes(conn, dbname)
 
 
 @register_schema(LocalMongoDBConnection)
@@ -59,6 +60,7 @@ def create_transactions_secondary_index(conn, dbname):
 
     # to query the transactions for a transaction id, this field is unique
     conn.conn[dbname]['transactions'].create_index('id',
+                                                   unique=True,
                                                    name='transaction_id')
 
     # secondary index for asset uuid, this field is unique
@@ -93,7 +95,7 @@ def create_assets_secondary_index(conn, dbname):
 
 def create_blocks_secondary_index(conn, dbname):
     conn.conn[dbname]['blocks']\
-        .create_index([('height', DESCENDING)], name='height')
+        .create_index([('height', DESCENDING)], name='height', unique=True)
 
 
 def create_metadata_secondary_index(conn, dbname):
@@ -132,3 +134,16 @@ def create_validators_secondary_index(conn, dbname):
     conn.conn[dbname]['validators'].create_index('height',
                                                  name='height',
                                                  unique=True,)
+
+
+def create_abci_chains_indexes(conn, dbname):
+    logger.info('Create `abci_chains.height` secondary index.')
+
+    conn.conn[dbname]['abci_chains'].create_index('height',
+                                                  name='height',
+                                                  unique=True,)
+
+    logger.info('Create `abci_chains.chain_id` secondary index.')
+    conn.conn[dbname]['abci_chains'].create_index('chain_id',
+                                                  name='chain_id',
+                                                  unique=True)

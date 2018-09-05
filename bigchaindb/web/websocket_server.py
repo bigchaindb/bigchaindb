@@ -48,6 +48,17 @@ def _multiprocessing_to_asyncio(in_queue, out_queue, loop):
         loop.call_soon_threadsafe(out_queue.put_nowait, value)
 
 
+def eventify_block(block):
+    for tx in block['transactions']:
+        try:
+            asset_id = tx['asset']['id']
+        except KeyError:
+            asset_id = tx['id']
+        yield {'height': block['height'],
+               'asset_id': asset_id,
+               'transaction_id': tx['id']}
+
+
 class Dispatcher:
     """Dispatch events to websockets.
 
@@ -99,17 +110,10 @@ class Dispatcher:
                 str_buffer.append(event)
 
             elif event.type == EventTypes.BLOCK_VALID:
-                block = event.data
+                str_buffer = map(json.dumps, eventify_block(event.data))
 
-                for tx in block['transactions']:
-                    asset_id = tx['id'] if tx['operation'] == 'CREATE' else tx['asset']['id']
-                    data = {'height': block['height'],
-                            'asset_id': asset_id,
-                            'transaction_id': tx['id']}
-                    str_buffer.append(json.dumps(data))
-
-            for _, websocket in self.subscribers.items():
-                for str_item in str_buffer:
+            for str_item in str_buffer:
+                for _, websocket in self.subscribers.items():
                     yield from websocket.send_str(str_item)
 
 

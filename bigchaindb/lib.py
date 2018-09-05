@@ -9,6 +9,7 @@ MongoDB.
 import logging
 from collections import namedtuple
 from uuid import uuid4
+import rapidjson
 
 try:
     from hashlib import sha3_256
@@ -77,10 +78,11 @@ class BigchainDB(object):
             raise ValidationError('Mode must be one of the following {}.'
                                   .format(', '.join(self.mode_list)))
 
+        tx_dict = transaction.tx_dict if transaction.tx_dict else transaction.to_dict()
         payload = {
             'method': mode,
             'jsonrpc': '2.0',
-            'params': [encode_transaction(transaction.to_dict())],
+            'params': [encode_transaction(tx_dict)],
             'id': str(uuid4())
         }
         # TODO: handle connection errors!
@@ -122,10 +124,9 @@ class BigchainDB(object):
         txns = []
         assets = []
         txn_metadatas = []
-        for transaction_obj in transactions:
-            # self.update_utxoset(transaction)
-            transaction = transaction_obj.to_dict()
-            if transaction['operation'] == transaction_obj.CREATE:
+        for t in transactions:
+            transaction = t.tx_dict if t.tx_dict else rapidjson.loads(rapidjson.dumps(t.to_dict()))
+            if transaction['operation'] == t.CREATE:
                 asset = transaction.pop('asset')
                 asset['id'] = transaction['id']
                 assets.append(asset)
@@ -224,6 +225,10 @@ class BigchainDB(object):
             return backend.query.delete_unspent_outputs(
                                         self.connection, *unspent_outputs)
 
+    def is_committed(self, transaction_id):
+        transaction = backend.query.get_transaction(self.connection, transaction_id)
+        return bool(transaction)
+
     def get_transaction(self, transaction_id):
         transaction = backend.query.get_transaction(self.connection, transaction_id)
 
@@ -285,7 +290,8 @@ class BigchainDB(object):
         current_spent_transactions = []
         for ctxn in current_transactions:
             for ctxn_input in ctxn.inputs:
-                if ctxn_input.fulfills.txid == txid and\
+                if ctxn_input.fulfills and\
+                   ctxn_input.fulfills.txid == txid and\
                    ctxn_input.fulfills.output == output:
                     current_spent_transactions.append(ctxn)
 
@@ -420,10 +426,16 @@ class BigchainDB(object):
     def fastquery(self):
         return fastquery.FastQuery(self.connection)
 
+    def get_validator_change(self, height=None):
+        return backend.query.get_validator_set(self.connection, height)
+
     def get_validators(self, height=None):
-        result = backend.query.get_validator_set(self.connection, height)
-        validators = result['validators']
-        return validators
+        result = self.get_validator_change(height)
+        return [] if result is None else result['validators']
+
+    def get_validators_by_election_id(self, election_id):
+        result = backend.query.get_validator_set_by_election_id(self.connection, election_id)
+        return result
 
     def delete_validator_update(self):
         return backend.query.delete_validator_update(self.connection)
@@ -431,13 +443,45 @@ class BigchainDB(object):
     def store_pre_commit_state(self, state):
         return backend.query.store_pre_commit_state(self.connection, state)
 
-    def store_validator_set(self, height, validators):
+    def store_validator_set(self, height, validators, election_id):
         """Store validator set at a given `height`.
            NOTE: If the validator set already exists at that `height` then an
            exception will be raised.
         """
         return backend.query.store_validator_set(self.connection, {'height': height,
-                                                                   'validators': validators})
+                                                                   'validators': validators,
+                                                                   'election_id': election_id})
+
+    def store_abci_chain(self, height, chain_id, is_synced=True):
+        return backend.query.store_abci_chain(self.connection, height,
+                                              chain_id, is_synced)
+
+    def get_latest_abci_chain(self):
+        return backend.query.get_latest_abci_chain(self.connection)
+
+    def migrate_abci_chain(self):
+        """Generate and record a new ABCI chain ID. New blocks are not
+        accepted until we receive an InitChain ABCI request with
+        the matching chain ID and validator set.
+
+        Chain ID is generated based on the current chain and height.
+        `chain-X` => `chain-X-migrated-at-height-5`.
+        `chain-X-migrated-at-height-5` => `chain-X-migrated-at-height-21`.
+
+        If there is no known chain (we are at genesis), the function returns.
+        """
+        latest_chain = self.get_latest_abci_chain()
+        if latest_chain is None:
+            return
+
+        block = self.get_latest_block()
+
+        suffix = '-migrated-at-height-'
+        chain_id = latest_chain['chain_id']
+        block_height_str = str(block['height'])
+        new_chain_id = chain_id.split(suffix)[0] + suffix + block_height_str
+
+        self.store_abci_chain(block['height'] + 1, new_chain_id, False)
 
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))
