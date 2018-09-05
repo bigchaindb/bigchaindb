@@ -24,7 +24,7 @@ def test_init_creates_db_tables_and_indexes():
     collection_names = conn.conn[dbname].collection_names()
     assert set(collection_names) == {
         'transactions', 'assets', 'metadata', 'blocks', 'utxos', 'pre_commit',
-        'validators', 'abci_chains',
+        'validators', 'elections', 'abci_chains',
     }
 
     indexes = conn.conn[dbname]['assets'].index_information().keys()
@@ -48,6 +48,9 @@ def test_init_creates_db_tables_and_indexes():
 
     indexes = conn.conn[dbname]['abci_chains'].index_information().keys()
     assert set(indexes) == {'_id_', 'height', 'chain_id'}
+
+    indexes = conn.conn[dbname]['elections'].index_information().keys()
+    assert set(indexes) == {'_id_', 'election_id'}
 
 
 def test_init_database_fails_if_db_exists():
@@ -81,7 +84,7 @@ def test_create_tables():
 
     collection_names = conn.conn[dbname].collection_names()
     assert set(collection_names) == {
-        'transactions', 'assets', 'metadata', 'blocks', 'utxos', 'validators',
+        'transactions', 'assets', 'metadata', 'blocks', 'utxos', 'validators', 'elections',
         'pre_commit', 'abci_chains',
     }
 
@@ -119,6 +122,10 @@ def test_create_secondary_indexes():
     assert index_info['utxo']['unique']
     assert index_info['utxo']['key'] == [('transaction_id', 1),
                                          ('output_index', 1)]
+
+    indexes = conn.conn[dbname]['elections'].index_information()
+    assert set(indexes.keys()) == {'_id_', 'election_id'}
+    assert indexes['election_id']['unique']
 
     indexes = conn.conn[dbname]['pre_commit'].index_information()
     assert set(indexes.keys()) == {'_id_', 'pre_commit_id'}

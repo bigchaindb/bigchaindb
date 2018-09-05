@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 # Tables/collections that every backend database must create
 TABLES = ('transactions', 'blocks', 'assets', 'metadata',
-          'validators', 'pre_commit', 'utxos', 'abci_chains')
+          'validators', 'elections', 'pre_commit', 'utxos', 'abci_chains')
 
 VALID_LANGUAGES = ('danish', 'dutch', 'english', 'finnish', 'french', 'german',
                    'hungarian', 'italian', 'norwegian', 'portuguese', 'romanian',

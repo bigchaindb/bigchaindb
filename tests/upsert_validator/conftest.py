@@ -4,7 +4,7 @@
 
 import pytest
 
-from bigchaindb import ValidatorElectionVote
+from bigchaindb import Vote
 from bigchaindb.backend.localmongodb import query
 from bigchaindb.lib import Block
 from bigchaindb.upsert_validator import ValidatorElection
@@ -62,12 +62,10 @@ def ongoing_election(b, valid_election, ed25519_node_keys):
 
 @pytest.fixture
 def concluded_election(b, ongoing_election, ed25519_node_keys):
-    validators = b.get_validators(height=1)
-    validator_update = {'validators': validators,
-                        'height': 2,
-                        'election_id': ongoing_election.id}
+    election_result = {'height': 2,
+                       'election_id': ongoing_election.id}
 
-    query.store_validator_set(b.connection, validator_update)
+    query.store_election(b.connection, election_result)
     return ongoing_election
 
 
@@ -91,9 +89,9 @@ def vote(election, voter, keys, b):
 
     election_pub_key = ValidatorElection.to_public_key(election.id)
 
-    v = ValidatorElectionVote.generate([election_input],
-                                       [([election_pub_key], votes)],
-                                       election_id=election.id)\
-                             .sign([key.private_key])
+    v = Vote.generate([election_input],
+                      [([election_pub_key], votes)],
+                      election_id=election.id)\
+        .sign([key.private_key])
     b.store_bulk_transactions([v])
     return v

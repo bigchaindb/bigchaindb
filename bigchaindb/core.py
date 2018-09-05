@@ -209,9 +209,9 @@ class App(BaseApplication):
 
         # Check if the current block concluded any validator elections and
         # update the locally tracked validator set
-        validator_updates = ValidatorElection.get_validator_update(self.bigchaindb,
-                                                                   self.new_height,
-                                                                   self.block_transactions)
+        validator_updates = ValidatorElection.is_approved(self.bigchaindb,
+                                                          self.new_height,
+                                                          self.block_transactions)
 
         # Store pre-commit state to recover in case there is a crash
         # during `commit`
