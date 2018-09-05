@@ -224,6 +224,15 @@ class Election(Transaction):
     def store_election(cls, bigchain, election, height):
         bigchain.store_election(height, election)
 
+    def show_election(self, bigchain):
+        data = self.asset['data']
+        response = ''
+        for k, v in data.items():
+            response += f'{k}={v}\n'
+        response += self.get_status(bigchain)
+
+        return response
+
     @classmethod
     def is_approved(cls, bigchain, new_height, txns):
         votes = {}
@@ -246,7 +255,4 @@ class Election(Transaction):
 
     @classmethod
     def on_approval(cls, bigchain, election, new_height):
-        raise NotImplementedError
-
-    def show_election(self, bigchain):
         raise NotImplementedError
