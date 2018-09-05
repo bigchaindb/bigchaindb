@@ -3,9 +3,8 @@
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
 from bigchaindb.common.exceptions import InvalidPowerChange
-from bigchaindb.common.election import Election
-from bigchaindb.common.schema import (_validate_schema,
-                                      TX_SCHEMA_VALIDATOR_ELECTION)
+from bigchaindb.elections.election import Election
+from bigchaindb.common.schema import (TX_SCHEMA_VALIDATOR_ELECTION)
 from .validator_utils import (new_validator_set, encode_validator)
 
 
@@ -16,6 +15,7 @@ class ValidatorElection(Election):
     # by renaming CREATE to VALIDATOR_ELECTION
     CREATE = OPERATION
     ALLOWED_OPERATIONS = (OPERATION,)
+    TX_SCHEMA_CUSTOM = TX_SCHEMA_VALIDATOR_ELECTION
 
     def validate(self, bigchain, current_transactions=[]):
         """For more details refer BEP-21: https://github.com/bigchaindb/BEPs/tree/master/21
@@ -32,16 +32,6 @@ class ValidatorElection(Election):
         return self
 
     @classmethod
-    def validate_schema(cls, tx, skip_id=False):
-        """Validate the validator election transaction. Since `VALIDATOR_ELECTION` extends `ELECTION`
-           transaction, all the validations for `ELECTION` transaction are covered by `super`
-        """
-
-        super(ValidatorElection, cls).validate_schema(tx, skip_id=skip_id)
-
-        _validate_schema(TX_SCHEMA_VALIDATOR_ELECTION, tx)
-
-    @classmethod
     def on_approval(cls, bigchain, election, new_height):
         # The new validator set comes into effect from height = new_height+1
         validator_updates = [election.asset['data']]
@@ -51,4 +41,4 @@ class ValidatorElection(Election):
 
         updated_validator_set = [v for v in updated_validator_set if v['voting_power'] > 0]
         bigchain.store_validator_set(new_height+1, updated_validator_set, election.id)
-        return [encode_validator(election.asset['data'])]
+        return encode_validator(election.asset['data'])

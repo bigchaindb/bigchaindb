@@ -480,13 +480,13 @@ class BigchainDB(object):
 
         self.store_abci_chain(block['height'] + 1, new_chain_id, False)
 
-    def store_election(self, height, election):
+    def store_election_results(self, height, election):
         """Store election results
         :param height: the block height at which the election concluded
         :param election: a concluded election
         """
-        return backend.query.store_election(self.connection, {'height': height,
-                                                              'election_id': election.id})
+        return backend.query.store_election_results(self.connection, {'height': height,
+                                                                      'election_id': election.id})
 
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))

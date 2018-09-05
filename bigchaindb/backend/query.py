@@ -352,7 +352,7 @@ def store_validator_set(conn, validator_update):
 
 
 @singledispatch
-def store_election(conn, validator_update):
+def store_election_results(conn, validator_update):
     """Store election results"""
 
     raise NotImplementedError

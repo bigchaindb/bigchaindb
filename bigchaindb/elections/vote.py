@@ -11,11 +11,13 @@ from bigchaindb.common.schema import (_validate_schema,
 
 class Vote(Transaction):
 
-    VOTE = 'VOTE'
+    OPERATION = 'VOTE'
     # NOTE: This class inherits TRANSFER txn type. The `TRANSFER` property is
     # overriden to re-use methods from parent class
-    TRANSFER = VOTE
-    ALLOWED_OPERATIONS = (VOTE,)
+    TRANSFER = OPERATION
+    ALLOWED_OPERATIONS = (OPERATION,)
+    # Custom validation schema
+    TX_SCHEMA_CUSTOM = TX_SCHEMA_VOTE
 
     def validate(self, bigchain, current_transactions=[]):
         """Validate election vote transaction
@@ -39,7 +41,7 @@ class Vote(Transaction):
     @classmethod
     def generate(cls, inputs, recipients, election_id, metadata=None):
         (inputs, outputs) = cls.validate_transfer(inputs, recipients, election_id, metadata)
-        election_vote = cls(cls.VOTE, {'id': election_id}, inputs, outputs, metadata)
+        election_vote = cls(cls.OPERATION, {'id': election_id}, inputs, outputs, metadata)
         cls.validate_schema(election_vote.to_dict(), skip_id=True)
         return election_vote
 
@@ -52,7 +54,7 @@ class Vote(Transaction):
             cls.validate_id(tx)
         _validate_schema(TX_SCHEMA_COMMON, tx)
         _validate_schema(TX_SCHEMA_TRANSFER, tx)
-        _validate_schema(TX_SCHEMA_VOTE, tx)
+        _validate_schema(cls.TX_SCHEMA_CUSTOM, tx)
 
     @classmethod
     def create(cls, tx_signers, recipients, metadata=None, asset=None):
