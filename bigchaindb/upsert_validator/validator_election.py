@@ -6,6 +6,7 @@ from bigchaindb.common.exceptions import InvalidPowerChange
 from bigchaindb.common.election import Election
 from bigchaindb.common.schema import (_validate_schema,
                                       TX_SCHEMA_VALIDATOR_ELECTION)
+from bigchaindb.tendermint_utils import public_key_to_base64
 from .validator_utils import (new_validator_set, encode_validator)
 
 
@@ -52,3 +53,16 @@ class ValidatorElection(Election):
         updated_validator_set = [v for v in updated_validator_set if v['voting_power'] > 0]
         bigchain.store_validator_set(new_height+1, updated_validator_set, election.id)
         return [encode_validator(election.asset['data'])]
+
+    def show_election(self, bigchain):
+
+        new_validator = self.asset['data']
+
+        public_key = public_key_to_base64(new_validator['public_key'])
+        power = new_validator['power']
+        node_id = new_validator['node_id']
+        status = self.get_status(bigchain)
+
+        response = f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
+
+        return response

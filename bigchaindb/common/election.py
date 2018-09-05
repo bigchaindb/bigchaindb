@@ -247,3 +247,6 @@ class Election(Transaction):
     @classmethod
     def on_approval(cls, bigchain, election, new_height):
         raise NotImplementedError
+
+    def show_election(self, bigchain):
+        raise NotImplementedError
