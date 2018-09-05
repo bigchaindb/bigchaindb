@@ -6,7 +6,7 @@ from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.schema import (_validate_schema,
                                       TX_SCHEMA_COMMON,
                                       TX_SCHEMA_TRANSFER,
-                                      TX_SCHEMA_VALIDATOR_ELECTION_VOTE)
+                                      TX_SCHEMA_VOTE)
 
 
 class Vote(Transaction):
@@ -45,14 +45,14 @@ class Vote(Transaction):
 
     @classmethod
     def validate_schema(cls, tx, skip_id=False):
-        """Validate the validator election vote transaction. Since `VALIDATOR_ELECTION_VOTE` extends `TRANFER`
+        """Validate the validator election vote transaction. Since `VOTE` extends `TRANSFER`
            transaction, all the validations for `CREATE` transaction should be inherited
         """
         if not skip_id:
             cls.validate_id(tx)
         _validate_schema(TX_SCHEMA_COMMON, tx)
         _validate_schema(TX_SCHEMA_TRANSFER, tx)
-        _validate_schema(TX_SCHEMA_VALIDATOR_ELECTION_VOTE, tx)
+        _validate_schema(TX_SCHEMA_VOTE, tx)
 
     @classmethod
     def create(cls, tx_signers, recipients, metadata=None, asset=None):

@@ -12,7 +12,7 @@ required:
 properties:
   operation:
     type: string
-    value: "VOTE"
+    value: "OPERATION"
   outputs:
     type: array
     items:

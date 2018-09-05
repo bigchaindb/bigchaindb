@@ -162,7 +162,7 @@ class Election(Transaction):
     def count_votes(cls, election_pk, transactions, getter=getattr):
         votes = 0
         for txn in transactions:
-            if getter(txn, 'operation') == cls.VOTE_TYPE:
+            if getter(txn, 'operation') == cls.VOTE_TYPE.VOTE:
                 for output in getter(txn, 'outputs'):
                     # NOTE: We enforce that a valid vote to election id will have only
                     # election_pk in the output public keys, including any other public key
