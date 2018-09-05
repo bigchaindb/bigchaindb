@@ -99,7 +99,7 @@ class BigchainDB(object):
         result = response['result']
         if mode == self.mode_commit:
             check_tx_code = result.get('check_tx', {}).get('code', 0)
-            deliver_tx_code = result['deliver_tx'].get('code', 0)
+            deliver_tx_code = result.get('deliver_tx', {}).get('code', 0)
             error_code = check_tx_code or deliver_tx_code
         else:
             error_code = result.get('code', 0)
