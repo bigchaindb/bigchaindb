@@ -125,7 +125,7 @@ def run_upsert_validator_new(args, bigchain):
 
     new_validator = {
         'public_key': {'value': public_key_from_base64(args.public_key),
-                       'type': 'ed25519-base58'},
+                       'type': 'ed25519-base16'},
         'power': args.power,
         'node_id': args.node_id
     }

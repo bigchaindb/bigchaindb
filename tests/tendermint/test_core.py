@@ -419,10 +419,10 @@ def test_new_validator_set(b):
                             'value': 'FxjS2/8AFYoIUqF6AcePTc87qOT7e4WGgH+sGCpTUDQ='},
              'voting_power': 10}
     node1_new_power = {'public_key': {'value': '1718D2DBFF00158A0852A17A01C78F4DCF3BA8E4FB7B8586807FAC182A535034',
-                                      'type': 'ed25519-base58'},
+                                      'type': 'ed25519-base16'},
                        'power': 20}
     node2 = {'public_key': {'value': '1888A353B181715CA2554701D06C1665BC42C5D936C55EA9C5DBCBDB8B3F02A3',
-                            'type': 'ed25519-base58'},
+                            'type': 'ed25519-base16'},
              'power': 10}
 
     validators = [node1]

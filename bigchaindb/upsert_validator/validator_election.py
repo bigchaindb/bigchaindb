@@ -19,7 +19,9 @@ from bigchaindb.common.schema import (_validate_schema,
                                       TX_SCHEMA_COMMON,
                                       TX_SCHEMA_CREATE)
 from . import ValidatorElectionVote
-from .validator_utils import (new_validator_set, encode_validator)
+from .validator_utils import (new_validator_set,
+                              encode_validator,
+                              validate_asset_public_key)
 
 
 class ValidatorElection(Transaction):
@@ -155,6 +157,7 @@ class ValidatorElection(Transaction):
         _validate_schema(TX_SCHEMA_COMMON, tx)
         _validate_schema(TX_SCHEMA_CREATE, tx)
         _validate_schema(TX_SCHEMA_VALIDATOR_ELECTION, tx)
+        validate_asset_public_key(tx['asset']['data']['public_key'])
 
     @classmethod
     def create(cls, tx_signers, recipients, metadata=None, asset=None):

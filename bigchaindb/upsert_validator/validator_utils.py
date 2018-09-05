@@ -1,8 +1,11 @@
 import codecs
+import base64
+import binascii
 
 from abci.types_pb2 import (Validator,
                             PubKey)
 from bigchaindb.tendermint_utils import public_key_to_base64
+from bigchaindb.common.exceptions import InvalidPublicKey
 
 
 def encode_validator(v):
@@ -35,3 +38,24 @@ def new_validator_set(validators, updates):
 
     new_validators_dict = {**validators_dict, **updates_dict}
     return list(new_validators_dict.values())
+
+
+def validate_asset_public_key(pk):
+    pk_binary = pk['value'].encode('utf-8')
+    encoding = pk['type']
+    decoder = base64.b64decode
+
+    if encoding == 'ed25519-base16':
+        decoder = base64.b16decode
+    elif encoding == 'ed25519-base32':
+        decoder = base64.b32decode
+    elif encoding == 'ed25519-base64':
+        decoder = base64.b64decode
+
+    try:
+        pk_decoded = decoder(pk_binary)
+        if len(pk_decoded) != 32:
+            raise InvalidPublicKey('Public key should be of size 32 bytes')
+
+    except binascii.Error as e:
+        raise InvalidPublicKey('Invalid `type` specified for public key `value`')

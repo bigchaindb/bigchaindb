@@ -352,7 +352,7 @@ def test_upsert_validator_new_with_tendermint(b, priv_validator_path, user_sk, v
     from bigchaindb.commands.bigchaindb import run_upsert_validator_new
 
     new_args = Namespace(action='new',
-                         public_key='8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie',
+                         public_key='HHG0IQRybpT6nJMIWWFWhMczCLHt6xcm7eP52GnGuPY=',
                          power=1,
                          node_id='unique_node_id_for_test_upsert_validator_new_with_tendermint',
                          sk=priv_validator_path,
@@ -429,6 +429,7 @@ def test_upsert_validator_new_election_invalid_power(caplog, b, priv_validator_p
         assert caplog.records[0].msg.__class__ == InvalidPowerChange
 
 
+@pytest.mark.google
 @pytest.mark.abci
 def test_upsert_validator_approve_with_tendermint(b, priv_validator_path, user_sk, validators):
     from bigchaindb.commands.bigchaindb import (run_upsert_validator_new,
@@ -443,6 +444,7 @@ def test_upsert_validator_approve_with_tendermint(b, priv_validator_path, user_s
                          config={})
 
     election_id = run_upsert_validator_new(new_args, b)
+    assert election_id
 
     args = Namespace(action='approve',
                      election_id=election_id,

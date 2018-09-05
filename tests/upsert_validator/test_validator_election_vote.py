@@ -238,7 +238,7 @@ def test_upsert_validator(b, node_key, node_keys, ed25519_node_keys):
     power = 1
     public_key = '9B3119650DF82B9A5D8A12E38953EA47475C09F0C48A4E6A0ECE182944B24403'
     public_key64 = public_key_to_base64(public_key)
-    new_validator = {'public_key': {'value': public_key, 'type': 'ed25519-base58'},
+    new_validator = {'public_key': {'value': public_key, 'type': 'ed25519-base16'},
                      'node_id': 'some_node_id',
                      'power': power}
 
@@ -280,7 +280,7 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
     power = 1
     public_key = '9B3119650DF82B9A5D8A12E38953EA47475C09F0C48A4E6A0ECE182944B24403'
     public_key64 = public_key_to_base64(public_key)
-    new_validator = {'public_key': {'value': public_key, 'type': 'ed25519-base58'},
+    new_validator = {'public_key': {'value': public_key, 'type': 'ed25519-base16'},
                      'node_id': 'some_node_id',
                      'power': power}
     voters = ValidatorElection.recipients(b)
@@ -315,7 +315,7 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
 
     # remove validator
     power = 0
-    new_validator = {'public_key': {'value': public_key, 'type': 'ed25519-base58'},
+    new_validator = {'public_key': {'value': public_key, 'type': 'ed25519-base16'},
                      'node_id': 'some_node_id',
                      'power': power}
     voters = ValidatorElection.recipients(b)
