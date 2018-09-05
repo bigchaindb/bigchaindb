@@ -17,7 +17,7 @@ from bigchaindb.utils import load_node_key
 from bigchaindb.common.exceptions import (DatabaseAlreadyExists,
                                           DatabaseDoesNotExist,
                                           ValidationError)
-from bigchaindb.common.vote import Vote
+from bigchaindb.elections.vote import Vote
 import bigchaindb
 from bigchaindb import (backend, ValidatorElection,
                         BigchainDB)

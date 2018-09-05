@@ -5,7 +5,7 @@
 import base58
 
 from bigchaindb import backend
-from bigchaindb.common.vote import Vote
+from bigchaindb.elections.vote import Vote
 from bigchaindb.common.exceptions import (InvalidSignature,
                                           MultipleInputsError,
                                           InvalidProposer,
@@ -26,6 +26,8 @@ class Election(Transaction):
     OPERATION = None
     # the model for votes issued by the election
     VOTE_TYPE = Vote
+    # Custom validation schema
+    TX_SCHEMA_CUSTOM = None
     # Election Statuses:
     ONGOING = 'ongoing'
     CONCLUDED = 'concluded'
@@ -145,6 +147,8 @@ class Election(Transaction):
             cls.validate_id(tx)
         _validate_schema(TX_SCHEMA_COMMON, tx)
         _validate_schema(TX_SCHEMA_CREATE, tx)
+        if cls.TX_SCHEMA_CUSTOM:
+            _validate_schema(cls.TX_SCHEMA_CUSTOM, tx)
 
     @classmethod
     def create(cls, tx_signers, recipients, metadata=None, asset=None):
@@ -162,7 +166,7 @@ class Election(Transaction):
     def count_votes(cls, election_pk, transactions, getter=getattr):
         votes = 0
         for txn in transactions:
-            if getter(txn, 'operation') == cls.VOTE_TYPE.VOTE:
+            if getter(txn, 'operation') == cls.VOTE_TYPE.OPERATION:
                 for output in getter(txn, 'outputs'):
                     # NOTE: We enforce that a valid vote to election id will have only
                     # election_pk in the output public keys, including any other public key
@@ -221,8 +225,8 @@ class Election(Transaction):
         return result
 
     @classmethod
-    def store_election(cls, bigchain, election, height):
-        bigchain.store_election(height, election)
+    def store_election_results(cls, bigchain, election, height):
+        bigchain.store_election_results(height, election)
 
     def show_election(self, bigchain):
         data = self.asset['data']
@@ -234,7 +238,7 @@ class Election(Transaction):
         return response
 
     @classmethod
-    def is_approved(cls, bigchain, new_height, txns):
+    def approved_update(cls, bigchain, new_height, txns):
         votes = {}
         for txn in txns:
             if not isinstance(txn, cls.VOTE_TYPE):
@@ -249,9 +253,9 @@ class Election(Transaction):
             # Once an election concludes any other conclusion for the same
             # or any other election is invalidated
             if election:
-                cls.store_election(bigchain, election, new_height)
+                cls.store_election_results(bigchain, election, new_height)
                 return cls.on_approval(bigchain, election, new_height)
-        return []
+        return None
 
     @classmethod
     def on_approval(cls, bigchain, election, new_height):

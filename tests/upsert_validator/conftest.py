@@ -65,7 +65,7 @@ def concluded_election(b, ongoing_election, ed25519_node_keys):
     election_result = {'height': 2,
                        'election_id': ongoing_election.id}
 
-    query.store_election(b.connection, election_result)
+    query.store_election_results(b.connection, election_result)
     return ongoing_election
 
 

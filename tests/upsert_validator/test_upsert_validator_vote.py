@@ -10,7 +10,7 @@ from bigchaindb.upsert_validator import ValidatorElection
 from bigchaindb.common.exceptions import AmountError
 from bigchaindb.common.crypto import generate_key_pair
 from bigchaindb.common.exceptions import ValidationError
-from bigchaindb.common.vote import Vote
+from bigchaindb.elections.vote import Vote
 from tests.utils import generate_block
 
 pytestmark = [pytest.mark.execute]
@@ -300,19 +300,22 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
     assert not ValidatorElection.has_concluded(b, election.id, [tx_vote0, tx_vote1])
     assert ValidatorElection.has_concluded(b, election.id, [tx_vote0, tx_vote1, tx_vote2])
 
-    assert ValidatorElection.is_approved(b, 4, [tx_vote0]) == []
-    assert ValidatorElection.is_approved(b, 4, [tx_vote0, tx_vote1]) == []
+    assert not ValidatorElection.approved_update(b, 4, [tx_vote0])
+    assert not ValidatorElection.approved_update(b, 4, [tx_vote0, tx_vote1])
 
-    update = ValidatorElection.is_approved(b, 4, [tx_vote0, tx_vote1, tx_vote2])
-    update_public_key = codecs.encode(update[0].pub_key.data, 'base64').decode().rstrip('\n')
-    assert len(update) == 1
+    update = ValidatorElection.approved_update(b, 4, [tx_vote0, tx_vote1, tx_vote2])
+    update_public_key = None
+    if update:
+        update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
+    assert update
     assert update_public_key == public_key64
 
     b.store_bulk_transactions([tx_vote0, tx_vote1])
 
-    update = ValidatorElection.is_approved(b, 4, [tx_vote2])
-    update_public_key = codecs.encode(update[0].pub_key.data, 'base64').decode().rstrip('\n')
-    assert len(update) == 1
+    update = ValidatorElection.approved_update(b, 4, [tx_vote2])
+    if update:
+        update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
+    assert update
     assert update_public_key == public_key64
 
     # remove validator
@@ -333,9 +336,10 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
 
     b.store_bulk_transactions([tx_vote0, tx_vote1])
 
-    update = ValidatorElection.is_approved(b, 9, [tx_vote2])
-    update_public_key = codecs.encode(update[0].pub_key.data, 'base64').decode().rstrip('\n')
-    assert len(update) == 1
+    update = ValidatorElection.approved_update(b, 9, [tx_vote2])
+    if update:
+        update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
+    assert update
     assert update_public_key == public_key64
 
     # assert that the public key is not a part of the current validator set
