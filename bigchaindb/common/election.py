@@ -23,7 +23,7 @@ class Election(Transaction):
 
     # NOTE: this transaction class extends create so the operation inheritance is achieved
     # by setting an ELECTION_TYPE and renaming CREATE = ELECTION_TYPE and ALLOWED_OPERATIONS = (ELECTION_TYPE,)
-    ELECTION_TYPE = None
+    OPERATION = None
     # the model for votes issued by the election
     VOTE_TYPE = Vote
     # Election Statuses:
@@ -132,7 +132,7 @@ class Election(Transaction):
     @classmethod
     def generate(cls, initiator, voters, election_data, metadata=None):
         (inputs, outputs) = cls.validate_create(initiator, voters, election_data, metadata)
-        election = cls(cls.ELECTION_TYPE, {'data': election_data}, inputs, outputs, metadata)
+        election = cls(cls.OPERATION, {'data': election_data}, inputs, outputs, metadata)
         cls.validate_schema(election.to_dict(), skip_id=True)
         return election
 

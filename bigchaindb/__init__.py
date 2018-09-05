@@ -98,5 +98,5 @@ from bigchaindb.common.vote import Vote  # noqa
 
 Transaction.register_type(Transaction.CREATE, models.Transaction)
 Transaction.register_type(Transaction.TRANSFER, models.Transaction)
-Transaction.register_type(ValidatorElection.ELECTION_TYPE, ValidatorElection)
+Transaction.register_type(ValidatorElection.OPERATION, ValidatorElection)
 Transaction.register_type(Vote.VOTE, Vote)

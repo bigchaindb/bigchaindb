@@ -11,11 +11,11 @@ from .validator_utils import (new_validator_set, encode_validator)
 
 class ValidatorElection(Election):
 
-    ELECTION_TYPE = 'VALIDATOR_ELECTION'
+    OPERATION = 'VALIDATOR_ELECTION'
     # NOTE: this transaction class extends create so the operation inheritence is achieved
     # by renaming CREATE to VALIDATOR_ELECTION
-    CREATE = ELECTION_TYPE
-    ALLOWED_OPERATIONS = (ELECTION_TYPE,)
+    CREATE = OPERATION
+    ALLOWED_OPERATIONS = (OPERATION,)
 
     def validate(self, bigchain, current_transactions=[]):
         """For more details refer BEP-21: https://github.com/bigchaindb/BEPs/tree/master/21
