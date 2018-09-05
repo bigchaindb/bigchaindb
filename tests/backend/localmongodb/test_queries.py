@@ -205,7 +205,7 @@ def test_get_owned_ids(signed_create_tx, user_pk):
     conn = connect()
 
     # insert a transaction
-    conn.db.transactions.insert_one(signed_create_tx.to_dict())
+    conn.db.transactions.insert_one(deepcopy(signed_create_tx.to_dict()))
 
     txns = list(query.get_owned_ids(conn, user_pk))
 
@@ -224,7 +224,7 @@ def test_get_spending_transactions(user_pk, user_sk):
     tx2 = Transaction.transfer([inputs[0]], out, tx1.id).sign([user_sk])
     tx3 = Transaction.transfer([inputs[1]], out, tx1.id).sign([user_sk])
     tx4 = Transaction.transfer([inputs[2]], out, tx1.id).sign([user_sk])
-    txns = [tx.to_dict() for tx in [tx1, tx2, tx3, tx4]]
+    txns = [deepcopy(tx.to_dict()) for tx in [tx1, tx2, tx3, tx4]]
     conn.db.transactions.insert_many(txns)
 
     links = [inputs[0].fulfills.to_dict(), inputs[2].fulfills.to_dict()]
