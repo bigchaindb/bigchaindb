@@ -232,12 +232,13 @@ class App(BaseApplication):
         # register a new block only when new transactions are received
         if self.block_txn_ids:
             self.bigchaindb.store_bulk_transactions(self.block_transactions)
-            block = Block(app_hash=self.block_txn_hash,
-                          height=self.new_height,
-                          transactions=self.block_txn_ids)
-            # NOTE: storing the block should be the last operation during commit
-            # this effects crash recovery. Refer BEP#8 for details
-            self.bigchaindb.store_block(block._asdict())
+
+        block = Block(app_hash=self.block_txn_hash,
+                      height=self.new_height,
+                      transactions=self.block_txn_ids)
+        # NOTE: storing the block should be the last operation during commit
+        # this effects crash recovery. Refer BEP#8 for details
+        self.bigchaindb.store_block(block._asdict())
 
         logger.debug('Commit-ing new block with hash: apphash=%s ,'
                      'height=%s, txn ids=%s', data, self.new_height,

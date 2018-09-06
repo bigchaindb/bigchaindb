@@ -101,7 +101,7 @@ def test_app(b, init_chain_request):
 
     block0 = b.get_latest_block()
     assert block0
-    assert block0['height'] == 1
+    assert block0['height'] == 2
 
     # when empty block is generated hash of previous block should be returned
     assert block0['app_hash'] == new_block_hash
