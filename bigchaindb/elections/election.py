@@ -97,7 +97,7 @@ class Election(Transaction):
             :param current_transactions: (list) A list of transactions to be validated along with the election
 
         Returns:
-            ValidatorElection object
+            Election: a Election object or an object of the derived Election subclass.
 
         Raises:
             ValidationError: If the election is invalid

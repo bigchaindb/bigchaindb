@@ -366,8 +366,8 @@ def test_end_block_return_validator_updates(b, init_chain_request):
     resp = app.end_block(RequestEndBlock(height=99))
     assert resp.validator_updates[0] == encode_validator(validator)
 
-    updates = b.is_approved()
-    assert updates == []
+    updates = b.approved_update()
+    assert not updates
 
 
 def test_store_pre_commit_state_in_end_block(b, alice, init_chain_request):

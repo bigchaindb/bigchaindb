@@ -30,7 +30,7 @@ class Vote(Transaction):
             bigchain (BigchainDB): an instantiated bigchaindb.lib.BigchainDB object.
 
         Returns:
-            Vote object
+            Vote: a Vote object
 
         Raises:
             ValidationError: If the election vote is invalid
