@@ -40,7 +40,7 @@ def test_app(b, init_chain_request):
 
     pk = codecs.encode(init_chain_request.validators[0].pub_key.data, 'base64').decode().strip('\n')
     [validator] = b.get_validators(height=1)
-    assert validator['pub_key']['data'] == pk
+    assert validator['public_key']['value'] == pk
     assert validator['voting_power'] == 10
 
     alice = generate_key_pair()

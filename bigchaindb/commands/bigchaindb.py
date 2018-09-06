@@ -124,7 +124,8 @@ def run_upsert_validator_new(args, bigchain):
     """
 
     new_validator = {
-        'public_key': public_key_from_base64(args.public_key),
+        'public_key': {'value': public_key_from_base64(args.public_key),
+                       'type': 'ed25519-base16'},
         'power': args.power,
         'node_id': args.node_id
     }
@@ -207,7 +208,7 @@ def run_upsert_validator_show(args, bigchain):
 
     new_validator = election.asset['data']
 
-    public_key = public_key_to_base64(new_validator['public_key'])
+    public_key = public_key_to_base64(new_validator['public_key']['value'])
     power = new_validator['power']
     node_id = new_validator['node_id']
     status = election.get_status(bigchain)

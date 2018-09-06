@@ -415,12 +415,14 @@ def test_store_pre_commit_state_in_end_block(b, alice, init_chain_request):
 
 
 def test_new_validator_set(b):
-    node1 = {'pub_key': {'type': 'ed25519',
-                         'data': 'FxjS2/8AFYoIUqF6AcePTc87qOT7e4WGgH+sGCpTUDQ='},
+    node1 = {'public_key': {'type': 'ed25519-base64',
+                            'value': 'FxjS2/8AFYoIUqF6AcePTc87qOT7e4WGgH+sGCpTUDQ='},
              'voting_power': 10}
-    node1_new_power = {'public_key': '1718D2DBFF00158A0852A17A01C78F4DCF3BA8E4FB7B8586807FAC182A535034',
+    node1_new_power = {'public_key': {'value': '1718D2DBFF00158A0852A17A01C78F4DCF3BA8E4FB7B8586807FAC182A535034',
+                                      'type': 'ed25519-base16'},
                        'power': 20}
-    node2 = {'public_key': '1888A353B181715CA2554701D06C1665BC42C5D936C55EA9C5DBCBDB8B3F02A3',
+    node2 = {'public_key': {'value': '1888A353B181715CA2554701D06C1665BC42C5D936C55EA9C5DBCBDB8B3F02A3',
+                            'type': 'ed25519-base16'},
              'power': 10}
 
     validators = [node1]
@@ -430,8 +432,8 @@ def test_new_validator_set(b):
 
     updated_validators = []
     for u in updates:
-        updated_validators.append({'pub_key': {'type': 'ed25519',
-                                               'data': public_key_to_base64(u['public_key'])},
+        updated_validators.append({'public_key': {'type': 'ed25519-base64',
+                                                  'value': public_key_to_base64(u['public_key']['value'])},
                                    'voting_power':  u['power']})
 
     assert updated_validator_set == updated_validators

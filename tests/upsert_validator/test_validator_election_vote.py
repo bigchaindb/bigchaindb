@@ -228,8 +228,7 @@ def test_upsert_validator(b, node_key, node_keys, ed25519_node_keys):
 
     (node_pub, _) = list(node_keys.items())[0]
 
-    validators = [{'pub_key': {'type': 'ed25519',
-                               'data': node_pub},
+    validators = [{'public_key': {'type': 'ed25519-base64', 'value': node_pub},
                    'voting_power': 10}]
 
     latest_block = b.get_latest_block()
@@ -239,7 +238,7 @@ def test_upsert_validator(b, node_key, node_keys, ed25519_node_keys):
     power = 1
     public_key = '9B3119650DF82B9A5D8A12E38953EA47475C09F0C48A4E6A0ECE182944B24403'
     public_key64 = public_key_to_base64(public_key)
-    new_validator = {'public_key': public_key,
+    new_validator = {'public_key': {'value': public_key, 'type': 'ed25519-base16'},
                      'node_id': 'some_node_id',
                      'power': power}
 
@@ -268,7 +267,7 @@ def test_upsert_validator(b, node_key, node_keys, ed25519_node_keys):
     new_validator_set = b.get_validators()
     validator_pub_keys = []
     for v in new_validator_set:
-        validator_pub_keys.append(v['pub_key']['data'])
+        validator_pub_keys.append(v['public_key']['value'])
 
     assert (public_key64 in validator_pub_keys)
 
@@ -281,7 +280,7 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
     power = 1
     public_key = '9B3119650DF82B9A5D8A12E38953EA47475C09F0C48A4E6A0ECE182944B24403'
     public_key64 = public_key_to_base64(public_key)
-    new_validator = {'public_key': public_key,
+    new_validator = {'public_key': {'value': public_key, 'type': 'ed25519-base16'},
                      'node_id': 'some_node_id',
                      'power': power}
     voters = ValidatorElection.recipients(b)
@@ -316,7 +315,7 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
 
     # remove validator
     power = 0
-    new_validator = {'public_key': public_key,
+    new_validator = {'public_key': {'value': public_key, 'type': 'ed25519-base16'},
                      'node_id': 'some_node_id',
                      'power': power}
     voters = ValidatorElection.recipients(b)
@@ -339,7 +338,7 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
 
     # assert that the public key is not a part of the current validator set
     for v in b.get_validators(10):
-        assert not v['pub_key']['data'] == public_key64
+        assert not v['public_key']['value'] == public_key64
 
 
 # ============================================================================
@@ -365,7 +364,7 @@ def gen_vote(election, i, ed25519_node_keys):
 def reset_validator_set(b, node_keys, height):
     validators = []
     for (node_pub, _) in node_keys.items():
-        validators.append({'pub_key': {'type': 'ed25519',
-                                       'data': node_pub},
+        validators.append({'public_key': {'type': 'ed25519-base64',
+                                          'value': node_pub},
                            'voting_power': 10})
     b.store_validator_set(height, validators, 'election_id')
