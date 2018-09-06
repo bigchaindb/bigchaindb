@@ -96,6 +96,10 @@ class BigchainDB(object):
     def _process_post_response(self, response, mode):
         logger.debug(response)
 
+        error = response.get('error')
+        if error:
+            return (500, error)
+
         result = response['result']
         if mode == self.mode_commit:
             check_tx_code = result.get('check_tx', {}).get('code', 0)
@@ -103,10 +107,6 @@ class BigchainDB(object):
             error_code = check_tx_code or deliver_tx_code
         else:
             error_code = result.get('code', 0)
-
-        error = response.get('error')
-        if error:
-            return (500, error)
 
         if error_code:
             return (500, 'Transaction validation failed')
