@@ -21,25 +21,30 @@ class MockWebSocket:
 
 def test_eventify_block_works_with_any_transaction():
     from bigchaindb.web.websocket_server import eventify_block
+    from bigchaindb.common.crypto import generate_key_pair
+    from bigchaindb.lib import Transaction
 
-    block = {
-        'height': 1,
-        'transactions': [{
-            'id': 1
-        }, {
-            'id': 2,
-            'asset': {'id': 1}
-            }]
-        }
+    alice = generate_key_pair()
+
+    tx = Transaction.create([alice.public_key],
+                            [([alice.public_key], 1)])\
+                    .sign([alice.private_key])
+    tx_transfer = Transaction.transfer(tx.to_inputs(),
+                                       [([alice.public_key], 1)],
+                                       asset_id=tx.id)\
+                             .sign([alice.private_key])
+
+    block = {'height': 1,
+             'transactions': [tx, tx_transfer]}
 
     expected_events = [{
             'height': 1,
-            'asset_id': 1,
-            'transaction_id': 1
+            'asset_id': tx.id,
+            'transaction_id': tx.id
         }, {
             'height': 1,
-            'asset_id': 1,
-            'transaction_id': 2
+            'asset_id': tx_transfer.asset['id'],
+            'transaction_id': tx_transfer.id
         }]
 
     for event, expected in zip(eventify_block(block), expected_events):
@@ -144,7 +149,7 @@ def test_websocket_block_event(b, test_client, loop):
     app = init_app(event_source, loop=loop)
     client = yield from test_client(app)
     ws = yield from client.ws_connect(EVENTS_ENDPOINT)
-    block = {'height': 1, 'transactions': [tx.to_dict()]}
+    block = {'height': 1, 'transactions': [tx]}
     block_event = events.Event(events.EventTypes.BLOCK_VALID, block)
 
     yield from event_source.put(block_event)
@@ -152,9 +157,9 @@ def test_websocket_block_event(b, test_client, loop):
     for tx in block['transactions']:
         result = yield from ws.receive()
         json_result = json.loads(result.data)
-        assert json_result['transaction_id'] == tx['id']
+        assert json_result['transaction_id'] == tx.id
         # Since the transactions are all CREATEs, asset id == transaction id
-        assert json_result['asset_id'] == tx['id']
+        assert json_result['asset_id'] == tx.id
         assert json_result['height'] == block['height']
 
     yield from event_source.put(POISON_PILL)

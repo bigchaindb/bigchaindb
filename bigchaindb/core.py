@@ -26,6 +26,7 @@ from bigchaindb.lib import Block, PreCommitState
 from bigchaindb.backend.query import PRE_COMMIT_ID
 from bigchaindb.upsert_validator import ValidatorElection
 import bigchaindb.upsert_validator.validator_utils as vutils
+from bigchaindb.events import EventTypes, Event
 
 
 CodeTypeOk = 0
@@ -41,7 +42,8 @@ class App(BaseApplication):
     State Machine.
     """
 
-    def __init__(self, bigchaindb=None):
+    def __init__(self, bigchaindb=None, events_queue=None):
+        self.events_queue = events_queue
         self.bigchaindb = bigchaindb or BigchainDB()
         self.block_txn_ids = []
         self.block_txn_hash = ''
@@ -245,4 +247,12 @@ class App(BaseApplication):
                      'height=%s, txn ids=%s', data, self.new_height,
                      self.block_txn_ids)
         logger.benchmark('COMMIT_BLOCK, height:%s', self.new_height)
+
+        if self.events_queue:
+            event = Event(EventTypes.BLOCK_VALID, {
+                'height': self.new_height,
+                'transactions': self.block_transactions
+            })
+            self.events_queue.put(event)
+
         return ResponseCommit(data=data)

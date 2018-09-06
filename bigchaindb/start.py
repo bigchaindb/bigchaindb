@@ -9,7 +9,6 @@ import bigchaindb
 from bigchaindb.lib import BigchainDB
 from bigchaindb.core import App
 from bigchaindb.web import server, websocket_server
-from bigchaindb import event_stream
 from bigchaindb.events import Exchange, EventTypes
 from bigchaindb.utils import Process
 
@@ -57,13 +56,6 @@ def start():
                                  args=(exchange.get_subscriber_queue(EventTypes.BLOCK_VALID),))
     p_websocket_server.start()
 
-    # connect to tendermint event stream
-    p_websocket_client = Process(name='bigchaindb_ws_to_tendermint',
-                                 target=event_stream.start,
-                                 daemon=True,
-                                 args=(exchange.get_publisher_queue(),))
-    p_websocket_client.start()
-
     p_exchange = Process(name='bigchaindb_exchange', target=exchange.run, daemon=True)
     p_exchange.start()
 
@@ -75,7 +67,7 @@ def start():
     setproctitle.setproctitle('bigchaindb')
 
     # Start the ABCIServer
-    app = ABCIServer(app=App())
+    app = ABCIServer(app=App(events_queue=exchange.get_publisher_queue()))
     app.run()
 
 

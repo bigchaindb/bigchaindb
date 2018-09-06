@@ -50,13 +50,13 @@ def _multiprocessing_to_asyncio(in_queue, out_queue, loop):
 
 def eventify_block(block):
     for tx in block['transactions']:
-        try:
-            asset_id = tx['asset']['id']
-        except KeyError:
-            asset_id = tx['id']
+        if tx.asset:
+            asset_id = tx.asset.get('id', tx.id)
+        else:
+            asset_id = tx.id
         yield {'height': block['height'],
                'asset_id': asset_id,
-               'transaction_id': tx['id']}
+               'transaction_id': tx.id}
 
 
 class Dispatcher:
