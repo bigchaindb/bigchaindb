@@ -11,10 +11,6 @@ class ConfigurationError(BigchainDBError):
     """Raised when there is a problem with server configuration"""
 
 
-class DatabaseAlreadyExists(BigchainDBError):
-    """Raised when trying to create the database but the db is already there"""
-
-
 class DatabaseDoesNotExist(BigchainDBError):
     """Raised when trying to delete the database but the db is not there"""
 

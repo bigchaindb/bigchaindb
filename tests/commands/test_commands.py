@@ -75,25 +75,6 @@ def test_bigchain_show_config(capsys):
     assert output_config == config
 
 
-def test_bigchain_run_init_when_db_exists(mocker, capsys):
-    from bigchaindb.commands.bigchaindb import run_init
-    from bigchaindb.common.exceptions import DatabaseAlreadyExists
-    init_db_mock = mocker.patch(
-        'bigchaindb.commands.bigchaindb.schema.init_database',
-        autospec=True,
-        spec_set=True,
-    )
-    init_db_mock.side_effect = DatabaseAlreadyExists
-    args = Namespace(config=None)
-    run_init(args)
-    output_message = capsys.readouterr()[1]
-    print(output_message)
-    assert output_message == (
-        'The database already exists.\n'
-        'If you wish to re-initialize it, first drop it.\n'
-    )
-
-
 def test__run_init(mocker):
     from bigchaindb.commands.bigchaindb import _run_init
     bigchain_mock = mocker.patch(
@@ -217,23 +198,6 @@ def test_run_configure_with_backend(backend, monkeypatch, mock_write_config):
                             'keypair': value['return']['keypair']})
 
     assert value['return'] == expected_config
-
-
-def test_run_start_when_db_already_exists(mocker,
-                                          monkeypatch,
-                                          run_start_args,
-                                          mocked_setup_logging):
-    from bigchaindb.commands.bigchaindb import run_start
-    from bigchaindb.common.exceptions import DatabaseAlreadyExists
-    mocked_start = mocker.patch('bigchaindb.start.start')
-
-    def mock_run_init():
-        raise DatabaseAlreadyExists()
-    monkeypatch.setattr('builtins.input', lambda: '\x03')
-    monkeypatch.setattr(
-        'bigchaindb.commands.bigchaindb._run_init', mock_run_init)
-    run_start(run_start_args)
-    assert mocked_start.called
 
 
 @patch('bigchaindb.commands.utils.start')

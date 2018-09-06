@@ -322,19 +322,17 @@ def inputs(user_pk, b, alice):
 @pytest.fixture
 def dummy_db(request):
     from bigchaindb.backend import connect, schema
-    from bigchaindb.common.exceptions import (DatabaseDoesNotExist,
-                                              DatabaseAlreadyExists)
+    from bigchaindb.common.exceptions import DatabaseDoesNotExist
+
     conn = connect()
     dbname = request.fixturename
     xdist_suffix = getattr(request.config, 'slaveinput', {}).get('slaveid')
     if xdist_suffix:
         dbname = '{}_{}'.format(dbname, xdist_suffix)
-    try:
-        schema.init_database(conn, dbname)
-    except DatabaseAlreadyExists:
-        schema.drop_database(conn, dbname)
-        schema.init_database(conn, dbname)
+
+    schema.init_database(conn, dbname)
     yield dbname
+
     try:
         schema.drop_database(conn, dbname)
     except DatabaseDoesNotExist:
