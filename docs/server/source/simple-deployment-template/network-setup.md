@@ -8,7 +8,7 @@ Code is Apache-2.0 and docs are CC-BY-4.0
 
 Note 1: These instructions will also work for a "network" with only one node.
 
-Note 2: You might not need to set up your own network yet. You should start by creating a proof-of-concept app that writes to [the BigchainDB Testnet](https://testnet.bigchaindb.com/), and if that goes well, then you can look into setting up your own network. 
+Note 2: You might not need to set up your own network yet. You should start by creating a proof-of-concept app that writes to [the BigchainDB Testnet](https://testnet.bigchaindb.com/), and if that goes well, then you can look into setting up your own network.
 
 Note 3: If you want to set up a node or network so that you can contribute to developing and testing the BigchainDB code, then see [the docs about contributing to BigchainDB](https://docs.bigchaindb.com/projects/contributing/en/latest/index.html).
 
@@ -169,51 +169,51 @@ Share the `node_id`, `pub_key.value` and hostname of your Node with all other Me
 At this point the Coordinator should have received the data from all the Members, and should combine them in the `.tendermint/config/genesis.json` file:
 
 ```json
-{  
+{
    "genesis_time":"0001-01-01T00:00:00Z",
    "chain_id":"test-chain-la6HSr",
-   "consensus_params":{  
-      "block_size_params":{  
+   "consensus_params":{
+      "block_size_params":{
          "max_bytes":"22020096",
          "max_txs":"10000",
          "max_gas":"-1"
       },
-      "tx_size_params":{  
+      "tx_size_params":{
          "max_bytes":"10240",
          "max_gas":"-1"
       },
-      "block_gossip_params":{  
+      "block_gossip_params":{
          "block_part_size_bytes":"65536"
       },
-      "evidence_params":{  
+      "evidence_params":{
          "max_age":"100000"
       }
    },
-   "validators":[  
-      {  
-         "pub_key":{  
+   "validators":[
+      {
+         "pub_key":{
             "type":"AC26791624DE60",
             "value":"<Member 1 public key>"
          },
          "power":10,
          "name":"<Member 1 name>"
       },
-      {  
-         "pub_key":{  
+      {
+         "pub_key":{
             "type":"AC26791624DE60",
             "value":"<Member 2 public key>"
          },
          "power":10,
          "name":"<Member 2 name>"
       },
-      {  
-         "...":{  
+      {
+         "...":{
 
          },
 
       },
-      {  
-         "pub_key":{  
+      {
+         "pub_key":{
             "type":"AC26791624DE60",
             "value":"<Member N public key>"
          },
@@ -242,14 +242,18 @@ The Member must copy the `genesis.json` file in the local `.tendermint/config` d
 The Member must edit the `.tendermint/config/config.toml` file and make the following changes:
 
 ```
-...
-
+moniker = "Name of our node"
 create_empty_blocks = false
-...
+log_level = "main:info,state:info,*:error"
 
 persistent_peers = "<Member 1 node id>@<Member 1 hostname>:26656,\
 <Member 2 node id>@<Member 2 hostname>:26656,\
 <Member N node id>@<Member N hostname>:26656,"
+
+send_rate = 102400000
+recv_rate = 102400000
+
+recheck = false
 ```
 
 ## Member: Start MongoDB

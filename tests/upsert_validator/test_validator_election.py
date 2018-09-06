@@ -24,6 +24,19 @@ def test_upsert_validator_valid_election(b_mock, new_validator, node_key):
     assert election.validate(b_mock)
 
 
+def test_upsert_validator_invalid_election_public_key(b_mock, new_validator, node_key):
+    from bigchaindb.common.exceptions import InvalidPublicKey
+
+    for iv in ['ed25519-base32', 'ed25519-base64']:
+        new_validator['public_key']['type'] = iv
+        voters = ValidatorElection.recipients(b_mock)
+
+        with pytest.raises(InvalidPublicKey):
+            ValidatorElection.generate([node_key.public_key],
+                                       voters,
+                                       new_validator, None).sign([node_key.private_key])
+
+
 def test_upsert_validator_invalid_power_election(b_mock, new_validator, node_key):
     voters = ValidatorElection.recipients(b_mock)
     new_validator['power'] = 30
@@ -147,7 +160,7 @@ def test_upsert_validator_show(caplog, ongoing_election, b):
     from bigchaindb.commands.bigchaindb import run_upsert_validator_show
 
     election_id = ongoing_election.id
-    public_key = public_key_to_base64(ongoing_election.asset['data']['public_key'])
+    public_key = public_key_to_base64(ongoing_election.asset['data']['public_key']['value'])
     power = ongoing_election.asset['data']['power']
     node_id = ongoing_election.asset['data']['node_id']
     status = ValidatorElection.ONGOING

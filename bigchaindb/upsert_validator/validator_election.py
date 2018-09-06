@@ -19,7 +19,10 @@ from bigchaindb.common.schema import (_validate_schema,
                                       TX_SCHEMA_COMMON,
                                       TX_SCHEMA_CREATE)
 from . import ValidatorElectionVote
-from .validator_utils import (new_validator_set, encode_validator)
+from .validator_utils import (new_validator_set,
+                              encode_validator,
+                              encode_pk_to_base16,
+                              validate_asset_public_key)
 
 
 class ValidatorElection(Transaction):
@@ -58,7 +61,7 @@ class ValidatorElection(Transaction):
         validators = {}
         for validator in bigchain.get_validators(height):
             # NOTE: we assume that Tendermint encodes public key in base64
-            public_key = public_key_from_ed25519_key(key_from_base64(validator['pub_key']['data']))
+            public_key = public_key_from_ed25519_key(key_from_base64(validator['public_key']['value']))
             validators[public_key] = validator['voting_power']
 
         return validators
@@ -155,6 +158,7 @@ class ValidatorElection(Transaction):
         _validate_schema(TX_SCHEMA_COMMON, tx)
         _validate_schema(TX_SCHEMA_CREATE, tx)
         _validate_schema(TX_SCHEMA_VALIDATOR_ELECTION, tx)
+        validate_asset_public_key(tx['asset']['data']['public_key'])
 
     @classmethod
     def create(cls, tx_signers, recipients, metadata=None, asset=None):
@@ -236,7 +240,10 @@ class ValidatorElection(Transaction):
 
                 updated_validator_set = [v for v in updated_validator_set if v['voting_power'] > 0]
                 bigchain.store_validator_set(new_height+1, updated_validator_set, election.id)
-                return [encode_validator(election.asset['data'])]
+
+                validator16 = encode_pk_to_base16(election.asset['data'])
+                return [encode_validator(validator16)]
+
         return []
 
     def get_validator_update_by_election_id(self, election_id, bigchain):

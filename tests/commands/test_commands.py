@@ -29,6 +29,7 @@ def test_make_sure_we_dont_remove_any_command():
                               '--private-key', 'TEMP_PATH_TO_PRIVATE_KEY']).command
     assert parser.parse_args(['upsert-validator', 'approve', 'ELECTION_ID', '--private-key',
                               'TEMP_PATH_TO_PRIVATE_KEY']).command
+    assert parser.parse_args(['upsert-validator', 'show', 'ELECTION_ID']).command
 
 
 @patch('bigchaindb.commands.utils.start')
@@ -336,7 +337,7 @@ def test_upsert_validator_new_with_tendermint(b, priv_validator_path, user_sk, v
     from bigchaindb.commands.bigchaindb import run_upsert_validator_new
 
     new_args = Namespace(action='new',
-                         public_key='8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie',
+                         public_key='HHG0IQRybpT6nJMIWWFWhMczCLHt6xcm7eP52GnGuPY=',
                          power=1,
                          node_id='unique_node_id_for_test_upsert_validator_new_with_tendermint',
                          sk=priv_validator_path,
@@ -424,6 +425,7 @@ def test_upsert_validator_approve_with_tendermint(b, priv_validator_path, user_s
                          config={})
 
     election_id = run_upsert_validator_new(new_args, b)
+    assert election_id
 
     args = Namespace(action='approve',
                      election_id=election_id,
@@ -501,8 +503,8 @@ def mock_get_validators(height):
     keys = node_keys()
     pub_key = list(keys.keys())[0]
     return [
-        {'pub_key': {'data': pub_key,
-                     'type': 'tendermint/PubKeyEd25519'},
+        {'public_key': {'value': pub_key,
+                        'type': 'ed25519-base64'},
          'voting_power': 10}
     ]
 
