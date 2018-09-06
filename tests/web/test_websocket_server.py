@@ -10,8 +10,6 @@ from unittest.mock import patch
 
 import pytest
 
-pytestmark = pytest.mark.tendermint
-
 
 class MockWebSocket:
     def __init__(self):

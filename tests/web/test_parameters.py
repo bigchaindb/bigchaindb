@@ -4,8 +4,6 @@
 
 import pytest
 
-pytestmark = pytest.mark.tendermint
-
 
 def test_valid_txid():
     from bigchaindb.web.views.parameters import valid_txid

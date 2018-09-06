@@ -28,7 +28,7 @@ from bigchaindb.upsert_validator.validator_utils import new_validator_set
 from bigchaindb.tendermint_utils import public_key_to_base64
 
 
-pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
+pytestmark = pytest.mark.bdb
 
 
 def encode_tx_to_bytes(transaction):

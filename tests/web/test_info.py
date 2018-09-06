@@ -43,6 +43,7 @@ def test_api_v1_endpoint(client, wsserver_base_url):
                 'streams': '{}/api/v1/streams/valid_transactions'.format(
                     wsserver_base_url),
         'metadata': '/metadata/',
+        'validators': '/validators'
     }
     res = client.get('/api/v1')
     assert res.json == api_v1_info

@@ -13,9 +13,6 @@ import bigchaindb
 ORIGINAL_CONFIG = copy.deepcopy(bigchaindb._config)
 
 
-pytestmark = pytest.mark.tendermint
-
-
 @pytest.fixture(scope='function', autouse=True)
 def clean_config(monkeypatch, request):
     original_config = copy.deepcopy(ORIGINAL_CONFIG)

@@ -13,7 +13,7 @@ from bigchaindb.common.exceptions import (DuplicateTransaction,
                                           MultipleInputsError,
                                           InvalidPowerChange)
 
-pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
+pytestmark = pytest.mark.bdb
 
 
 def test_upsert_validator_valid_election(b_mock, new_validator, node_key):

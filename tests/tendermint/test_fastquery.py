@@ -8,7 +8,7 @@ from bigchaindb.common.transaction import TransactionLink
 from bigchaindb.models import Transaction
 
 
-pytestmark = [pytest.mark.bdb, pytest.mark.tendermint]
+pytestmark = pytest.mark.bdb
 
 
 @pytest.fixture

@@ -4,8 +4,6 @@
 
 import pytest
 
-pytestmark = pytest.mark.tendermint
-
 
 @pytest.fixture
 def config(request, monkeypatch):

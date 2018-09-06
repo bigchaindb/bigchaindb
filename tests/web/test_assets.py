@@ -7,7 +7,6 @@ import pytest
 ASSETS_ENDPOINT = '/api/v1/assets/'
 
 
-@pytest.mark.tendermint
 def test_get_assets_with_empty_text_search(client):
     res = client.get(ASSETS_ENDPOINT + '?search=')
     assert res.json == {'status': 400,
@@ -15,14 +14,12 @@ def test_get_assets_with_empty_text_search(client):
     assert res.status_code == 400
 
 
-@pytest.mark.tendermint
 def test_get_assets_with_missing_text_search(client):
     res = client.get(ASSETS_ENDPOINT)
     assert res.status_code == 400
 
 
 @pytest.mark.bdb
-@pytest.mark.tendermint
 def test_get_assets_tendermint(client, b, alice):
     from bigchaindb.models import Transaction
 
@@ -49,7 +46,6 @@ def test_get_assets_tendermint(client, b, alice):
 
 
 @pytest.mark.bdb
-@pytest.mark.tendermint
 def test_get_assets_limit_tendermint(client, b, alice):
     from bigchaindb.models import Transaction
 

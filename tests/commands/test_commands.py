@@ -14,7 +14,6 @@ from bigchaindb import ValidatorElection
 from tests.conftest import node_keys
 
 
-@pytest.mark.tendermint
 def test_make_sure_we_dont_remove_any_command():
     # thanks to: http://stackoverflow.com/a/18161115/597097
     from bigchaindb.commands.bigchaindb import create_parser
@@ -32,7 +31,6 @@ def test_make_sure_we_dont_remove_any_command():
                               'TEMP_PATH_TO_PRIVATE_KEY']).command
 
 
-@pytest.mark.tendermint
 @patch('bigchaindb.commands.utils.start')
 def test_main_entrypoint(mock_start):
     from bigchaindb.commands.bigchaindb import main
@@ -41,22 +39,21 @@ def test_main_entrypoint(mock_start):
     assert mock_start.called
 
 
-def test_bigchain_run_start(mock_run_configure,
-                            mock_processes_start,
-                            mock_db_init_with_existing_db,
-                            mocked_setup_logging):
-    from bigchaindb import config
+@patch('bigchaindb.log.setup_logging')
+@patch('bigchaindb.commands.bigchaindb._run_init')
+@patch('bigchaindb.config_utils.autoconfigure')
+def test_bigchain_run_start(mock_setup_logging, mock_run_init,
+                            mock_autoconfigure, mock_processes_start):
     from bigchaindb.commands.bigchaindb import run_start
     args = Namespace(config=None, yes=True,
                      skip_initialize_database=False)
     run_start(args)
-    mocked_setup_logging.assert_called_once_with(user_log_config=config['log'])
+    assert mock_setup_logging.called
 
 
 # TODO Please beware, that if debugging, the "-s" switch for pytest will
 # interfere with capsys.
 # See related issue: https://github.com/pytest-dev/pytest/issues/128
-@pytest.mark.tendermint
 @pytest.mark.usefixtures('ignore_local_config_file')
 def test_bigchain_show_config(capsys):
     from bigchaindb.commands.bigchaindb import run_show_config
@@ -77,7 +74,6 @@ def test_bigchain_show_config(capsys):
     assert output_config == config
 
 
-@pytest.mark.tendermint
 def test_bigchain_run_init_when_db_exists(mocker, capsys):
     from bigchaindb.commands.bigchaindb import run_init
     from bigchaindb.common.exceptions import DatabaseAlreadyExists
@@ -97,7 +93,6 @@ def test_bigchain_run_init_when_db_exists(mocker, capsys):
     )
 
 
-@pytest.mark.tendermint
 def test__run_init(mocker):
     from bigchaindb.commands.bigchaindb import _run_init
     bigchain_mock = mocker.patch(
@@ -113,7 +108,6 @@ def test__run_init(mocker):
         connection=bigchain_mock.return_value.connection)
 
 
-@pytest.mark.tendermint
 @patch('bigchaindb.backend.schema.drop_database')
 def test_drop_db_when_assumed_yes(mock_db_drop):
     from bigchaindb.commands.bigchaindb import run_drop
@@ -123,7 +117,6 @@ def test_drop_db_when_assumed_yes(mock_db_drop):
     assert mock_db_drop.called
 
 
-@pytest.mark.tendermint
 @patch('bigchaindb.backend.schema.drop_database')
 def test_drop_db_when_interactive_yes(mock_db_drop, monkeypatch):
     from bigchaindb.commands.bigchaindb import run_drop
@@ -135,7 +128,6 @@ def test_drop_db_when_interactive_yes(mock_db_drop, monkeypatch):
     assert mock_db_drop.called
 
 
-@pytest.mark.tendermint
 @patch('bigchaindb.backend.schema.drop_database')
 def test_drop_db_when_db_does_not_exist(mock_db_drop, capsys):
     from bigchaindb import config
@@ -150,7 +142,6 @@ def test_drop_db_when_db_does_not_exist(mock_db_drop, capsys):
         name=config['database']['name'])
 
 
-@pytest.mark.tendermint
 @patch('bigchaindb.backend.schema.drop_database')
 def test_drop_db_does_not_drop_when_interactive_no(mock_db_drop, monkeypatch):
     from bigchaindb.commands.bigchaindb import run_drop
@@ -165,7 +156,6 @@ def test_drop_db_does_not_drop_when_interactive_no(mock_db_drop, monkeypatch):
 # TODO Beware if you are putting breakpoints in there, and using the '-s'
 # switch with pytest. It will just hang. Seems related to the monkeypatching of
 # input_on_stderr.
-@pytest.mark.tendermint
 def test_run_configure_when_config_does_not_exist(monkeypatch,
                                                   mock_write_config,
                                                   mock_generate_key_pair,
@@ -178,7 +168,6 @@ def test_run_configure_when_config_does_not_exist(monkeypatch,
     assert return_value is None
 
 
-@pytest.mark.tendermint
 def test_run_configure_when_config_does_exist(monkeypatch,
                                               mock_write_config,
                                               mock_generate_key_pair,
@@ -200,7 +189,6 @@ def test_run_configure_when_config_does_exist(monkeypatch,
 
 
 @pytest.mark.skip
-@pytest.mark.tendermint
 @pytest.mark.parametrize('backend', (
     'localmongodb',
 ))
@@ -234,10 +222,9 @@ def test_run_start_when_db_already_exists(mocker,
                                           monkeypatch,
                                           run_start_args,
                                           mocked_setup_logging):
-    from bigchaindb import config
     from bigchaindb.commands.bigchaindb import run_start
     from bigchaindb.common.exceptions import DatabaseAlreadyExists
-    mocked_start = mocker.patch('bigchaindb.processes.start')
+    mocked_start = mocker.patch('bigchaindb.start.start')
 
     def mock_run_init():
         raise DatabaseAlreadyExists()
@@ -245,11 +232,9 @@ def test_run_start_when_db_already_exists(mocker,
     monkeypatch.setattr(
         'bigchaindb.commands.bigchaindb._run_init', mock_run_init)
     run_start(run_start_args)
-    mocked_setup_logging.assert_called_once_with(user_log_config=config['log'])
     assert mocked_start.called
 
 
-@pytest.mark.tendermint
 @patch('bigchaindb.commands.utils.start')
 def test_calling_main(start_mock, monkeypatch):
     from bigchaindb.commands.bigchaindb import main
@@ -294,7 +279,6 @@ def test_recover_db_on_start(mock_run_recover,
     assert mock_start.called
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_run_recover(b, alice, bob):
     from bigchaindb.commands.bigchaindb import run_recover
@@ -363,7 +347,6 @@ def test_upsert_validator_new_with_tendermint(b, priv_validator_path, user_sk, v
     assert b.get_transaction(election_id)
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_upsert_validator_new_without_tendermint(caplog, b, priv_validator_path, user_sk):
     from bigchaindb.commands.bigchaindb import run_upsert_validator_new
@@ -388,7 +371,6 @@ def test_upsert_validator_new_without_tendermint(caplog, b, priv_validator_path,
         assert b.get_transaction(election_id)
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_upsert_validator_new_invalid_election(caplog, b, priv_validator_path, user_sk):
     from bigchaindb.commands.bigchaindb import run_upsert_validator_new
@@ -405,7 +387,6 @@ def test_upsert_validator_new_invalid_election(caplog, b, priv_validator_path, u
         assert caplog.records[0].msg.__class__ == FileNotFoundError
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_upsert_validator_new_election_invalid_power(caplog, b, priv_validator_path, user_sk):
     from bigchaindb.commands.bigchaindb import run_upsert_validator_new
@@ -454,7 +435,6 @@ def test_upsert_validator_approve_with_tendermint(b, priv_validator_path, user_s
 
 
 @pytest.mark.bdb
-@pytest.mark.tendermint
 def test_upsert_validator_approve_without_tendermint(caplog, b, priv_validator_path, new_validator, node_key):
     from bigchaindb.commands.bigchaindb import run_upsert_validator_approve
     from argparse import Namespace
@@ -474,7 +454,6 @@ def test_upsert_validator_approve_without_tendermint(caplog, b, priv_validator_p
         assert b.get_transaction(approval_id)
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_upsert_validator_approve_failure(caplog, b, priv_validator_path, new_validator, node_key):
     from bigchaindb.commands.bigchaindb import run_upsert_validator_approve
@@ -499,7 +478,6 @@ def test_upsert_validator_approve_failure(caplog, b, priv_validator_path, new_va
         assert caplog.records[0].msg == 'Failed to commit vote'
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_upsert_validator_approve_called_with_bad_key(caplog, b, bad_validator_path, new_validator, node_key):
     from bigchaindb.commands.bigchaindb import run_upsert_validator_approve
