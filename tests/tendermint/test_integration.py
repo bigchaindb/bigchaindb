@@ -130,12 +130,13 @@ def test_post_transaction_responses(tendermint_ws_url, b):
     code, message = b.write_transaction(tx_transfer, 'broadcast_tx_commit')
     assert code == 202
 
-    # NOTE: DOESN'T WORK (double spend)
-    # Tendermint crashes with error: Unexpected result type
-    # carly = generate_key_pair()
-    # double_spend = Transaction.transfer(tx.to_inputs(),
-    #                                     [([carly.public_key], 1)],
-    #                                     asset_id=tx.id)\
-    #                           .sign([alice.private_key])
-    # code, message = b.write_transaction(double_spend, 'broadcast_tx_commit')
-    # assert code == 500
+    carly = generate_key_pair()
+    double_spend = Transaction.transfer(
+        tx.to_inputs(),
+        [([carly.public_key], 1)],
+        asset_id=tx.id,
+    ).sign([alice.private_key])
+    for mode in ('broadcast_tx_sync', 'broadcast_tx_commit'):
+        code, message = b.write_transaction(double_spend, mode)
+        assert code == 500
+        assert message == 'Transaction validation failed'
