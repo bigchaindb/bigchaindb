@@ -45,5 +45,5 @@ class ValidatorElection(Election):
                                                   validator_updates)
 
         updated_validator_set = [v for v in updated_validator_set if v['voting_power'] > 0]
-        bigchain.store_validator_set(new_height+1, updated_validator_set, election.id)
+        bigchain.store_validator_set(new_height+1, updated_validator_set)
         return encode_validator(election.asset['data'])
