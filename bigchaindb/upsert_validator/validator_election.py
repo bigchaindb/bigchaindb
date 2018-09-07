@@ -53,7 +53,7 @@ class ValidatorElection(Election):
 
         new_validator = self.asset['data']
 
-        public_key = public_key_to_base64(new_validator['public_key'])
+        public_key = public_key_to_base64(new_validator['public_key']['value'])
         power = new_validator['power']
         node_id = new_validator['node_id']
         status = self.get_status(bigchain)

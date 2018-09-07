@@ -354,7 +354,7 @@ def test_election_new_upsert_validator_with_tendermint(b, priv_validator_path, u
 
     new_args = Namespace(action='new',
                          election_type='upsert_validator',
-                         public_key='8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie',
+                         public_key='HHG0IQRybpT6nJMIWWFWhMczCLHt6xcm7eP52GnGuPY=',
                          power=1,
                          node_id='unique_node_id_for_test_upsert_validator_new_with_tendermint',
                          sk=priv_validator_path,
