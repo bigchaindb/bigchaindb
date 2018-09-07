@@ -164,11 +164,11 @@ def test_validator_updates(b, validator_pub_key):
                         'update_id': VALIDATOR_UPDATE_ID}
     query.store_validator_update(b.connection, validator_update)
 
-    updates = b.is_approved()
-    assert updates == [validator_update['validator']]
+    updates = b.approved_updates()
+    assert updates == validator_update['validator']
 
     b.delete_validator_update()
-    assert b.is_approved() == []
+    assert not b.approved_updates()
 
 
 @pytest.mark.bdb

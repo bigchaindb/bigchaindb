@@ -154,7 +154,15 @@ Transactions
    is in a committed block.
 
    .. note::
-   
+       In the async and sync modes, after a successful HTTP response is returned, the transaction may still be rejected later on. All the transactions are recorded internally by Tendermint in WAL (Write-Ahead Log) before the HTTP response is returned. Nevertheless, the following should be noted:
+
+       - Transactions in WAL including the failed ones are not exposed in any of the BigchainDB or Tendermint APIs.
+       - Transactions are never fetched from WAL. WAL is never replayed.
+       - A critical failure (e.g. the system is out of disk space) may occur preventing transactions from being stored in WAL, even when the HTTP response indicates a success.
+       - If a transaction fails the validation because it conflicts with the other transactions of the same block, Tendermint includes it into its block, but BigchainDB does not store these transactions and does not offer any information about them in the APIs.
+
+   .. note::
+
        The posted transaction should be valid.
        The relevant
        `BigchainDB Transactions Spec <https://github.com/bigchaindb/BEPs/tree/master/tx-specs/>`_

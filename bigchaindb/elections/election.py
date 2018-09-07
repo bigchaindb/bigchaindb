@@ -24,8 +24,6 @@ class Election(Transaction):
     # NOTE: this transaction class extends create so the operation inheritance is achieved
     # by setting an ELECTION_TYPE and renaming CREATE = ELECTION_TYPE and ALLOWED_OPERATIONS = (ELECTION_TYPE,)
     OPERATION = None
-    # the model for votes issued by the election
-    VOTE_TYPE = Vote
     # Custom validation schema
     TX_SCHEMA_CUSTOM = None
     # Election Statuses:
@@ -55,7 +53,7 @@ class Election(Transaction):
         validators = {}
         for validator in bigchain.get_validators(height):
             # NOTE: we assume that Tendermint encodes public key in base64
-            public_key = public_key_from_ed25519_key(key_from_base64(validator['pub_key']['data']))
+            public_key = public_key_from_ed25519_key(key_from_base64(validator['public_key']['value']))
             validators[public_key] = validator['voting_power']
 
         return validators
@@ -99,7 +97,7 @@ class Election(Transaction):
             :param current_transactions: (list) A list of transactions to be validated along with the election
 
         Returns:
-            ValidatorElection object
+            Election: a Election object or an object of the derived Election subclass.
 
         Raises:
             ValidationError: If the election is invalid
@@ -166,7 +164,7 @@ class Election(Transaction):
     def count_votes(cls, election_pk, transactions, getter=getattr):
         votes = 0
         for txn in transactions:
-            if getter(txn, 'operation') == cls.VOTE_TYPE.OPERATION:
+            if getter(txn, 'operation') == Vote.OPERATION:
                 for output in getter(txn, 'outputs'):
                     # NOTE: We enforce that a valid vote to election id will have only
                     # election_pk in the output public keys, including any other public key
@@ -241,7 +239,7 @@ class Election(Transaction):
     def approved_update(cls, bigchain, new_height, txns):
         votes = {}
         for txn in txns:
-            if not isinstance(txn, cls.VOTE_TYPE):
+            if not isinstance(txn, Vote):
                 continue
 
             election_id = txn.asset['id']

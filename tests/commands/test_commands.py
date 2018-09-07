@@ -449,6 +449,7 @@ def test_election_approve_with_tendermint(b, priv_validator_path, user_sk, valid
                          config={})
 
     election_id = run_election_new_upsert_validator(new_args, b)
+    assert election_id
 
     args = Namespace(action='approve',
                      election_id=election_id,
@@ -529,8 +530,8 @@ def mock_get_validators(height):
     keys = node_keys()
     pub_key = list(keys.keys())[0]
     return [
-        {'pub_key': {'data': pub_key,
-                     'type': 'tendermint/PubKeyEd25519'},
+        {'public_key': {'value': pub_key,
+                        'type': 'ed25519-base64'},
          'voting_power': 10}
     ]
 
