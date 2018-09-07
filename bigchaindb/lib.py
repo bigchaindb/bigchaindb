@@ -56,9 +56,10 @@ class BigchainDB(object):
                 A connection to the database.
         """
         config_utils.autoconfigure()
+        self.mode_commit = 'broadcast_tx_commit'
         self.mode_list = ('broadcast_tx_async',
                           'broadcast_tx_sync',
-                          'broadcast_tx_commit')
+                          self.mode_commit)
         self.tendermint_host = bigchaindb.config['tendermint']['host']
         self.tendermint_port = bigchaindb.config['tendermint']['port']
         self.endpoint = 'http://{}:{}/'.format(self.tendermint_host, self.tendermint_port)
@@ -96,29 +97,23 @@ class BigchainDB(object):
 
     def _process_post_response(self, response, mode):
         logger.debug(response)
-        if response.get('error') is not None:
-            return (500, 'Internal error')
+
+        error = response.get('error')
+        if error:
+            return (500, error)
+
+        result = response['result']
+        if mode == self.mode_commit:
+            check_tx_code = result.get('check_tx', {}).get('code', 0)
+            deliver_tx_code = result.get('deliver_tx', {}).get('code', 0)
+            error_code = check_tx_code or deliver_tx_code
+        else:
+            error_code = result.get('code', 0)
+
+        if error_code:
+            return (500, 'Transaction validation failed')
 
         return (202, '')
-        # result = response['result']
-        # if mode == self.mode_list[2]:
-        #     return self._process_commit_mode_response(result)
-        # else:
-        #     status_code = result['code']
-        #     return self._process_status_code(status_code,
-        #                                      'Error while processing transaction')
-
-    # def _process_commit_mode_response(self, result):
-    #     check_tx_status_code = result['check_tx']['code']
-    #     if check_tx_status_code == 0:
-    #         deliver_tx_status_code = result['deliver_tx']['code']
-    #         return self._process_status_code(deliver_tx_status_code,
-    #                                          'Error while commiting the transaction')
-    #     else:
-    #         return (500, 'Error while validating the transaction')
-
-    def process_status_code(self, status_code, failure_msg):
-        return (202, '') if status_code == 0 else (500, failure_msg)
 
     def store_bulk_transactions(self, transactions):
         txns = []

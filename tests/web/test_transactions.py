@@ -416,6 +416,12 @@ def test_transactions_get_list_bad(client):
 def test_post_transaction_valid_modes(mock_post, client, mode):
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
+
+    def _mock_post(*args, **kwargs):
+        return Mock(json=Mock(return_value={'result': {'code': 0}}))
+
+    mock_post.side_effect = _mock_post
+
     alice = generate_key_pair()
     tx = Transaction.create([alice.public_key],
                             [([alice.public_key], 1)],

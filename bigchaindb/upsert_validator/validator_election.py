@@ -5,7 +5,7 @@
 from bigchaindb.common.exceptions import InvalidPowerChange
 from bigchaindb.elections.election import Election
 from bigchaindb.common.schema import (TX_SCHEMA_VALIDATOR_ELECTION)
-from .validator_utils import (new_validator_set, encode_validator)
+from .validator_utils import (new_validator_set, encode_validator, validate_asset_public_key)
 
 
 class ValidatorElection(Election):
@@ -30,6 +30,11 @@ class ValidatorElection(Election):
             raise InvalidPowerChange('`power` change must be less than 1/3 of total power')
 
         return self
+
+    @classmethod
+    def validate_schema(cls, tx, skip_id=False):
+        super(ValidatorElection, cls).validate_schema(tx, skip_id=skip_id)
+        validate_asset_public_key(tx['asset']['data']['public_key'])
 
     @classmethod
     def on_approval(cls, bigchain, election, new_height):

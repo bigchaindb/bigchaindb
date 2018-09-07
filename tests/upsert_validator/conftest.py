@@ -22,7 +22,7 @@ def mock_get_validators(network_validators):
         validators = []
         for public_key, power in network_validators.items():
             validators.append({
-                'pub_key': {'type': 'AC26791624DE60', 'data': public_key},
+                'public_key': {'type': 'ed25519-base64', 'value': public_key},
                 'voting_power': power
             })
         return validators

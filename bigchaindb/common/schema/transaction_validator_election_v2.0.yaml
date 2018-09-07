@@ -23,7 +23,20 @@ properties:
           node_id:
             type: string
           public_key:
-            type: string
+            type: object
+            additionalProperties: false
+            required:
+            - value
+            - type
+            properties:
+              value:
+                type: string
+              type:
+                type: string
+                enum:
+                  - ed25519-base16
+                  - ed25519-base32
+                  - ed25519-base64
           power:
             "$ref": "#/definitions/positiveInteger"
         required:
