@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
 from argparse import Namespace
+from unittest.mock import patch
 
 import pytest
 
@@ -72,16 +73,17 @@ def test_upsert_validator_invalid_inputs_election(b_mock, new_validator, node_ke
         election.validate(b_mock)
 
 
-def test_upsert_validator_invalid_election(b_mock, new_validator, node_key, valid_election):
+@patch('bigchaindb.elections.election.uuid4', lambda: 'mock_uuid4')
+def test_upsert_validator_invalid_election(b_mock, new_validator, node_key, fixed_seed_election):
     voters = ValidatorElection.recipients(b_mock)
     duplicate_election = ValidatorElection.generate([node_key.public_key],
                                                     voters,
                                                     new_validator, None).sign([node_key.private_key])
 
     with pytest.raises(DuplicateTransaction):
-        valid_election.validate(b_mock, [duplicate_election])
+        fixed_seed_election.validate(b_mock, [duplicate_election])
 
-    b_mock.store_bulk_transactions([valid_election])
+    b_mock.store_bulk_transactions([fixed_seed_election])
 
     with pytest.raises(DuplicateTransaction):
         duplicate_election.validate(b_mock)

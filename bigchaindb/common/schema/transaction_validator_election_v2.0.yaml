@@ -22,6 +22,8 @@ properties:
         properties:
           node_id:
             type: string
+          seed:
+            type: string
           public_key:
             type: object
             additionalProperties: false
@@ -43,6 +45,7 @@ properties:
           - node_id
           - public_key
           - power
+          - seed
     required:
     - data
   outputs:

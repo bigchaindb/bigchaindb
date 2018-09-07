@@ -3,6 +3,7 @@
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
 import base58
+from uuid import uuid4
 
 from bigchaindb import backend
 from bigchaindb.elections.vote import Vote
@@ -131,6 +132,10 @@ class Election(Transaction):
 
     @classmethod
     def generate(cls, initiator, voters, election_data, metadata=None):
+        # Break symmetry in case we need to call an election with the same properties twice
+        uuid = uuid4()
+        election_data['seed'] = str(uuid)
+
         (inputs, outputs) = cls.validate_create(initiator, voters, election_data, metadata)
         election = cls(cls.OPERATION, {'data': election_data}, inputs, outputs, metadata)
         cls.validate_schema(election.to_dict(), skip_id=True)
