@@ -143,6 +143,9 @@ def create_abci_chains_indexes(conn, dbname):
     conn.conn[dbname]['abci_chains'].create_index('height',
                                                   name='height',
                                                   unique=True,)
+
+    logger.info('Create `abci_chains.chain_id` secondary index.')
+
     conn.conn[dbname]['abci_chains'].create_index('chain_id',
                                                   name='chain_id',
                                                   unique=True)
