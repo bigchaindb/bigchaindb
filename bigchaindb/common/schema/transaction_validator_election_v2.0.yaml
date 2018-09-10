@@ -45,7 +45,6 @@ properties:
           - node_id
           - public_key
           - power
-          - seed
     required:
     - data
   outputs:
