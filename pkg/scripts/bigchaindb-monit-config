@@ -183,11 +183,11 @@ check process tendermint
     depends on bigchaindb
 
 check file tendermint.out.log with path ${monit_log_path}/tendermint.out.log
-    if size > 100 KB then
+    if size > 200 MB then
         exec "${monit_script_path}_logrotate rotate_tendermint_logs ${monit_log_path}/tendermint.out.log $monit_pid_path/tendermint.pid"
 
 check file tendermint.err.log with path ${monit_log_path}/tendermint.err.log
-    if size > 100 KB then
+    if size > 200 MB then
         exec "${monit_script_path}_logrotate rotate_tendermint_logs ${monit_log_path}/tendermint.err.log $monit_pid_path/tendermint.pid"
 EOF
 
