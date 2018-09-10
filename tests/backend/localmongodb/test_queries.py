@@ -10,7 +10,7 @@ import pymongo
 from bigchaindb.backend import connect, query
 
 
-pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
+pytestmark = pytest.mark.bdb
 
 
 def test_get_txids_filtered(signed_create_tx, signed_transfer_tx):

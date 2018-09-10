@@ -15,7 +15,6 @@ from tests.utils import generate_block
 pytestmark = [pytest.mark.execute]
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_upsert_validator_valid_election_vote(b_mock, valid_election, ed25519_node_keys):
     b_mock.store_bulk_transactions([valid_election])
@@ -34,7 +33,6 @@ def test_upsert_validator_valid_election_vote(b_mock, valid_election, ed25519_no
     assert vote.validate(b_mock)
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_upsert_validator_valid_non_election_vote(b_mock, valid_election, ed25519_node_keys):
     b_mock.store_bulk_transactions([valid_election])
@@ -54,7 +52,6 @@ def test_upsert_validator_valid_non_election_vote(b_mock, valid_election, ed2551
                              .sign([key0.private_key])
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_upsert_validator_delegate_election_vote(b_mock, valid_election, ed25519_node_keys):
     alice = generate_key_pair()
@@ -91,7 +88,6 @@ def test_upsert_validator_delegate_election_vote(b_mock, valid_election, ed25519
     assert key0_casted_vote.validate(b_mock)
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_upsert_validator_invalid_election_vote(b_mock, valid_election, ed25519_node_keys):
     b_mock.store_bulk_transactions([valid_election])
@@ -112,7 +108,6 @@ def test_upsert_validator_invalid_election_vote(b_mock, valid_election, ed25519_
         assert vote.validate(b_mock)
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_valid_election_votes_received(b_mock, valid_election, ed25519_node_keys):
     alice = generate_key_pair()
@@ -158,7 +153,6 @@ def test_valid_election_votes_received(b_mock, valid_election, ed25519_node_keys
     assert valid_election.get_commited_votes(b_mock) == votes-2
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_valid_election_conclude(b_mock, valid_election, ed25519_node_keys):
 
@@ -272,7 +266,6 @@ def test_upsert_validator(b, node_key, node_keys, ed25519_node_keys):
     assert (public_key64 in validator_pub_keys)
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
     reset_validator_set(b, node_keys, 1)

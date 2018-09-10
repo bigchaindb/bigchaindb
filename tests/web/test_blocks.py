@@ -50,7 +50,5 @@ def test_get_blocks_by_txid_endpoint_returns_400_bad_query_params(client):
     res = client.get(BLOCKS_ENDPOINT + '?transaction_id=123&status=123')
     assert res.status_code == 400
     assert res.json == {
-        'message': {
-            'status': '123 is not a valid choice'
-        }
+        'message': 'Unknown arguments: status'
     }

@@ -6,9 +6,6 @@ import pytest
 import random
 
 
-pytestmark = pytest.mark.tendermint
-
-
 def test_asset_transfer(b, signed_create_tx, user_pk, user_sk):
     from bigchaindb.models import Transaction
 

@@ -10,11 +10,6 @@ try:
 except ImportError:
     from sha3 import sha3_256
 
-import pytest
-
-
-pytestmark = pytest.mark.tendermint
-
 
 def test_encode_decode_transaction(b):
     from bigchaindb.tendermint_utils import (encode_transaction,

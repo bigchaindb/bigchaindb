@@ -7,8 +7,6 @@ from unittest.mock import patch, call
 
 import pytest
 
-pytestmark = pytest.mark.tendermint
-
 
 @pytest.fixture
 def mock_queue(monkeypatch):

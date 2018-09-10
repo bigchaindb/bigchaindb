@@ -2,10 +2,6 @@
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
-import pytest
-
-pytestmark = pytest.mark.tendermint
-
 VALIDATORS_ENDPOINT = '/api/v1/validators/'
 
 

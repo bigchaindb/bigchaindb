@@ -8,9 +8,6 @@ import random
 from bigchaindb.common.exceptions import DoubleSpend
 
 
-pytestmark = pytest.mark.tendermint
-
-
 # CREATE divisible asset
 # Single input
 # Single owners_before
