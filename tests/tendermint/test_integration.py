@@ -14,7 +14,6 @@ from abci.encoding import read_messages
 from io import BytesIO
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_app(b, init_chain_request):
     from bigchaindb import App

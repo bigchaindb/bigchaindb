@@ -18,9 +18,6 @@ from bigchaindb import backend
 from bigchaindb.lib import Block
 
 
-pytestmark = pytest.mark.tendermint
-
-
 @pytest.mark.bdb
 def test_asset_is_separated_from_transaciton(b):
     import copy

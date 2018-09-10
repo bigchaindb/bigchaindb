@@ -5,9 +5,6 @@
 import pytest
 
 
-pytestmark = pytest.mark.tendermint
-
-
 def test_get_connection_raises_a_configuration_error(monkeypatch):
     from bigchaindb.common.exceptions import ConfigurationError
     from bigchaindb.backend import connect
