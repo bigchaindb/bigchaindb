@@ -32,8 +32,8 @@ class ValidatorElection(Election):
         return self
 
     @classmethod
-    def validate_schema(cls, tx, skip_id=False):
-        super(ValidatorElection, cls).validate_schema(tx, skip_id=skip_id)
+    def validate_schema(cls, tx):
+        super(ValidatorElection, cls).validate_schema(tx)
         validate_asset_public_key(tx['asset']['data']['public_key'])
 
     @classmethod
