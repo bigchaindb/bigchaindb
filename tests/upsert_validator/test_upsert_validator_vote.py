@@ -303,18 +303,15 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
     assert not ValidatorElection.approved_update(b, 4, [tx_vote0, tx_vote1])
 
     update = ValidatorElection.approved_update(b, 4, [tx_vote0, tx_vote1, tx_vote2])
-    update_public_key = None
-    if update:
-        update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
     assert update
+    update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
     assert update_public_key == public_key64
 
     b.store_bulk_transactions([tx_vote0, tx_vote1])
 
     update = ValidatorElection.approved_update(b, 4, [tx_vote2])
-    if update:
-        update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
     assert update
+    update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
     assert update_public_key == public_key64
 
     # remove validator

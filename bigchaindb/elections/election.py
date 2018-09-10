@@ -106,7 +106,7 @@ class Election(Transaction):
         input_conditions = []
 
         duplicates = any(txn for txn in current_transactions if txn.id == self.id)
-        if bigchain.get_transaction(self.id) or duplicates:
+        if bigchain.is_committed(self.id) or duplicates:
             raise DuplicateTransaction('transaction `{}` already exists'
                                        .format(self.id))
 
