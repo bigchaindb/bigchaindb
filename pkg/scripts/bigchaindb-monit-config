@@ -111,7 +111,7 @@ case \$1 in
 
     pushd \$4
 
-      nohup tendermint node --consensus.create_empty_blocks=false >> \$3/tendermint.out.log 2>> \$3/tendermint.err.log &
+      nohup tendermint node >> \$3/tendermint.out.log 2>> \$3/tendermint.err.log &
 
       echo \$! > \$2
     popd
