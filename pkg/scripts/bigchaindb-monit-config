@@ -138,7 +138,7 @@ case \$1 in
     /bin/mv \$2 \$2.\$(date +%y-%m-%d)
     /bin/tar -cvf \$2.\$(date +%Y%m%d_%H%M%S).tar.gz \$2.\$(date +%y-%m-%d)
     /bin/rm \$2.\$(date +%y-%m-%d)
-    kill -2 \$(cat \$3)
+    /bin/kill -2 \$(cat \$3)
     ;;
 
 esac
@@ -189,6 +189,7 @@ check file tendermint.out.log with path ${monit_log_path}/tendermint.out.log
 check file tendermint.err.log with path ${monit_log_path}/tendermint.err.log
     if size > 200 MB then
         exec "${monit_script_path}_logrotate rotate_tendermint_logs ${monit_log_path}/tendermint.err.log $monit_pid_path/tendermint.pid"
+
 EOF
 
 # Setting permissions for control file
