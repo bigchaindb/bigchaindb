@@ -72,13 +72,13 @@ def create_tables(conn, dbname):
         try:
             logger.info(f'Create `{table_name}` table.')
             conn.conn[dbname].create_collection(table_name)
-            create_indexes(conn, dbname, table_name, INDEXES[table_name])
         except CollectionInvalid:
             logger.info(f'Collection {table_name} already exists.')
+        create_indexes(conn, dbname, table_name, INDEXES[table_name])
 
 
 def create_indexes(conn, dbname, collection, indexes):
-    logger.info(f'Create secondary indexes for `{collection}`.')
+    logger.info(f'Ensure secondary indexes for `{collection}`.')
     for fields, kwargs in indexes:
         conn.conn[dbname][collection].create_index(fields, **kwargs)
 
