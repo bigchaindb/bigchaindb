@@ -17,3 +17,4 @@ Appendices
    ntp-notes
    licenses
    all-in-one-bigchaindb
+   log-rotation

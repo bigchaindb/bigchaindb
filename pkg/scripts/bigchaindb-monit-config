@@ -135,10 +135,10 @@ cat >${monit_script_path}_logrotate <<EOF
 case \$1 in
 
   rotate_tendermint_logs)
-    /bin/mv \$2 \$2.\$(date +%y-%m-%d)
+    /bin/cp \$2 \$2.\$(date +%y-%m-%d)
     /bin/tar -cvf \$2.\$(date +%Y%m%d_%H%M%S).tar.gz \$2.\$(date +%y-%m-%d)
     /bin/rm \$2.\$(date +%y-%m-%d)
-    /bin/kill -2 \$(cat \$3)
+    /bin/cp /dev/null \$2
     ;;
 
 esac
