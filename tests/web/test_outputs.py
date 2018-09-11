@@ -71,6 +71,7 @@ def test_get_outputs_endpoint_with_invalid_spent(client, user_pk):
     assert res.status_code == 400
 
 
+@pytest.mark.abci
 @pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_get_divisble_transactions_returns_500(b, client):
