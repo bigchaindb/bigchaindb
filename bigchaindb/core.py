@@ -100,7 +100,7 @@ class App(BaseApplication):
 
         block = Block(app_hash=app_hash, height=height, transactions=[])
         self.bigchaindb.store_block(block._asdict())
-        self.bigchaindb.store_validator_set(height + 1, validator_set, None)
+        self.bigchaindb.store_validator_set(height + 1, validator_set)
         abci_chain_height = 0 if known_chain is None else known_chain['height']
         self.bigchaindb.store_abci_chain(abci_chain_height,
                                          genesis.chain_id, True)
@@ -209,9 +209,10 @@ class App(BaseApplication):
 
         # Check if the current block concluded any validator elections and
         # update the locally tracked validator set
-        validator_updates = ValidatorElection.get_validator_update(self.bigchaindb,
-                                                                   self.new_height,
-                                                                   self.block_transactions)
+        validator_update = ValidatorElection.approved_update(self.bigchaindb,
+                                                             self.new_height,
+                                                             self.block_transactions)
+        update = [validator_update] if validator_update else []
 
         # Store pre-commit state to recover in case there is a crash
         # during `commit`
@@ -220,7 +221,7 @@ class App(BaseApplication):
                                           transactions=self.block_txn_ids)
         logger.debug('Updating PreCommitState: %s', self.new_height)
         self.bigchaindb.store_pre_commit_state(pre_commit_state._asdict())
-        return ResponseEndBlock(validator_updates=validator_updates)
+        return ResponseEndBlock(validator_updates=update)
 
     def commit(self):
         """Store the new height and along with block hash."""

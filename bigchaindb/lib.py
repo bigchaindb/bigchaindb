@@ -428,24 +428,20 @@ class BigchainDB(object):
         result = self.get_validator_change(height)
         return [] if result is None else result['validators']
 
-    def get_validators_by_election_id(self, election_id):
-        result = backend.query.get_validator_set_by_election_id(self.connection, election_id)
+    def get_election(self, election_id):
+        result = backend.query.get_election(self.connection, election_id)
         return result
-
-    def delete_validator_update(self):
-        return backend.query.delete_validator_update(self.connection)
 
     def store_pre_commit_state(self, state):
         return backend.query.store_pre_commit_state(self.connection, state)
 
-    def store_validator_set(self, height, validators, election_id):
+    def store_validator_set(self, height, validators):
         """Store validator set at a given `height`.
            NOTE: If the validator set already exists at that `height` then an
            exception will be raised.
         """
         return backend.query.store_validator_set(self.connection, {'height': height,
-                                                                   'validators': validators,
-                                                                   'election_id': election_id})
+                                                                   'validators': validators})
 
     def store_abci_chain(self, height, chain_id, is_synced=True):
         return backend.query.store_abci_chain(self.connection, height,
@@ -477,6 +473,14 @@ class BigchainDB(object):
         new_chain_id = chain_id.split(suffix)[0] + suffix + block_height_str
 
         self.store_abci_chain(block['height'] + 1, new_chain_id, False)
+
+    def store_election_results(self, height, election):
+        """Store election results
+        :param height: the block height at which the election concluded
+        :param election: a concluded election
+        """
+        return backend.query.store_election_results(self.connection, {'height': height,
+                                                                      'election_id': election.id})
 
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))

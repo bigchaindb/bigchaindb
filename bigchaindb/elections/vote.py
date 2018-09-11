@@ -6,16 +6,18 @@ from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.schema import (_validate_schema,
                                       TX_SCHEMA_COMMON,
                                       TX_SCHEMA_TRANSFER,
-                                      TX_SCHEMA_VALIDATOR_ELECTION_VOTE)
+                                      TX_SCHEMA_VOTE)
 
 
-class ValidatorElectionVote(Transaction):
+class Vote(Transaction):
 
-    VALIDATOR_ELECTION_VOTE = 'VALIDATOR_ELECTION_VOTE'
+    OPERATION = 'VOTE'
     # NOTE: This class inherits TRANSFER txn type. The `TRANSFER` property is
     # overriden to re-use methods from parent class
-    TRANSFER = VALIDATOR_ELECTION_VOTE
-    ALLOWED_OPERATIONS = (VALIDATOR_ELECTION_VOTE,)
+    TRANSFER = OPERATION
+    ALLOWED_OPERATIONS = (OPERATION,)
+    # Custom validation schema
+    TX_SCHEMA_CUSTOM = TX_SCHEMA_VOTE
 
     def validate(self, bigchain, current_transactions=[]):
         """Validate election vote transaction
@@ -28,7 +30,7 @@ class ValidatorElectionVote(Transaction):
             bigchain (BigchainDB): an instantiated bigchaindb.lib.BigchainDB object.
 
         Returns:
-            ValidatorElectionVote object
+            Vote: a Vote object
 
         Raises:
             ValidationError: If the election vote is invalid
@@ -39,20 +41,20 @@ class ValidatorElectionVote(Transaction):
     @classmethod
     def generate(cls, inputs, recipients, election_id, metadata=None):
         (inputs, outputs) = cls.validate_transfer(inputs, recipients, election_id, metadata)
-        election_vote = cls(cls.VALIDATOR_ELECTION_VOTE, {'id': election_id}, inputs, outputs, metadata)
+        election_vote = cls(cls.OPERATION, {'id': election_id}, inputs, outputs, metadata)
         cls.validate_schema(election_vote.to_dict(), skip_id=True)
         return election_vote
 
     @classmethod
     def validate_schema(cls, tx, skip_id=False):
-        """Validate the validator election vote transaction. Since `VALIDATOR_ELECTION_VOTE` extends `TRANFER`
+        """Validate the validator election vote transaction. Since `VOTE` extends `TRANSFER`
            transaction, all the validations for `CREATE` transaction should be inherited
         """
         if not skip_id:
             cls.validate_id(tx)
         _validate_schema(TX_SCHEMA_COMMON, tx)
         _validate_schema(TX_SCHEMA_TRANSFER, tx)
-        _validate_schema(TX_SCHEMA_VALIDATOR_ELECTION_VOTE, tx)
+        _validate_schema(cls.TX_SCHEMA_CUSTOM, tx)
 
     @classmethod
     def create(cls, tx_signers, recipients, metadata=None, asset=None):

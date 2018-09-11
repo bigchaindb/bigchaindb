@@ -5,14 +5,14 @@
 ---
 "$schema": "http://json-schema.org/draft-04/schema#"
 type: object
-title: Validator Election Vote Schema - Vote on a validator set change
+title: Vote Schema - Vote on an election
 required:
 - operation
 - outputs
 properties:
   operation:
     type: string
-    value: "VALIDATOR_ELECTION_VOTE"
+    value: "VOTE"
   outputs:
     type: array
     items:

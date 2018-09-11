@@ -6,10 +6,11 @@ import pytest
 import codecs
 
 from bigchaindb.tendermint_utils import public_key_to_base64
-from bigchaindb.upsert_validator import ValidatorElection, ValidatorElectionVote
+from bigchaindb.upsert_validator import ValidatorElection
 from bigchaindb.common.exceptions import AmountError
 from bigchaindb.common.crypto import generate_key_pair
 from bigchaindb.common.exceptions import ValidationError
+from bigchaindb.elections.vote import Vote
 from tests.utils import generate_block
 
 pytestmark = [pytest.mark.execute]
@@ -26,10 +27,10 @@ def test_upsert_validator_valid_election_vote(b_mock, valid_election, ed25519_no
 
     election_pub_key = ValidatorElection.to_public_key(valid_election.id)
 
-    vote = ValidatorElectionVote.generate([input0],
-                                          [([election_pub_key], votes)],
-                                          election_id=valid_election.id)\
-                                .sign([key0.private_key])
+    vote = Vote.generate([input0],
+                         [([election_pub_key], votes)],
+                         election_id=valid_election.id)\
+        .sign([key0.private_key])
     assert vote.validate(b_mock)
 
 
@@ -46,10 +47,10 @@ def test_upsert_validator_valid_non_election_vote(b_mock, valid_election, ed2551
 
     # Ensure that threshold conditions are now allowed
     with pytest.raises(ValidationError):
-        ValidatorElectionVote.generate([input0],
-                                       [([election_pub_key, key0.public_key], votes)],
-                                       election_id=valid_election.id)\
-                             .sign([key0.private_key])
+        Vote.generate([input0],
+                      [([election_pub_key, key0.public_key], votes)],
+                      election_id=valid_election.id)\
+             .sign([key0.private_key])
 
 
 @pytest.mark.bdb
@@ -63,10 +64,10 @@ def test_upsert_validator_delegate_election_vote(b_mock, valid_election, ed25519
     public_key0 = input0.owners_before[0]
     key0 = ed25519_node_keys[public_key0]
 
-    delegate_vote = ValidatorElectionVote.generate([input0],
-                                                   [([alice.public_key], 3), ([key0.public_key], votes-3)],
-                                                   election_id=valid_election.id)\
-                                         .sign([key0.private_key])
+    delegate_vote = Vote.generate([input0],
+                                  [([alice.public_key], 3), ([key0.public_key], votes-3)],
+                                  election_id=valid_election.id)\
+        .sign([key0.private_key])
 
     assert delegate_vote.validate(b_mock)
 
@@ -74,17 +75,17 @@ def test_upsert_validator_delegate_election_vote(b_mock, valid_election, ed25519
     election_pub_key = ValidatorElection.to_public_key(valid_election.id)
 
     alice_votes = delegate_vote.to_inputs()[0]
-    alice_casted_vote = ValidatorElectionVote.generate([alice_votes],
-                                                       [([election_pub_key], 3)],
-                                                       election_id=valid_election.id)\
-                                             .sign([alice.private_key])
+    alice_casted_vote = Vote.generate([alice_votes],
+                                      [([election_pub_key], 3)],
+                                      election_id=valid_election.id)\
+        .sign([alice.private_key])
     assert alice_casted_vote.validate(b_mock)
 
     key0_votes = delegate_vote.to_inputs()[1]
-    key0_casted_vote = ValidatorElectionVote.generate([key0_votes],
-                                                      [([election_pub_key], votes-3)],
-                                                      election_id=valid_election.id)\
-                                            .sign([key0.private_key])
+    key0_casted_vote = Vote.generate([key0_votes],
+                                     [([election_pub_key], votes-3)],
+                                     election_id=valid_election.id)\
+        .sign([key0.private_key])
     assert key0_casted_vote.validate(b_mock)
 
 
@@ -99,10 +100,10 @@ def test_upsert_validator_invalid_election_vote(b_mock, valid_election, ed25519_
 
     election_pub_key = ValidatorElection.to_public_key(valid_election.id)
 
-    vote = ValidatorElectionVote.generate([input0],
-                                          [([election_pub_key], votes+1)],
-                                          election_id=valid_election.id)\
-                                .sign([key0.private_key])
+    vote = Vote.generate([input0],
+                         [([election_pub_key], votes+1)],
+                         election_id=valid_election.id)\
+        .sign([key0.private_key])
 
     with pytest.raises(AmountError):
         assert vote.validate(b_mock)
@@ -120,10 +121,10 @@ def test_valid_election_votes_received(b_mock, valid_election, ed25519_node_keys
     key0 = ed25519_node_keys[public_key0]
 
     # delegate some votes to alice
-    delegate_vote = ValidatorElectionVote.generate([input0],
-                                                   [([alice.public_key], 4), ([key0.public_key], votes-4)],
-                                                   election_id=valid_election.id)\
-                                         .sign([key0.private_key])
+    delegate_vote = Vote.generate([input0],
+                                  [([alice.public_key], 4), ([key0.public_key], votes-4)],
+                                  election_id=valid_election.id)\
+        .sign([key0.private_key])
     b_mock.store_bulk_transactions([delegate_vote])
     assert valid_election.get_commited_votes(b_mock) == 0
 
@@ -131,10 +132,10 @@ def test_valid_election_votes_received(b_mock, valid_election, ed25519_node_keys
     alice_votes = delegate_vote.to_inputs()[0]
     key0_votes = delegate_vote.to_inputs()[1]
 
-    alice_casted_vote = ValidatorElectionVote.generate([alice_votes],
-                                                       [([election_public_key], 2), ([alice.public_key], 2)],
-                                                       election_id=valid_election.id)\
-                                             .sign([alice.private_key])
+    alice_casted_vote = Vote.generate([alice_votes],
+                                      [([election_public_key], 2), ([alice.public_key], 2)],
+                                      election_id=valid_election.id)\
+        .sign([alice.private_key])
 
     assert alice_casted_vote.validate(b_mock)
     b_mock.store_bulk_transactions([alice_casted_vote])
@@ -142,10 +143,10 @@ def test_valid_election_votes_received(b_mock, valid_election, ed25519_node_keys
     # Check if the delegated vote is count as valid vote
     assert valid_election.get_commited_votes(b_mock) == 2
 
-    key0_casted_vote = ValidatorElectionVote.generate([key0_votes],
-                                                      [([election_public_key], votes-4)],
-                                                      election_id=valid_election.id)\
-                                            .sign([key0.private_key])
+    key0_casted_vote = Vote.generate([key0_votes],
+                                     [([election_public_key], votes-4)],
+                                     election_id=valid_election.id)\
+        .sign([key0.private_key])
 
     assert key0_casted_vote.validate(b_mock)
     b_mock.store_bulk_transactions([key0_casted_vote])
@@ -227,7 +228,7 @@ def test_upsert_validator(b, node_key, node_keys, ed25519_node_keys):
 
     latest_block = b.get_latest_block()
     # reset the validator set
-    b.store_validator_set(latest_block['height'], validators, 'previous_election_id')
+    b.store_validator_set(latest_block['height'], validators)
 
     power = 1
     public_key = '9B3119650DF82B9A5D8A12E38953EA47475C09F0C48A4E6A0ECE182944B24403'
@@ -291,19 +292,19 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
     assert not ValidatorElection.has_concluded(b, election.id, [tx_vote0, tx_vote1])
     assert ValidatorElection.has_concluded(b, election.id, [tx_vote0, tx_vote1, tx_vote2])
 
-    assert ValidatorElection.get_validator_update(b, 4, [tx_vote0]) == []
-    assert ValidatorElection.get_validator_update(b, 4, [tx_vote0, tx_vote1]) == []
+    assert not ValidatorElection.approved_update(b, 4, [tx_vote0])
+    assert not ValidatorElection.approved_update(b, 4, [tx_vote0, tx_vote1])
 
-    update = ValidatorElection.get_validator_update(b, 4, [tx_vote0, tx_vote1, tx_vote2])
-    update_public_key = codecs.encode(update[0].pub_key.data, 'base64').decode().rstrip('\n')
-    assert len(update) == 1
+    update = ValidatorElection.approved_update(b, 4, [tx_vote0, tx_vote1, tx_vote2])
+    assert update
+    update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
     assert update_public_key == public_key64
 
     b.store_bulk_transactions([tx_vote0, tx_vote1])
 
-    update = ValidatorElection.get_validator_update(b, 4, [tx_vote2])
-    update_public_key = codecs.encode(update[0].pub_key.data, 'base64').decode().rstrip('\n')
-    assert len(update) == 1
+    update = ValidatorElection.approved_update(b, 4, [tx_vote2])
+    assert update
+    update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
     assert update_public_key == public_key64
 
     # remove validator
@@ -324,9 +325,10 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
 
     b.store_bulk_transactions([tx_vote0, tx_vote1])
 
-    update = ValidatorElection.get_validator_update(b, 9, [tx_vote2])
-    update_public_key = codecs.encode(update[0].pub_key.data, 'base64').decode().rstrip('\n')
-    assert len(update) == 1
+    update = ValidatorElection.approved_update(b, 9, [tx_vote2])
+    if update:
+        update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
+    assert update
     assert update_public_key == public_key64
 
     # assert that the public key is not a part of the current validator set
@@ -348,10 +350,10 @@ def to_inputs(election, i, ed25519_node_keys):
 def gen_vote(election, i, ed25519_node_keys):
     (input_i, votes_i, key_i) = to_inputs(election, i, ed25519_node_keys)
     election_pub_key = ValidatorElection.to_public_key(election.id)
-    return ValidatorElectionVote.generate([input_i],
-                                          [([election_pub_key], votes_i)],
-                                          election_id=election.id)\
-                                .sign([key_i.private_key])
+    return Vote.generate([input_i],
+                         [([election_pub_key], votes_i)],
+                         election_id=election.id)\
+        .sign([key_i.private_key])
 
 
 def reset_validator_set(b, node_keys, height):
@@ -360,4 +362,4 @@ def reset_validator_set(b, node_keys, height):
         validators.append({'public_key': {'type': 'ed25519-base64',
                                           'value': node_pub},
                            'voting_power': 10})
-    b.store_validator_set(height, validators, 'election_id')
+    b.store_validator_set(height, validators)

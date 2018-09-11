@@ -17,9 +17,10 @@ from bigchaindb.utils import load_node_key
 from bigchaindb.common.exceptions import (DatabaseAlreadyExists,
                                           DatabaseDoesNotExist,
                                           ValidationError)
+from bigchaindb.elections.vote import Vote
 import bigchaindb
 from bigchaindb import (backend, ValidatorElection,
-                        BigchainDB, ValidatorElectionVote)
+                        BigchainDB)
 from bigchaindb.backend import schema
 from bigchaindb.backend import query
 from bigchaindb.backend.query import PRE_COMMIT_ID
@@ -176,9 +177,9 @@ def run_upsert_validator_approve(args, bigchain):
 
     inputs = [i for i in tx.to_inputs() if key.public_key in i.owners_before]
     election_pub_key = ValidatorElection.to_public_key(tx.id)
-    approval = ValidatorElectionVote.generate(inputs,
-                                              [([election_pub_key], voting_power)],
-                                              tx.id).sign([key.private_key])
+    approval = Vote.generate(inputs,
+                             [([election_pub_key], voting_power)],
+                             tx.id).sign([key.private_key])
     approval.validate(bigchain)
 
     resp = bigchain.write_transaction(approval, 'broadcast_tx_commit')

@@ -10,7 +10,7 @@ def test_get_validators_endpoint(b, client):
                       'pub_key': {'data': '4E2685D9016126864733225BE00F005515200727FBAB1312FC78C8B76831255A',
                                   'type': 'ed25519'},
                       'voting_power': 10}]
-    b.store_validator_set(23, validator_set, 'election_id')
+    b.store_validator_set(23, validator_set)
 
     res = client.get(VALIDATORS_ENDPOINT)
     assert is_validator(res.json[0])

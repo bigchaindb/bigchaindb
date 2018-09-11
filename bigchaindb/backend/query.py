@@ -352,6 +352,13 @@ def store_validator_set(conn, validator_update):
 
 
 @singledispatch
+def store_election_results(conn, election):
+    """Store election results"""
+
+    raise NotImplementedError
+
+
+@singledispatch
 def get_validator_set(conn, height):
     """Get validator set for a given `height`, if `height` is not specified
     then return the latest validator set
@@ -361,7 +368,7 @@ def get_validator_set(conn, height):
 
 
 @singledispatch
-def get_validator_set_by_election_id(conn, election_id):
+def get_election(conn, election_id):
     """Return a validator set change with the specified election_id
     """
 
@@ -369,13 +376,11 @@ def get_validator_set_by_election_id(conn, election_id):
 
 
 @singledispatch
-def get_asset_tokens_for_public_key(connection, asset_id,
-                                    public_key, operation):
+def get_asset_tokens_for_public_key(connection, asset_id, public_key):
     """Retrieve a list of tokens of type `asset_id` that are owned by the `public_key`.
     Args:
         asset_id (str): Id of the token.
         public_key (str): base58 encoded public key
-        operation: filter transaction based on `operation`
     Returns:
         Iterator of transaction that list given owner in conditions.
     """

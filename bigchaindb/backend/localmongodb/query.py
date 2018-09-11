@@ -282,6 +282,18 @@ def store_validator_set(conn, validators_update):
 
 
 @register_query(LocalMongoDBConnection)
+def store_election_results(conn, election):
+    height = election['height']
+    return conn.run(
+        conn.collection('elections').replace_one(
+            {'height': height},
+            election,
+            upsert=True
+        )
+    )
+
+
+@register_query(LocalMongoDBConnection)
 def get_validator_set(conn, height=None):
     query = {}
     if height is not None:
@@ -298,11 +310,11 @@ def get_validator_set(conn, height=None):
 
 
 @register_query(LocalMongoDBConnection)
-def get_validator_set_by_election_id(conn, election_id):
+def get_election(conn, election_id):
     query = {'election_id': election_id}
 
     cursor = conn.run(
-        conn.collection('validators')
+        conn.collection('elections')
         .find(query, projection={'_id': False})
     )
 

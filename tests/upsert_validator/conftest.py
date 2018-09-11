@@ -1,10 +1,11 @@
 # Copyright BigchainDB GmbH and BigchainDB contributors
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
+from unittest.mock import patch
 
 import pytest
 
-from bigchaindb import ValidatorElectionVote
+from bigchaindb import Vote
 from bigchaindb.backend.localmongodb import query
 from bigchaindb.lib import Block
 from bigchaindb.upsert_validator import ValidatorElection
@@ -47,6 +48,15 @@ def valid_election_b(b, node_key, new_validator):
 
 
 @pytest.fixture
+@patch('bigchaindb.elections.election.uuid4', lambda: 'mock_uuid4')
+def fixed_seed_election(b_mock, node_key, new_validator):
+    voters = ValidatorElection.recipients(b_mock)
+    return ValidatorElection.generate([node_key.public_key],
+                                      voters,
+                                      new_validator, None).sign([node_key.private_key])
+
+
+@pytest.fixture
 def ongoing_election(b, valid_election, ed25519_node_keys):
     validators = b.get_validators(height=1)
     genesis_validators = {'validators': validators,
@@ -62,12 +72,10 @@ def ongoing_election(b, valid_election, ed25519_node_keys):
 
 @pytest.fixture
 def concluded_election(b, ongoing_election, ed25519_node_keys):
-    validators = b.get_validators(height=1)
-    validator_update = {'validators': validators,
-                        'height': 2,
-                        'election_id': ongoing_election.id}
+    election_result = {'height': 2,
+                       'election_id': ongoing_election.id}
 
-    query.store_validator_set(b.connection, validator_update)
+    query.store_election_results(b.connection, election_result)
     return ongoing_election
 
 
@@ -91,9 +99,9 @@ def vote(election, voter, keys, b):
 
     election_pub_key = ValidatorElection.to_public_key(election.id)
 
-    v = ValidatorElectionVote.generate([election_input],
-                                       [([election_pub_key], votes)],
-                                       election_id=election.id)\
-                             .sign([key.private_key])
+    v = Vote.generate([election_input],
+                      [([election_pub_key], votes)],
+                      election_id=election.id)\
+        .sign([key.private_key])
     b.store_bulk_transactions([v])
     return v

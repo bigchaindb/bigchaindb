@@ -94,9 +94,9 @@ _config = copy.deepcopy(config)
 from bigchaindb.common.transaction import Transaction  # noqa
 from bigchaindb import models                          # noqa
 from bigchaindb.upsert_validator import ValidatorElection  # noqa
-from bigchaindb.upsert_validator import ValidatorElectionVote  # noqa
+from bigchaindb.elections.vote import Vote  # noqa
 
 Transaction.register_type(Transaction.CREATE, models.Transaction)
 Transaction.register_type(Transaction.TRANSFER, models.Transaction)
-Transaction.register_type(ValidatorElection.VALIDATOR_ELECTION, ValidatorElection)
-Transaction.register_type(ValidatorElectionVote.VALIDATOR_ELECTION_VOTE, ValidatorElectionVote)
+Transaction.register_type(ValidatorElection.OPERATION, ValidatorElection)
+Transaction.register_type(Vote.OPERATION, Vote)
