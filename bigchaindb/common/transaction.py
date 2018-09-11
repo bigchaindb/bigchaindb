@@ -1195,7 +1195,9 @@ class Transaction(object):
         """
         operation = tx.get('operation', Transaction.CREATE) if isinstance(tx, dict) else Transaction.CREATE
         cls = Transaction.resolve_class(operation)
+
         if not skip_schema_validation:
+            cls.validate_id(tx)
             cls.validate_schema(tx)
 
         inputs = [Input.from_dict(input_) for input_ in tx['inputs']]
