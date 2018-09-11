@@ -45,6 +45,7 @@ The following steps are what we do to release a new version of _BigchainDB Serve
    - In `bigchaindb/version.py`:
      - update `__version__` to e.g. `0.9.0` (with no `.dev` on the end)
      - update `__short_version__` to e.g. `0.9` (with no `.dev` on the end)
+   - In the docs about installing BigchainDB (and Tendermint), and in the associated scripts, recommend/install a version of Tendermint that _actually works_ with the soon-to-be-released version of BigchainDB. You can find all such references by doing a search for the previously-recommended version number, such as `0.22.8`.
    - In `setup.py`, _maybe_ update the development status item in the `classifiers` list. For example, one allowed value is `"Development Status :: 5 - Production/Stable"`. The [allowed values are listed at pypi.python.org](https://pypi.python.org/pypi?%3Aaction=list_classifiers).
 
 1. **Wait for all the tests to pass!**
