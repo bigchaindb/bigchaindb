@@ -229,6 +229,7 @@ def test_upsert_validator(b, node_key, node_keys, ed25519_node_keys):
     latest_block = b.get_latest_block()
     # reset the validator set
     b.store_validator_set(latest_block['height'], validators)
+    generate_block(b)
 
     power = 1
     public_key = '9B3119650DF82B9A5D8A12E38953EA47475C09F0C48A4E6A0ECE182944B24403'

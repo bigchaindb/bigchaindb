@@ -235,19 +235,21 @@ def test_check_tx__unsigned_create_is_error(b):
     assert result.code == CodeTypeError
 
 
-def test_deliver_tx__valid_create_updates_db(b, init_chain_request):
+def test_deliver_tx__valid_create_updates_db_and_emits_event(b, init_chain_request):
+    import multiprocessing as mp
     from bigchaindb import App
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
 
     alice = generate_key_pair()
     bob = generate_key_pair()
+    events = mp.Queue()
 
     tx = Transaction.create([alice.public_key],
                             [([bob.public_key], 1)])\
                     .sign([alice.private_key])
 
-    app = App(b)
+    app = App(b, events)
 
     app.init_chain(init_chain_request)
 
@@ -260,6 +262,8 @@ def test_deliver_tx__valid_create_updates_db(b, init_chain_request):
     app.end_block(RequestEndBlock(height=99))
     app.commit()
     assert b.get_transaction(tx.id).id == tx.id
+    block_event = events.get()
+    assert block_event.data['transactions'] == [tx]
 
     # unspent_outputs = b.get_unspent_outputs()
     # unspent_output = next(unspent_outputs)
