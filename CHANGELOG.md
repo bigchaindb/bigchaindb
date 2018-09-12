@@ -32,10 +32,17 @@ Tag name: v2.0.0b6
 
 * Created an all-in-one Docker image containing BigchainDB Server, Tendermint and MongoDB. It was created for a particular user and is not recommended for production use unless you really know what you're doing. [Pull request #2424](https://github.com/bigchaindb/bigchaindb/pull/2424)
 * [New documentation about privacy and handling private data](https://docs.bigchaindb.com/en/latest/private-data.html). [Pull request #2437](https://github.com/bigchaindb/bigchaindb/pull/2437)
-* Began implementing one of the migration strategies outlined in [BEP-42](https://github.com/bigchaindb/BEPs/tree/master/42). [Pull request #2488](https://github.com/bigchaindb/bigchaindb/pull/2488)
+* New documentation about log rotation. [Pull request #2528](https://github.com/bigchaindb/bigchaindb/pull/2528)
+* Implemented one of the migration strategies outlined in [BEP-42](https://github.com/bigchaindb/BEPs/tree/master/42). That involved creating a more general-purpose election process and commands. Pull requests
+[#2488](https://github.com/bigchaindb/bigchaindb/pull/2488),
+[#2495](https://github.com/bigchaindb/bigchaindb/pull/2495),
+[#2498](https://github.com/bigchaindb/bigchaindb/pull/2498)
+* Used memoization to avoid doing some validation checks multiple times. [Pull request #2490](https://github.com/bigchaindb/bigchaindb/pull/2490)
 
 ### Changed
 
+* The docs no longer say to install the highest version of Tendermint: they say to install a specific version. [Pull request #2524](https://github.com/bigchaindb/bigchaindb/pull/2524)
+* The setup docs include more recommended settings for `config.toml`. [Pull request #2516](https://github.com/bigchaindb/bigchaindb/pull/2516)
 * The process to add, remove or update the voting power of a validator at run time (using the `bigchaindb upsert-validator` subcommands) was completely changed and is now fully working. See [issue #2372](https://github.com/bigchaindb/bigchaindb/issues/2372) and all the pull requests it references. Pull requests [#2439](https://github.com/bigchaindb/bigchaindb/pull/2439) and [#2440](https://github.com/bigchaindb/bigchaindb/pull/2440)
 * The license on the documentation was changed from CC-BY-SA-4 to CC-BY-4. [Pull request #2427](https://github.com/bigchaindb/bigchaindb/pull/2427)
 * Re-activated and/or updated some unit tests that had been deacivated during the migration to Tendermint. Pull requests [#2390](https://github.com/bigchaindb/bigchaindb/pull/2390), [#2415](https://github.com/bigchaindb/bigchaindb/pull/2415), [#2452](https://github.com/bigchaindb/bigchaindb/pull/24), [#2456](https://github.com/bigchaindb/bigchaindb/pull/2456)
@@ -58,8 +65,10 @@ Tag name: v2.0.0b6
 * Fixed a unit test that was failing randomly. [Pull request #2423](https://github.com/bigchaindb/bigchaindb/pull/2423)
 * Fixed the validator curl port. [Pull request #2447](https://github.com/bigchaindb/bigchaindb/pull/2447)
 * Fixed an error in the docs about the HTTP POST /transactions endpoint. [Pull request #2481](https://github.com/bigchaindb/bigchaindb/pull/2481)
-* Fixed a bug when validating a CREATE + TRANSFER. [Pull request #2487](https://github.com/bigchaindb/bigchaindb/pull/2487)
 * Fixed a unit test that could loop forever. [Pull requqest #2486](https://github.com/bigchaindb/bigchaindb/pull/2486)
+* Fixed a bug when validating a CREATE + TRANSFER. [Pull request #2487](https://github.com/bigchaindb/bigchaindb/pull/2487)
+* Fixed the HTTP response when posting a transaction in commit mode. [Pull request #2510](https://github.com/bigchaindb/bigchaindb/pull/2510)
+* Fixed a crash that happened when attempting to restart BigchainDB at Tendermint block height 1. [Pull request#2519](https://github.com/bigchaindb/bigchaindb/pull/2519)
 
 ### External Contributors
 
