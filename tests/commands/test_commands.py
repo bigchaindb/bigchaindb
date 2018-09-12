@@ -453,7 +453,7 @@ def test_election_approve_without_tendermint(caplog, b, priv_validator_path, new
 
     b, election_id = call_election(b, new_validator, node_key)
 
-    # call run_upsert_validator_approve with args that point to the election
+    # call run_election_approve with args that point to the election
     args = Namespace(action='approve',
                      election_id=election_id,
                      sk=priv_validator_path,

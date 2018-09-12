@@ -12,27 +12,7 @@ from bigchaindb.upsert_validator import ValidatorElection
 
 
 @pytest.fixture
-def b_mock(b, network_validators):
-    b.get_validators = mock_get_validators(network_validators)
-
-    return b
-
-
-def mock_get_validators(network_validators):
-    def validator_set(height):
-        validators = []
-        for public_key, power in network_validators.items():
-            validators.append({
-                'public_key': {'type': 'ed25519-base64', 'value': public_key},
-                'voting_power': power
-            })
-        return validators
-
-    return validator_set
-
-
-@pytest.fixture
-def valid_election(b_mock, node_key, new_validator):
+def valid_upsert_validator_election(b_mock, node_key, new_validator):
     voters = ValidatorElection.recipients(b_mock)
     return ValidatorElection.generate([node_key.public_key],
                                       voters,
@@ -40,7 +20,7 @@ def valid_election(b_mock, node_key, new_validator):
 
 
 @pytest.fixture
-def valid_election_b(b, node_key, new_validator):
+def valid_upsert_validator_election_b(b, node_key, new_validator):
     voters = ValidatorElection.recipients(b)
     return ValidatorElection.generate([node_key.public_key],
                                       voters,
@@ -57,17 +37,17 @@ def fixed_seed_election(b_mock, node_key, new_validator):
 
 
 @pytest.fixture
-def ongoing_election(b, valid_election, ed25519_node_keys):
+def ongoing_election(b, valid_upsert_validator_election, ed25519_node_keys):
     validators = b.get_validators(height=1)
     genesis_validators = {'validators': validators,
                           'height': 0,
                           'election_id': None}
     query.store_validator_set(b.connection, genesis_validators)
 
-    b.store_bulk_transactions([valid_election])
-    block_1 = Block(app_hash='hash_1', height=1, transactions=[valid_election.id])
+    b.store_bulk_transactions([valid_upsert_validator_election])
+    block_1 = Block(app_hash='hash_1', height=1, transactions=[valid_upsert_validator_election.id])
     b.store_block(block_1._asdict())
-    return valid_election
+    return valid_upsert_validator_election
 
 
 @pytest.fixture

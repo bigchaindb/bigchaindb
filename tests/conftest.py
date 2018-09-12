@@ -243,6 +243,26 @@ def b():
 
 
 @pytest.fixture
+def b_mock(b, network_validators):
+    b.get_validators = mock_get_validators(network_validators)
+
+    return b
+
+
+def mock_get_validators(network_validators):
+    def validator_set(height):
+        validators = []
+        for public_key, power in network_validators.items():
+            validators.append({
+                'public_key': {'type': 'ed25519-base64', 'value': public_key},
+                'voting_power': power
+            })
+        return validators
+
+    return validator_set
+
+
+@pytest.fixture
 def create_tx(alice, user_pk):
     from bigchaindb.models import Transaction
     name = f'I am created by the create_tx fixture. My random identifier is {random.random()}.'

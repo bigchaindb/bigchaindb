@@ -5,6 +5,7 @@
 import pytest
 import codecs
 
+from bigchaindb.elections.election import Election
 from bigchaindb.tendermint_utils import public_key_to_base64
 from bigchaindb.upsert_validator import ValidatorElection
 from bigchaindb.common.exceptions import AmountError
@@ -17,92 +18,92 @@ pytestmark = [pytest.mark.execute]
 
 
 @pytest.mark.bdb
-def test_upsert_validator_valid_election_vote(b_mock, valid_election, ed25519_node_keys):
-    b_mock.store_bulk_transactions([valid_election])
+def test_upsert_validator_valid_election_vote(b_mock, valid_upsert_validator_election, ed25519_node_keys):
+    b_mock.store_bulk_transactions([valid_upsert_validator_election])
 
-    input0 = valid_election.to_inputs()[0]
-    votes = valid_election.outputs[0].amount
+    input0 = valid_upsert_validator_election.to_inputs()[0]
+    votes = valid_upsert_validator_election.outputs[0].amount
     public_key0 = input0.owners_before[0]
     key0 = ed25519_node_keys[public_key0]
 
-    election_pub_key = ValidatorElection.to_public_key(valid_election.id)
+    election_pub_key = ValidatorElection.to_public_key(valid_upsert_validator_election.id)
 
     vote = Vote.generate([input0],
                          [([election_pub_key], votes)],
-                         election_id=valid_election.id)\
+                         election_id=valid_upsert_validator_election.id)\
         .sign([key0.private_key])
     assert vote.validate(b_mock)
 
 
 @pytest.mark.bdb
-def test_upsert_validator_valid_non_election_vote(b_mock, valid_election, ed25519_node_keys):
-    b_mock.store_bulk_transactions([valid_election])
+def test_upsert_validator_valid_non_election_vote(b_mock, valid_upsert_validator_election, ed25519_node_keys):
+    b_mock.store_bulk_transactions([valid_upsert_validator_election])
 
-    input0 = valid_election.to_inputs()[0]
-    votes = valid_election.outputs[0].amount
+    input0 = valid_upsert_validator_election.to_inputs()[0]
+    votes = valid_upsert_validator_election.outputs[0].amount
     public_key0 = input0.owners_before[0]
     key0 = ed25519_node_keys[public_key0]
 
-    election_pub_key = ValidatorElection.to_public_key(valid_election.id)
+    election_pub_key = ValidatorElection.to_public_key(valid_upsert_validator_election.id)
 
     # Ensure that threshold conditions are now allowed
     with pytest.raises(ValidationError):
         Vote.generate([input0],
                       [([election_pub_key, key0.public_key], votes)],
-                      election_id=valid_election.id)\
+                      election_id=valid_upsert_validator_election.id)\
              .sign([key0.private_key])
 
 
 @pytest.mark.bdb
-def test_upsert_validator_delegate_election_vote(b_mock, valid_election, ed25519_node_keys):
+def test_upsert_validator_delegate_election_vote(b_mock, valid_upsert_validator_election, ed25519_node_keys):
     alice = generate_key_pair()
 
-    b_mock.store_bulk_transactions([valid_election])
+    b_mock.store_bulk_transactions([valid_upsert_validator_election])
 
-    input0 = valid_election.to_inputs()[0]
-    votes = valid_election.outputs[0].amount
+    input0 = valid_upsert_validator_election.to_inputs()[0]
+    votes = valid_upsert_validator_election.outputs[0].amount
     public_key0 = input0.owners_before[0]
     key0 = ed25519_node_keys[public_key0]
 
     delegate_vote = Vote.generate([input0],
                                   [([alice.public_key], 3), ([key0.public_key], votes-3)],
-                                  election_id=valid_election.id)\
+                                  election_id=valid_upsert_validator_election.id)\
         .sign([key0.private_key])
 
     assert delegate_vote.validate(b_mock)
 
     b_mock.store_bulk_transactions([delegate_vote])
-    election_pub_key = ValidatorElection.to_public_key(valid_election.id)
+    election_pub_key = ValidatorElection.to_public_key(valid_upsert_validator_election.id)
 
     alice_votes = delegate_vote.to_inputs()[0]
     alice_casted_vote = Vote.generate([alice_votes],
                                       [([election_pub_key], 3)],
-                                      election_id=valid_election.id)\
+                                      election_id=valid_upsert_validator_election.id)\
         .sign([alice.private_key])
     assert alice_casted_vote.validate(b_mock)
 
     key0_votes = delegate_vote.to_inputs()[1]
     key0_casted_vote = Vote.generate([key0_votes],
                                      [([election_pub_key], votes-3)],
-                                     election_id=valid_election.id)\
+                                     election_id=valid_upsert_validator_election.id)\
         .sign([key0.private_key])
     assert key0_casted_vote.validate(b_mock)
 
 
 @pytest.mark.bdb
-def test_upsert_validator_invalid_election_vote(b_mock, valid_election, ed25519_node_keys):
-    b_mock.store_bulk_transactions([valid_election])
+def test_upsert_validator_invalid_election_vote(b_mock, valid_upsert_validator_election, ed25519_node_keys):
+    b_mock.store_bulk_transactions([valid_upsert_validator_election])
 
-    input0 = valid_election.to_inputs()[0]
-    votes = valid_election.outputs[0].amount
+    input0 = valid_upsert_validator_election.to_inputs()[0]
+    votes = valid_upsert_validator_election.outputs[0].amount
     public_key0 = input0.owners_before[0]
     key0 = ed25519_node_keys[public_key0]
 
-    election_pub_key = ValidatorElection.to_public_key(valid_election.id)
+    election_pub_key = ValidatorElection.to_public_key(valid_upsert_validator_election.id)
 
     vote = Vote.generate([input0],
                          [([election_pub_key], votes+1)],
-                         election_id=valid_election.id)\
+                         election_id=valid_upsert_validator_election.id)\
         .sign([key0.private_key])
 
     with pytest.raises(AmountError):
@@ -110,107 +111,107 @@ def test_upsert_validator_invalid_election_vote(b_mock, valid_election, ed25519_
 
 
 @pytest.mark.bdb
-def test_valid_election_votes_received(b_mock, valid_election, ed25519_node_keys):
+def test_valid_election_votes_received(b_mock, valid_upsert_validator_election, ed25519_node_keys):
     alice = generate_key_pair()
-    b_mock.store_bulk_transactions([valid_election])
-    assert valid_election.get_commited_votes(b_mock) == 0
+    b_mock.store_bulk_transactions([valid_upsert_validator_election])
+    assert valid_upsert_validator_election.get_commited_votes(b_mock) == 0
 
-    input0 = valid_election.to_inputs()[0]
-    votes = valid_election.outputs[0].amount
+    input0 = valid_upsert_validator_election.to_inputs()[0]
+    votes = valid_upsert_validator_election.outputs[0].amount
     public_key0 = input0.owners_before[0]
     key0 = ed25519_node_keys[public_key0]
 
     # delegate some votes to alice
     delegate_vote = Vote.generate([input0],
                                   [([alice.public_key], 4), ([key0.public_key], votes-4)],
-                                  election_id=valid_election.id)\
+                                  election_id=valid_upsert_validator_election.id)\
         .sign([key0.private_key])
     b_mock.store_bulk_transactions([delegate_vote])
-    assert valid_election.get_commited_votes(b_mock) == 0
+    assert valid_upsert_validator_election.get_commited_votes(b_mock) == 0
 
-    election_public_key = ValidatorElection.to_public_key(valid_election.id)
+    election_public_key = ValidatorElection.to_public_key(valid_upsert_validator_election.id)
     alice_votes = delegate_vote.to_inputs()[0]
     key0_votes = delegate_vote.to_inputs()[1]
 
     alice_casted_vote = Vote.generate([alice_votes],
                                       [([election_public_key], 2), ([alice.public_key], 2)],
-                                      election_id=valid_election.id)\
+                                      election_id=valid_upsert_validator_election.id)\
         .sign([alice.private_key])
 
     assert alice_casted_vote.validate(b_mock)
     b_mock.store_bulk_transactions([alice_casted_vote])
 
     # Check if the delegated vote is count as valid vote
-    assert valid_election.get_commited_votes(b_mock) == 2
+    assert valid_upsert_validator_election.get_commited_votes(b_mock) == 2
 
     key0_casted_vote = Vote.generate([key0_votes],
                                      [([election_public_key], votes-4)],
-                                     election_id=valid_election.id)\
+                                     election_id=valid_upsert_validator_election.id)\
         .sign([key0.private_key])
 
     assert key0_casted_vote.validate(b_mock)
     b_mock.store_bulk_transactions([key0_casted_vote])
 
-    assert valid_election.get_commited_votes(b_mock) == votes-2
+    assert valid_upsert_validator_election.get_commited_votes(b_mock) == votes - 2
 
 
 @pytest.mark.bdb
-def test_valid_election_conclude(b_mock, valid_election, ed25519_node_keys):
+def test_valid_election_conclude(b_mock, valid_upsert_validator_election, ed25519_node_keys):
 
     # Node 0: cast vote
-    tx_vote0 = gen_vote(valid_election, 0, ed25519_node_keys)
+    tx_vote0 = gen_vote(valid_upsert_validator_election, 0, ed25519_node_keys)
 
     # check if the vote is valid even before the election doesn't exist
     with pytest.raises(ValidationError):
         assert tx_vote0.validate(b_mock)
 
     # store election
-    b_mock.store_bulk_transactions([valid_election])
+    b_mock.store_bulk_transactions([valid_upsert_validator_election])
     # cannot conclude election as not votes exist
-    assert not ValidatorElection.has_concluded(b_mock, valid_election.id)
+    assert not ValidatorElection.has_concluded(b_mock, valid_upsert_validator_election.id)
 
     # validate vote
     assert tx_vote0.validate(b_mock)
-    assert not ValidatorElection.has_concluded(b_mock, valid_election.id, [tx_vote0])
+    assert not ValidatorElection.has_concluded(b_mock, valid_upsert_validator_election.id, [tx_vote0])
 
     b_mock.store_bulk_transactions([tx_vote0])
-    assert not ValidatorElection.has_concluded(b_mock, valid_election.id)
+    assert not ValidatorElection.has_concluded(b_mock, valid_upsert_validator_election.id)
 
     # Node 1: cast vote
-    tx_vote1 = gen_vote(valid_election, 1, ed25519_node_keys)
+    tx_vote1 = gen_vote(valid_upsert_validator_election, 1, ed25519_node_keys)
 
     # Node 2: cast vote
-    tx_vote2 = gen_vote(valid_election, 2, ed25519_node_keys)
+    tx_vote2 = gen_vote(valid_upsert_validator_election, 2, ed25519_node_keys)
 
     # Node 3: cast vote
-    tx_vote3 = gen_vote(valid_election, 3, ed25519_node_keys)
+    tx_vote3 = gen_vote(valid_upsert_validator_election, 3, ed25519_node_keys)
 
     assert tx_vote1.validate(b_mock)
-    assert not ValidatorElection.has_concluded(b_mock, valid_election.id, [tx_vote1])
+    assert not ValidatorElection.has_concluded(b_mock, valid_upsert_validator_election.id, [tx_vote1])
 
     # 2/3 is achieved in the same block so the election can be.has_concludedd
-    assert ValidatorElection.has_concluded(b_mock, valid_election.id, [tx_vote1, tx_vote2])
+    assert ValidatorElection.has_concluded(b_mock, valid_upsert_validator_election.id, [tx_vote1, tx_vote2])
 
     b_mock.store_bulk_transactions([tx_vote1])
-    assert not ValidatorElection.has_concluded(b_mock, valid_election.id)
+    assert not ValidatorElection.has_concluded(b_mock, valid_upsert_validator_election.id)
 
     assert tx_vote2.validate(b_mock)
     assert tx_vote3.validate(b_mock)
 
     # conclusion can be triggered my different votes in the same block
-    assert ValidatorElection.has_concluded(b_mock, valid_election.id, [tx_vote2])
-    assert ValidatorElection.has_concluded(b_mock, valid_election.id, [tx_vote2, tx_vote3])
+    assert ValidatorElection.has_concluded(b_mock, valid_upsert_validator_election.id, [tx_vote2])
+    assert ValidatorElection.has_concluded(b_mock, valid_upsert_validator_election.id, [tx_vote2, tx_vote3])
 
     b_mock.store_bulk_transactions([tx_vote2])
 
     # Once the blockchain records >2/3 of the votes the election is assumed to be.has_concludedd
     # so any invocation of `.has_concluded` for that election should return False
-    assert not ValidatorElection.has_concluded(b_mock, valid_election.id)
+    assert not ValidatorElection.has_concluded(b_mock, valid_upsert_validator_election.id)
 
     # Vote is still valid but the election cannot be.has_concludedd as it it assmed that it has
     # been.has_concludedd before
     assert tx_vote3.validate(b_mock)
-    assert not ValidatorElection.has_concluded(b_mock, valid_election.id, [tx_vote3])
+    assert not ValidatorElection.has_concluded(b_mock, valid_upsert_validator_election.id, [tx_vote3])
 
 
 @pytest.mark.abci
@@ -293,17 +294,17 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
     assert not ValidatorElection.has_concluded(b, election.id, [tx_vote0, tx_vote1])
     assert ValidatorElection.has_concluded(b, election.id, [tx_vote0, tx_vote1, tx_vote2])
 
-    assert not ValidatorElection.approved_update(b, 4, [tx_vote0])
-    assert not ValidatorElection.approved_update(b, 4, [tx_vote0, tx_vote1])
+    assert not Election.approved_elections(b, 4, [tx_vote0]).get('VALIDATOR_ELECTION')
+    assert not Election.approved_elections(b, 4, [tx_vote0, tx_vote1]).get('VALIDATOR_ELECTION')
 
-    update = ValidatorElection.approved_update(b, 4, [tx_vote0, tx_vote1, tx_vote2])
+    update = Election.approved_elections(b, 4, [tx_vote0, tx_vote1, tx_vote2]).get('VALIDATOR_ELECTION')
     assert update
     update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
     assert update_public_key == public_key64
 
     b.store_bulk_transactions([tx_vote0, tx_vote1])
 
-    update = ValidatorElection.approved_update(b, 4, [tx_vote2])
+    update = Election.approved_elections(b, 4, [tx_vote2]).get('VALIDATOR_ELECTION')
     assert update
     update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
     assert update_public_key == public_key64
@@ -326,7 +327,7 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
 
     b.store_bulk_transactions([tx_vote0, tx_vote1])
 
-    update = ValidatorElection.approved_update(b, 9, [tx_vote2])
+    update = Election.approved_elections(b, 9, [tx_vote2]).get('VALIDATOR_ELECTION')
     if update:
         update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
     assert update
