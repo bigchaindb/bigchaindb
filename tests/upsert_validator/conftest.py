@@ -1,6 +1,7 @@
 # Copyright BigchainDB GmbH and BigchainDB contributors
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
+from unittest.mock import patch
 
 import pytest
 
@@ -41,6 +42,15 @@ def valid_election(b_mock, node_key, new_validator):
 @pytest.fixture
 def valid_election_b(b, node_key, new_validator):
     voters = ValidatorElection.recipients(b)
+    return ValidatorElection.generate([node_key.public_key],
+                                      voters,
+                                      new_validator, None).sign([node_key.private_key])
+
+
+@pytest.fixture
+@patch('bigchaindb.elections.election.uuid4', lambda: 'mock_uuid4')
+def fixed_seed_election(b_mock, node_key, new_validator):
+    voters = ValidatorElection.recipients(b_mock)
     return ValidatorElection.generate([node_key.public_key],
                                       voters,
                                       new_validator, None).sign([node_key.private_key])

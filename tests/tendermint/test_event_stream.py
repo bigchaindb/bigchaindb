@@ -10,7 +10,6 @@ from aiohttp import ClientSession
 import pytest
 
 
-@pytest.mark.tendermint
 def test_process_event_new_block():
     from bigchaindb.event_stream import process_event
 
@@ -48,7 +47,6 @@ def test_process_event_new_block():
     assert isinstance(block.data['height'], int)
 
 
-@pytest.mark.tendermint
 def test_process_event_empty_block():
     from bigchaindb.event_stream import process_event
 
@@ -69,7 +67,6 @@ def test_process_event_empty_block():
     assert event_queue.empty()
 
 
-@pytest.mark.tendermint
 def test_process_unknown_event():
     from bigchaindb.event_stream import process_event
 

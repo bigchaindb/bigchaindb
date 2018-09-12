@@ -100,7 +100,7 @@ class App(BaseApplication):
 
         block = Block(app_hash=app_hash, height=height, transactions=[])
         self.bigchaindb.store_block(block._asdict())
-        self.bigchaindb.store_validator_set(height + 1, validator_set, None)
+        self.bigchaindb.store_validator_set(height + 1, validator_set)
         abci_chain_height = 0 if known_chain is None else known_chain['height']
         self.bigchaindb.store_abci_chain(abci_chain_height,
                                          genesis.chain_id, True)

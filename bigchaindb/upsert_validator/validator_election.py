@@ -3,7 +3,6 @@
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
 from bigchaindb.common.exceptions import InvalidPowerChange
-from bigchaindb.tendermint_utils import public_key_to_base64
 from bigchaindb.elections.election import Election
 from bigchaindb.common.schema import (TX_SCHEMA_VALIDATOR_ELECTION)
 from .validator_utils import (new_validator_set, encode_validator, validate_asset_public_key)
@@ -33,8 +32,8 @@ class ValidatorElection(Election):
         return self
 
     @classmethod
-    def validate_schema(cls, tx, skip_id=False):
-        super(ValidatorElection, cls).validate_schema(tx, skip_id=skip_id)
+    def validate_schema(cls, tx):
+        super(ValidatorElection, cls).validate_schema(tx)
         validate_asset_public_key(tx['asset']['data']['public_key'])
 
     @classmethod
@@ -46,18 +45,5 @@ class ValidatorElection(Election):
                                                   validator_updates)
 
         updated_validator_set = [v for v in updated_validator_set if v['voting_power'] > 0]
-        bigchain.store_validator_set(new_height+1, updated_validator_set, election.id)
+        bigchain.store_validator_set(new_height+1, updated_validator_set)
         return encode_validator(election.asset['data'])
-
-    def show_election(self, bigchain):
-
-        new_validator = self.asset['data']
-
-        public_key = public_key_to_base64(new_validator['public_key']['value'])
-        power = new_validator['power']
-        node_id = new_validator['node_id']
-        status = self.get_status(bigchain)
-
-        response = f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
-
-        return response

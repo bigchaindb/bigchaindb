@@ -8,8 +8,6 @@ This test module defines it's own fixture which is used by all the tests.
 """
 import pytest
 
-pytestmark = pytest.mark.tendermint
-
 
 @pytest.fixture
 def txlist(b, user_pk, user2_pk, user_sk, user2_sk):

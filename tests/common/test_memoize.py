@@ -10,7 +10,7 @@ from bigchaindb.common.crypto import generate_key_pair
 from bigchaindb.common.memoize import to_dict, from_dict
 
 
-pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
+pytestmark = pytest.mark.bdb
 
 
 def test_memoize_to_dict(b):

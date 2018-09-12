@@ -16,7 +16,6 @@ from tests.utils import generate_block
 pytestmark = [pytest.mark.execute]
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_upsert_validator_valid_election_vote(b_mock, valid_election, ed25519_node_keys):
     b_mock.store_bulk_transactions([valid_election])
@@ -35,7 +34,6 @@ def test_upsert_validator_valid_election_vote(b_mock, valid_election, ed25519_no
     assert vote.validate(b_mock)
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_upsert_validator_valid_non_election_vote(b_mock, valid_election, ed25519_node_keys):
     b_mock.store_bulk_transactions([valid_election])
@@ -55,7 +53,6 @@ def test_upsert_validator_valid_non_election_vote(b_mock, valid_election, ed2551
              .sign([key0.private_key])
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_upsert_validator_delegate_election_vote(b_mock, valid_election, ed25519_node_keys):
     alice = generate_key_pair()
@@ -92,7 +89,6 @@ def test_upsert_validator_delegate_election_vote(b_mock, valid_election, ed25519
     assert key0_casted_vote.validate(b_mock)
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_upsert_validator_invalid_election_vote(b_mock, valid_election, ed25519_node_keys):
     b_mock.store_bulk_transactions([valid_election])
@@ -113,7 +109,6 @@ def test_upsert_validator_invalid_election_vote(b_mock, valid_election, ed25519_
         assert vote.validate(b_mock)
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_valid_election_votes_received(b_mock, valid_election, ed25519_node_keys):
     alice = generate_key_pair()
@@ -159,7 +154,6 @@ def test_valid_election_votes_received(b_mock, valid_election, ed25519_node_keys
     assert valid_election.get_commited_votes(b_mock) == votes-2
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_valid_election_conclude(b_mock, valid_election, ed25519_node_keys):
 
@@ -234,7 +228,7 @@ def test_upsert_validator(b, node_key, node_keys, ed25519_node_keys):
 
     latest_block = b.get_latest_block()
     # reset the validator set
-    b.store_validator_set(latest_block['height'], validators, 'previous_election_id')
+    b.store_validator_set(latest_block['height'], validators)
 
     power = 1
     public_key = '9B3119650DF82B9A5D8A12E38953EA47475C09F0C48A4E6A0ECE182944B24403'
@@ -273,7 +267,6 @@ def test_upsert_validator(b, node_key, node_keys, ed25519_node_keys):
     assert (public_key64 in validator_pub_keys)
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
     reset_validator_set(b, node_keys, 1)
@@ -303,18 +296,15 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
     assert not ValidatorElection.approved_update(b, 4, [tx_vote0, tx_vote1])
 
     update = ValidatorElection.approved_update(b, 4, [tx_vote0, tx_vote1, tx_vote2])
-    update_public_key = None
-    if update:
-        update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
     assert update
+    update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
     assert update_public_key == public_key64
 
     b.store_bulk_transactions([tx_vote0, tx_vote1])
 
     update = ValidatorElection.approved_update(b, 4, [tx_vote2])
-    if update:
-        update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
     assert update
+    update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
     assert update_public_key == public_key64
 
     # remove validator
@@ -372,4 +362,4 @@ def reset_validator_set(b, node_keys, height):
         validators.append({'public_key': {'type': 'ed25519-base64',
                                           'value': node_pub},
                            'voting_power': 10})
-    b.store_validator_set(height, validators, 'election_id')
+    b.store_validator_set(height, validators)

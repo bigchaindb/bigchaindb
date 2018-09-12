@@ -13,7 +13,7 @@ from cryptoconditions import Ed25519Sha256
 from pytest import mark, raises
 from sha3 import sha3_256
 
-pytestmark = [mark.tendermint, mark.bdb]
+pytestmark = mark.bdb
 
 
 def test_input_serialization(ffill_uri, user_pub):

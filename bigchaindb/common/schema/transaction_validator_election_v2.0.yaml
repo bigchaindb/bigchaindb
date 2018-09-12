@@ -22,6 +22,8 @@ properties:
         properties:
           node_id:
             type: string
+          seed:
+            type: string
           public_key:
             type: object
             additionalProperties: false

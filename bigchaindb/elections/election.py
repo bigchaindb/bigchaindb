@@ -3,6 +3,7 @@
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
 import base58
+from uuid import uuid4
 
 from bigchaindb import backend
 from bigchaindb.elections.vote import Vote
@@ -105,7 +106,7 @@ class Election(Transaction):
         input_conditions = []
 
         duplicates = any(txn for txn in current_transactions if txn.id == self.id)
-        if bigchain.get_transaction(self.id) or duplicates:
+        if bigchain.is_committed(self.id) or duplicates:
             raise DuplicateTransaction('transaction `{}` already exists'
                                        .format(self.id))
 
@@ -131,18 +132,20 @@ class Election(Transaction):
 
     @classmethod
     def generate(cls, initiator, voters, election_data, metadata=None):
+        # Break symmetry in case we need to call an election with the same properties twice
+        uuid = uuid4()
+        election_data['seed'] = str(uuid)
+
         (inputs, outputs) = cls.validate_create(initiator, voters, election_data, metadata)
         election = cls(cls.OPERATION, {'data': election_data}, inputs, outputs, metadata)
-        cls.validate_schema(election.to_dict(), skip_id=True)
+        cls.validate_schema(election.to_dict())
         return election
 
     @classmethod
-    def validate_schema(cls, tx, skip_id=False):
+    def validate_schema(cls, tx):
         """Validate the election transaction. Since `ELECTION` extends `CREATE` transaction, all the validations for
         `CREATE` transaction should be inherited
         """
-        if not skip_id:
-            cls.validate_id(tx)
         _validate_schema(TX_SCHEMA_COMMON, tx)
         _validate_schema(TX_SCHEMA_CREATE, tx)
         if cls.TX_SCHEMA_CUSTOM:

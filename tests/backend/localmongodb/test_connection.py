@@ -9,7 +9,7 @@ import pymongo
 from pymongo import MongoClient
 
 
-pytestmark = [pytest.mark.bdb, pytest.mark.tendermint]
+pytestmark = pytest.mark.bdb
 
 
 @pytest.fixture

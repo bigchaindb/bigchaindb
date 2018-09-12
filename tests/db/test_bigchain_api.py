@@ -12,7 +12,6 @@ pytestmark = pytest.mark.bdb
 
 class TestBigchainApi(object):
 
-    @pytest.mark.tendermint
     def test_get_spent_with_double_spend_detected(self, b, alice):
         from bigchaindb.models import Transaction
         from bigchaindb.common.exceptions import DoubleSpend
@@ -43,7 +42,6 @@ class TestBigchainApi(object):
         with pytest.raises(CriticalDoubleSpend):
             b.get_spent(tx.id, 0)
 
-    @pytest.mark.tendermint
     def test_double_inclusion(self, b, alice):
         from bigchaindb.models import Transaction
         from bigchaindb.backend.exceptions import OperationError
@@ -56,7 +54,6 @@ class TestBigchainApi(object):
         with pytest.raises(OperationError):
             b.store_bulk_transactions([tx])
 
-    @pytest.mark.tendermint
     def test_text_search(self, b, alice):
         from bigchaindb.models import Transaction
 
@@ -81,7 +78,6 @@ class TestBigchainApi(object):
         assert len(assets) == 3
 
     @pytest.mark.usefixtures('inputs')
-    @pytest.mark.tendermint
     def test_non_create_input_not_found(self, b, user_pk):
         from cryptoconditions import Ed25519Sha256
         from bigchaindb.common.exceptions import InputDoesNotExist
@@ -97,7 +93,6 @@ class TestBigchainApi(object):
         with pytest.raises(InputDoesNotExist):
             tx.validate(b)
 
-    @pytest.mark.tendermint
     def test_write_transaction(self, b, user_sk, user_pk, alice, create_tx):
         from bigchaindb.models import Transaction
 
@@ -120,7 +115,6 @@ class TestBigchainApi(object):
 
 class TestTransactionValidation(object):
 
-    @pytest.mark.tendermint
     def test_non_create_input_not_found(self, b, signed_transfer_tx):
         from bigchaindb.common.exceptions import InputDoesNotExist
         from bigchaindb.common.transaction import TransactionLink
@@ -129,7 +123,6 @@ class TestTransactionValidation(object):
         with pytest.raises(InputDoesNotExist):
             b.validate_transaction(signed_transfer_tx)
 
-    @pytest.mark.tendermint
     @pytest.mark.usefixtures('inputs')
     def test_non_create_valid_input_wrong_owner(self, b, user_pk):
         from bigchaindb.common.crypto import generate_key_pair
@@ -147,7 +140,6 @@ class TestTransactionValidation(object):
         with pytest.raises(InvalidSignature):
             b.validate_transaction(tx)
 
-    @pytest.mark.tendermint
     @pytest.mark.usefixtures('inputs')
     def test_non_create_double_spend(self, b, signed_create_tx,
                                      signed_transfer_tx, double_spend_tx):
@@ -161,7 +153,6 @@ class TestTransactionValidation(object):
 
 class TestMultipleInputs(object):
 
-    @pytest.mark.tendermint
     def test_transfer_single_owner_single_input(self, b, inputs, user_pk,
                                                 user_sk):
         from bigchaindb.common import crypto
@@ -181,7 +172,6 @@ class TestMultipleInputs(object):
         assert len(tx.inputs) == 1
         assert len(tx.outputs) == 1
 
-    @pytest.mark.tendermint
     def test_single_owner_before_multiple_owners_after_single_input(self, b,
                                                                     user_sk,
                                                                     user_pk,
@@ -203,7 +193,6 @@ class TestMultipleInputs(object):
         assert len(tx.inputs) == 1
         assert len(tx.outputs) == 1
 
-    @pytest.mark.tendermint
     @pytest.mark.usefixtures('inputs')
     def test_multiple_owners_before_single_owner_after_single_input(self, b,
                                                                     user_sk,
@@ -232,7 +221,6 @@ class TestMultipleInputs(object):
         assert len(transfer_tx.inputs) == 1
         assert len(transfer_tx.outputs) == 1
 
-    @pytest.mark.tendermint
     @pytest.mark.usefixtures('inputs')
     def test_multiple_owners_before_multiple_owners_after_single_input(self, b,
                                                                        user_sk,
@@ -262,7 +250,6 @@ class TestMultipleInputs(object):
         assert len(tx.inputs) == 1
         assert len(tx.outputs) == 1
 
-    @pytest.mark.tendermint
     def test_get_owned_ids_single_tx_single_output(self, b, user_sk, user_pk, alice):
         from bigchaindb.common import crypto
         from bigchaindb.common.transaction import TransactionLink
@@ -290,7 +277,6 @@ class TestMultipleInputs(object):
         assert owned_inputs_user1 == [TransactionLink(tx.id, 0)]
         assert owned_inputs_user2 == [TransactionLink(tx_transfer.id, 0)]
 
-    @pytest.mark.tendermint
     def test_get_owned_ids_single_tx_multiple_outputs(self, b, user_sk,
                                                       user_pk, alice):
         from bigchaindb.common import crypto
@@ -326,7 +312,6 @@ class TestMultipleInputs(object):
         assert owned_inputs_user2 == [TransactionLink(tx_transfer.id, 0),
                                       TransactionLink(tx_transfer.id, 1)]
 
-    @pytest.mark.tendermint
     def test_get_owned_ids_multiple_owners(self, b, user_sk, user_pk, alice):
         from bigchaindb.common import crypto
         from bigchaindb.common.transaction import TransactionLink
@@ -359,7 +344,6 @@ class TestMultipleInputs(object):
         assert owned_inputs_user1 == owned_inputs_user2
         assert not spent_user1
 
-    @pytest.mark.tendermint
     def test_get_spent_single_tx_single_output(self, b, user_sk, user_pk, alice):
         from bigchaindb.common import crypto
         from bigchaindb.models import Transaction
@@ -386,7 +370,6 @@ class TestMultipleInputs(object):
         spent_inputs_user1 = b.get_spent(input_txid, 0)
         assert spent_inputs_user1 == tx
 
-    @pytest.mark.tendermint
     def test_get_spent_single_tx_multiple_outputs(self, b, user_sk, user_pk, alice):
         from bigchaindb.common import crypto
         from bigchaindb.models import Transaction
@@ -424,7 +407,6 @@ class TestMultipleInputs(object):
         # spendable by BigchainDB
         assert b.get_spent(tx_create.to_inputs()[2].fulfills.txid, 2) is None
 
-    @pytest.mark.tendermint
     def test_get_spent_multiple_owners(self, b, user_sk, user_pk, alice):
         from bigchaindb.common import crypto
         from bigchaindb.models import Transaction
@@ -461,7 +443,6 @@ class TestMultipleInputs(object):
             assert b.get_spent(unspent.id, 0) is None
 
 
-@pytest.mark.tendermint
 def test_get_outputs_filtered_only_unspent():
     from bigchaindb.common.transaction import TransactionLink
     from bigchaindb.lib import BigchainDB
@@ -478,7 +459,6 @@ def test_get_outputs_filtered_only_unspent():
     assert out == [TransactionLink('b', 2)]
 
 
-@pytest.mark.tendermint
 def test_get_outputs_filtered_only_spent():
     from bigchaindb.common.transaction import TransactionLink
     from bigchaindb.lib import BigchainDB
@@ -494,7 +474,6 @@ def test_get_outputs_filtered_only_spent():
     assert out == [TransactionLink('b', 2)]
 
 
-@pytest.mark.tendermint
 @patch('bigchaindb.fastquery.FastQuery.filter_unspent_outputs')
 @patch('bigchaindb.fastquery.FastQuery.filter_spent_outputs')
 def test_get_outputs_filtered(filter_spent, filter_unspent):
@@ -512,7 +491,6 @@ def test_get_outputs_filtered(filter_spent, filter_unspent):
     assert out == get_outputs.return_value
 
 
-@pytest.mark.tendermint
 def test_cant_spend_same_input_twice_in_tx(b, alice):
     """Recreate duplicated fulfillments bug
     https://github.com/bigchaindb/bigchaindb/issues/1099
@@ -536,7 +514,6 @@ def test_cant_spend_same_input_twice_in_tx(b, alice):
         tx_transfer_signed.validate(b)
 
 
-@pytest.mark.tendermint
 def test_transaction_unicode(b, alice):
     import copy
     from bigchaindb.common.utils import serialize
