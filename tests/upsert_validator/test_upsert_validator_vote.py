@@ -244,7 +244,7 @@ def test_upsert_validator(b, node_key, node_keys, ed25519_node_keys):
                                           new_validator, None).sign([node_key.private_key])
     code, message = b.write_transaction(election, 'broadcast_tx_commit')
     assert code == 202
-    time.sleep(3)
+    time.sleep(1)
 
     assert b.get_transaction(election.id)
 
@@ -252,7 +252,7 @@ def test_upsert_validator(b, node_key, node_keys, ed25519_node_keys):
     assert tx_vote.validate(b)
     code, message = b.write_transaction(tx_vote, 'broadcast_tx_commit')
     assert code == 202
-    time.sleep(3)
+    time.sleep(1)
 
     resp = requests.get(b.endpoint + 'validators')
     validator_pub_keys = []
