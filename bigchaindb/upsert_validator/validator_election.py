@@ -4,7 +4,7 @@
 
 from bigchaindb.common.exceptions import InvalidPowerChange
 from bigchaindb.elections.election import Election
-from bigchaindb.common.schema import (TX_SCHEMA_VALIDATOR_ELECTION)
+from bigchaindb.common.schema import TX_SCHEMA_VALIDATOR_ELECTION
 from .validator_utils import (new_validator_set, encode_validator, validate_asset_public_key)
 
 
