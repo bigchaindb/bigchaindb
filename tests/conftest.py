@@ -23,8 +23,10 @@ from pymongo import MongoClient
 from bigchaindb.common import crypto
 from bigchaindb.log import setup_logging
 from bigchaindb.tendermint_utils import key_from_base64
+from bigchaindb.backend import schema
 from bigchaindb.common.crypto import (key_pair_from_ed25519_key,
                                       public_key_from_ed25519_key)
+from bigchaindb.common.exceptions import DatabaseDoesNotExist
 from bigchaindb.lib import Block
 
 
@@ -113,17 +115,12 @@ def _configure_bigchaindb(request):
 @pytest.fixture(scope='session')
 def _setup_database(_configure_bigchaindb):
     from bigchaindb import config
-    from bigchaindb.backend import connect, schema
-    from bigchaindb.common.exceptions import DatabaseDoesNotExist
+    from bigchaindb.backend import connect
     print('Initializing test db')
     dbname = config['database']['name']
     conn = connect()
 
-    try:
-        schema.drop_database(conn, dbname)
-    except DatabaseDoesNotExist:
-        pass
-
+    _drop_db(conn, dbname)
     schema.init_database(conn)
     print('Finishing init database')
 
@@ -131,10 +128,7 @@ def _setup_database(_configure_bigchaindb):
 
     print('Deleting `{}` database'.format(dbname))
     conn = connect()
-    try:
-        schema.drop_database(conn, dbname)
-    except DatabaseDoesNotExist:
-        pass
+    _drop_db(conn, dbname)
 
     print('Finished deleting `{}`'.format(dbname))
 
@@ -270,7 +264,6 @@ def signed_create_tx(alice, create_tx):
     return create_tx.sign([alice.private_key])
 
 
-@pytest.mark.abci
 @pytest.fixture
 def posted_create_tx(b, signed_create_tx):
     res = b.post_transaction(signed_create_tx, 'broadcast_tx_commit')
@@ -321,20 +314,22 @@ def inputs(user_pk, b, alice):
 
 @pytest.fixture
 def dummy_db(request):
-    from bigchaindb.backend import connect, schema
-    from bigchaindb.common.exceptions import (DatabaseDoesNotExist,
-                                              DatabaseAlreadyExists)
+    from bigchaindb.backend import connect
+
     conn = connect()
     dbname = request.fixturename
     xdist_suffix = getattr(request.config, 'slaveinput', {}).get('slaveid')
     if xdist_suffix:
         dbname = '{}_{}'.format(dbname, xdist_suffix)
-    try:
-        schema.init_database(conn, dbname)
-    except DatabaseAlreadyExists:
-        schema.drop_database(conn, dbname)
-        schema.init_database(conn, dbname)
+
+    _drop_db(conn, dbname)  # make sure we start with a clean DB
+    schema.init_database(conn, dbname)
     yield dbname
+
+    _drop_db(conn, dbname)
+
+
+def _drop_db(conn, dbname):
     try:
         schema.drop_database(conn, dbname)
     except DatabaseDoesNotExist:
@@ -430,7 +425,6 @@ def event_loop():
     loop.close()
 
 
-@pytest.mark.bdb
 @pytest.fixture(scope='session')
 def abci_server():
     from abci import ABCIServer

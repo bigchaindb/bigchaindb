@@ -8,7 +8,6 @@ from pytest import mark, raises
 @mark.parametrize('schema_func_name,args_qty', (
     ('create_database', 1),
     ('create_tables', 1),
-    ('create_indexes', 1),
     ('drop_database', 1),
 ))
 def test_schema(schema_func_name, args_qty):

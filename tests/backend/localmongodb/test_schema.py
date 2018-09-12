@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
-import pytest
-
 
 def test_init_creates_db_tables_and_indexes():
     import bigchaindb
@@ -50,11 +48,10 @@ def test_init_creates_db_tables_and_indexes():
     assert set(indexes) == {'_id_', 'election_id'}
 
 
-def test_init_database_fails_if_db_exists():
+def test_init_database_is_graceful_if_db_exists():
     import bigchaindb
     from bigchaindb import backend
     from bigchaindb.backend.schema import init_database
-    from bigchaindb.common import exceptions
 
     conn = backend.connect()
     dbname = bigchaindb.config['database']['name']
@@ -62,8 +59,7 @@ def test_init_database_fails_if_db_exists():
     # The db is set up by the fixtures
     assert dbname in conn.conn.database_names()
 
-    with pytest.raises(exceptions.DatabaseAlreadyExists):
-        init_database()
+    init_database()
 
 
 def test_create_tables():
@@ -84,21 +80,6 @@ def test_create_tables():
         'transactions', 'assets', 'metadata', 'blocks', 'utxos', 'validators', 'elections',
         'pre_commit', 'abci_chains',
     }
-
-
-def test_create_secondary_indexes():
-    import bigchaindb
-    from bigchaindb import backend
-    from bigchaindb.backend import schema
-
-    conn = backend.connect()
-    dbname = bigchaindb.config['database']['name']
-
-    # The db is set up by the fixtures so we need to remove it
-    conn.conn.drop_database(dbname)
-    schema.create_database(conn, dbname)
-    schema.create_tables(conn, dbname)
-    schema.create_indexes(conn, dbname)
 
     indexes = conn.conn[dbname]['assets'].index_information().keys()
     assert set(indexes) == {'_id_', 'asset_id', 'text'}

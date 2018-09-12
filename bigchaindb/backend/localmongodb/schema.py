@@ -7,9 +7,9 @@
 import logging
 
 from pymongo import ASCENDING, DESCENDING, TEXT
+from pymongo.errors import CollectionInvalid
 
 from bigchaindb import backend
-from bigchaindb.common import exceptions
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 
@@ -18,12 +18,47 @@ logger = logging.getLogger(__name__)
 register_schema = module_dispatch_registrar(backend.schema)
 
 
+INDEXES = {
+    'transactions': [
+        ('id', dict(unique=True, name='transaction_id')),
+        ('asset.id', dict(name='asset_id')),
+        ('outputs.public_keys', dict(name='outputs')),
+        ([('inputs.fulfills.transaction_id', ASCENDING),
+          ('inputs.fulfills.output_index', ASCENDING)], dict(name='inputs')),
+    ],
+    'assets': [
+        ('id', dict(name='asset_id', unique=True)),
+        ([('$**', TEXT)], dict(name='text')),
+    ],
+    'blocks': [
+        ([('height', DESCENDING)], dict(name='height', unique=True)),
+    ],
+    'metadata': [
+        ('id', dict(name='transaction_id', unique=True)),
+        ([('$**', TEXT)], dict(name='text')),
+    ],
+    'utxos': [
+        ([('transaction_id', ASCENDING),
+          ('output_index', ASCENDING)], dict(name='utxo', unique=True)),
+    ],
+    'pre_commit': [
+        ('commit_id', dict(name='pre_commit_id', unique=True)),
+    ],
+    'elections': [
+        ('election_id', dict(name='election_id', unique=True)),
+    ],
+    'validators': [
+        ('height', dict(name='height', unique=True)),
+    ],
+    'abci_chains': [
+        ('height', dict(name='height', unique=True)),
+        ('chain_id', dict(name='chain_id', unique=True)),
+    ],
+}
+
+
 @register_schema(LocalMongoDBConnection)
 def create_database(conn, dbname):
-    if dbname in conn.conn.database_names():
-        raise exceptions.DatabaseAlreadyExists('Database `{}` already exists'
-                                               .format(dbname))
-
     logger.info('Create database `%s`.', dbname)
     # TODO: read and write concerns can be declared here
     conn.conn.get_database(dbname)
@@ -32,128 +67,22 @@ def create_database(conn, dbname):
 @register_schema(LocalMongoDBConnection)
 def create_tables(conn, dbname):
     for table_name in backend.schema.TABLES:
-        logger.info('Create `%s` table.', table_name)
         # create the table
         # TODO: read and write concerns can be declared here
-        conn.conn[dbname].create_collection(table_name)
+        try:
+            logger.info(f'Create `{table_name}` table.')
+            conn.conn[dbname].create_collection(table_name)
+        except CollectionInvalid:
+            logger.info(f'Collection {table_name} already exists.')
+        create_indexes(conn, dbname, table_name, INDEXES[table_name])
 
 
-@register_schema(LocalMongoDBConnection)
-def create_indexes(conn, dbname):
-    create_transactions_secondary_index(conn, dbname)
-    create_assets_secondary_index(conn, dbname)
-    create_blocks_secondary_index(conn, dbname)
-    create_metadata_secondary_index(conn, dbname)
-    create_utxos_secondary_index(conn, dbname)
-    create_pre_commit_secondary_index(conn, dbname)
-    create_validators_secondary_index(conn, dbname)
-    create_abci_chains_indexes(conn, dbname)
-    create_elections_secondary_index(conn, dbname)
+def create_indexes(conn, dbname, collection, indexes):
+    logger.info(f'Ensure secondary indexes for `{collection}`.')
+    for fields, kwargs in indexes:
+        conn.conn[dbname][collection].create_index(fields, **kwargs)
 
 
 @register_schema(LocalMongoDBConnection)
 def drop_database(conn, dbname):
     conn.conn.drop_database(dbname)
-
-
-def create_transactions_secondary_index(conn, dbname):
-    logger.info('Create `transactions` secondary index.')
-
-    # to query the transactions for a transaction id, this field is unique
-    conn.conn[dbname]['transactions'].create_index('id',
-                                                   unique=True,
-                                                   name='transaction_id')
-
-    # secondary index for asset uuid, this field is unique
-    conn.conn[dbname]['transactions']\
-        .create_index('asset.id', name='asset_id')
-
-    # secondary index on the public keys of outputs
-    conn.conn[dbname]['transactions']\
-        .create_index('outputs.public_keys',
-                      name='outputs')
-
-    # secondary index on inputs/transaction links (transaction_id, output)
-    conn.conn[dbname]['transactions']\
-        .create_index([
-            ('inputs.fulfills.transaction_id', ASCENDING),
-            ('inputs.fulfills.output_index', ASCENDING),
-        ], name='inputs')
-
-
-def create_assets_secondary_index(conn, dbname):
-    logger.info('Create `assets` secondary index.')
-
-    # unique index on the id of the asset.
-    # the id is the txid of the transaction that created the asset
-    conn.conn[dbname]['assets'].create_index('id',
-                                             name='asset_id',
-                                             unique=True)
-
-    # full text search index
-    conn.conn[dbname]['assets'].create_index([('$**', TEXT)], name='text')
-
-
-def create_blocks_secondary_index(conn, dbname):
-    conn.conn[dbname]['blocks']\
-        .create_index([('height', DESCENDING)], name='height', unique=True)
-
-
-def create_metadata_secondary_index(conn, dbname):
-    logger.info('Create `assets` secondary index.')
-
-    # the id is the txid of the transaction where metadata was defined
-    conn.conn[dbname]['metadata'].create_index('id',
-                                               name='transaction_id',
-                                               unique=True)
-
-    # full text search index
-    conn.conn[dbname]['metadata'].create_index([('$**', TEXT)], name='text')
-
-
-def create_utxos_secondary_index(conn, dbname):
-    logger.info('Create `utxos` secondary index.')
-
-    conn.conn[dbname]['utxos'].create_index(
-        [('transaction_id', ASCENDING), ('output_index', ASCENDING)],
-        name='utxo',
-        unique=True,
-    )
-
-
-def create_pre_commit_secondary_index(conn, dbname):
-    logger.info('Create `pre_commit` secondary index.')
-
-    conn.conn[dbname]['pre_commit'].create_index('commit_id',
-                                                 name='pre_commit_id',
-                                                 unique=True)
-
-
-def create_validators_secondary_index(conn, dbname):
-    logger.info('Create `validators` secondary index.')
-
-    conn.conn[dbname]['validators'].create_index('height',
-                                                 name='height',
-                                                 unique=True,)
-
-
-def create_abci_chains_indexes(conn, dbname):
-    logger.info('Create `abci_chains.height` secondary index.')
-
-    conn.conn[dbname]['abci_chains'].create_index('height',
-                                                  name='height',
-                                                  unique=True,)
-
-    logger.info('Create `abci_chains.chain_id` secondary index.')
-
-    conn.conn[dbname]['abci_chains'].create_index('chain_id',
-                                                  name='chain_id',
-                                                  unique=True)
-
-
-def create_elections_secondary_index(conn, dbname):
-    logger.info('Create `elections` secondary index.')
-
-    conn.conn[dbname]['elections'].create_index('election_id',
-                                                name='election_id',
-                                                unique=True,)

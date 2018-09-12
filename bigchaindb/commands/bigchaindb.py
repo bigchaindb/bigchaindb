@@ -14,8 +14,7 @@ import json
 import sys
 
 from bigchaindb.utils import load_node_key
-from bigchaindb.common.exceptions import (DatabaseAlreadyExists,
-                                          DatabaseDoesNotExist,
+from bigchaindb.common.exceptions import (DatabaseDoesNotExist,
                                           ValidationError)
 from bigchaindb.elections.vote import Vote
 import bigchaindb
@@ -228,14 +227,7 @@ def _run_init():
 @configure_bigchaindb
 def run_init(args):
     """Initialize the database"""
-    # TODO Provide mechanism to:
-    # 1. prompt the user to inquire whether they wish to drop the db
-    # 2. force the init, (e.g., via -f flag)
-    try:
-        _run_init()
-    except DatabaseAlreadyExists:
-        print('The database already exists.', file=sys.stderr)
-        print('If you wish to re-initialize it, first drop it.', file=sys.stderr)
+    _run_init()
 
 
 @configure_bigchaindb
@@ -279,12 +271,9 @@ def run_start(args):
     logger.info('BigchainDB Version %s', bigchaindb.__version__)
     run_recover(bigchaindb.lib.BigchainDB())
 
-    try:
-        if not args.skip_initialize_database:
-            logger.info('Initializing database')
-            _run_init()
-    except DatabaseAlreadyExists:
-        pass
+    if not args.skip_initialize_database:
+        logger.info('Initializing database')
+        _run_init()
 
     logger.info('Starting BigchainDB main process.')
     from bigchaindb.start import start
