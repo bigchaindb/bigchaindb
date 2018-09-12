@@ -26,6 +26,8 @@ def test_make_sure_we_dont_remove_any_command():
     assert parser.parse_args(['start']).command
     assert parser.parse_args(['election', 'new', 'upsert-validator', 'TEMP_PUB_KEYPAIR', '10', 'TEMP_NODE_ID',
                               '--private-key', 'TEMP_PATH_TO_PRIVATE_KEY']).command
+    assert parser.parse_args(['election', 'new', 'migration',
+                              '--private-key', 'TEMP_PATH_TO_PRIVATE_KEY']).command
     assert parser.parse_args(['election', 'approve', 'ELECTION_ID', '--private-key',
                               'TEMP_PATH_TO_PRIVATE_KEY']).command
     assert parser.parse_args(['election', 'show', 'ELECTION_ID']).command
