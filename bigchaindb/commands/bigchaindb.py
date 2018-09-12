@@ -317,7 +317,7 @@ def create_parser():
 
     # parser for managing elections
     election_parser = subparsers.add_parser('election',
-                                            help='Add/update/delete a validator.')
+                                            help='Manage elections.')
 
     election_subparser = election_parser.add_subparsers(title='Action',
                                                         dest='action')
