@@ -343,6 +343,20 @@ def test_election_new_upsert_validator_without_tendermint(caplog, b, priv_valida
         assert b.get_transaction(election_id)
 
 
+@pytest.mark.abci
+def test_election_new_migration_with_tendermint(b, priv_validator_path, user_sk, validators):
+    from bigchaindb.commands.bigchaindb import run_election_new_migration
+
+    new_args = Namespace(action='new',
+                         election_type='migration',
+                         sk=priv_validator_path,
+                         config={})
+
+    election_id = run_election_new_migration(new_args, b)
+
+    assert b.get_transaction(election_id)
+
+
 @pytest.mark.bdb
 def test_election_new_migration_without_tendermint(caplog, b, priv_validator_path, user_sk):
     from bigchaindb.commands.bigchaindb import run_election_new_migration
