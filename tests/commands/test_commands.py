@@ -25,11 +25,11 @@ def test_make_sure_we_dont_remove_any_command():
     assert parser.parse_args(['init']).command
     assert parser.parse_args(['drop']).command
     assert parser.parse_args(['start']).command
-    assert parser.parse_args(['upsert-validator', 'new', 'TEMP_PUB_KEYPAIR', '10', 'TEMP_NODE_ID',
+    assert parser.parse_args(['election', 'new', 'upsert-validator', 'TEMP_PUB_KEYPAIR', '10', 'TEMP_NODE_ID',
                               '--private-key', 'TEMP_PATH_TO_PRIVATE_KEY']).command
-    assert parser.parse_args(['upsert-validator', 'approve', 'ELECTION_ID', '--private-key',
+    assert parser.parse_args(['election', 'approve', 'ELECTION_ID', '--private-key',
                               'TEMP_PATH_TO_PRIVATE_KEY']).command
-    assert parser.parse_args(['upsert-validator', 'show', 'ELECTION_ID']).command
+    assert parser.parse_args(['election', 'show', 'ELECTION_ID']).command
 
 
 @patch('bigchaindb.commands.utils.start')
@@ -333,24 +333,25 @@ class MockResponse():
 
 
 @pytest.mark.abci
-def test_upsert_validator_new_with_tendermint(b, priv_validator_path, user_sk, validators):
-    from bigchaindb.commands.bigchaindb import run_upsert_validator_new
+def test_election_new_upsert_validator_with_tendermint(b, priv_validator_path, user_sk, validators):
+    from bigchaindb.commands.bigchaindb import run_election_new_upsert_validator
 
     new_args = Namespace(action='new',
+                         election_type='upsert_validator',
                          public_key='HHG0IQRybpT6nJMIWWFWhMczCLHt6xcm7eP52GnGuPY=',
                          power=1,
                          node_id='unique_node_id_for_test_upsert_validator_new_with_tendermint',
                          sk=priv_validator_path,
                          config={})
 
-    election_id = run_upsert_validator_new(new_args, b)
+    election_id = run_election_new_upsert_validator(new_args, b)
 
     assert b.get_transaction(election_id)
 
 
 @pytest.mark.bdb
-def test_upsert_validator_new_without_tendermint(caplog, b, priv_validator_path, user_sk):
-    from bigchaindb.commands.bigchaindb import run_upsert_validator_new
+def test_election_new_upsert_validator_without_tendermint(caplog, b, priv_validator_path, user_sk):
+    from bigchaindb.commands.bigchaindb import run_election_new_upsert_validator
 
     def mock_write(tx, mode):
         b.store_bulk_transactions([tx])
@@ -360,6 +361,7 @@ def test_upsert_validator_new_without_tendermint(caplog, b, priv_validator_path,
     b.write_transaction = mock_write
 
     args = Namespace(action='new',
+                     election_type='upsert_validator',
                      public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',
                      power=1,
                      node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
@@ -367,16 +369,17 @@ def test_upsert_validator_new_without_tendermint(caplog, b, priv_validator_path,
                      config={})
 
     with caplog.at_level(logging.INFO):
-        election_id = run_upsert_validator_new(args, b)
+        election_id = run_election_new_upsert_validator(args, b)
         assert caplog.records[0].msg == '[SUCCESS] Submitted proposal with id: ' + election_id
         assert b.get_transaction(election_id)
 
 
 @pytest.mark.bdb
-def test_upsert_validator_new_invalid_election(caplog, b, priv_validator_path, user_sk):
-    from bigchaindb.commands.bigchaindb import run_upsert_validator_new
+def test_election_new_upsert_validator_invalid_election(caplog, b, priv_validator_path, user_sk):
+    from bigchaindb.commands.bigchaindb import run_election_new_upsert_validator
 
     args = Namespace(action='new',
+                     election_type='upsert_validator',
                      public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',
                      power=10,
                      node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
@@ -384,13 +387,13 @@ def test_upsert_validator_new_invalid_election(caplog, b, priv_validator_path, u
                      config={})
 
     with caplog.at_level(logging.ERROR):
-        assert not run_upsert_validator_new(args, b)
+        assert not run_election_new_upsert_validator(args, b)
         assert caplog.records[0].msg.__class__ == FileNotFoundError
 
 
 @pytest.mark.bdb
-def test_upsert_validator_new_election_invalid_power(caplog, b, priv_validator_path, user_sk):
-    from bigchaindb.commands.bigchaindb import run_upsert_validator_new
+def test_election_new_upsert_validator_invalid_power(caplog, b, priv_validator_path, user_sk):
+    from bigchaindb.commands.bigchaindb import run_election_new_upsert_validator
     from bigchaindb.common.exceptions import InvalidPowerChange
 
     def mock_write(tx, mode):
@@ -400,6 +403,7 @@ def test_upsert_validator_new_election_invalid_power(caplog, b, priv_validator_p
     b.write_transaction = mock_write
     b.get_validators = mock_get_validators
     args = Namespace(action='new',
+                     election_type='upsert_validator',
                      public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',
                      power=10,
                      node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
@@ -407,38 +411,39 @@ def test_upsert_validator_new_election_invalid_power(caplog, b, priv_validator_p
                      config={})
 
     with caplog.at_level(logging.ERROR):
-        assert not run_upsert_validator_new(args, b)
+        assert not run_election_new_upsert_validator(args, b)
         assert caplog.records[0].msg.__class__ == InvalidPowerChange
 
 
 @pytest.mark.abci
-def test_upsert_validator_approve_with_tendermint(b, priv_validator_path, user_sk, validators):
-    from bigchaindb.commands.bigchaindb import (run_upsert_validator_new,
-                                                run_upsert_validator_approve)
+def test_election_approve_with_tendermint(b, priv_validator_path, user_sk, validators):
+    from bigchaindb.commands.bigchaindb import (run_election_new_upsert_validator,
+                                                run_election_approve)
 
     public_key = 'CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg='
     new_args = Namespace(action='new',
+                         election_type='upsert_validator',
                          public_key=public_key,
                          power=1,
                          node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
                          sk=priv_validator_path,
                          config={})
 
-    election_id = run_upsert_validator_new(new_args, b)
+    election_id = run_election_new_upsert_validator(new_args, b)
     assert election_id
 
     args = Namespace(action='approve',
                      election_id=election_id,
                      sk=priv_validator_path,
                      config={})
-    approve = run_upsert_validator_approve(args, b)
+    approve = run_election_approve(args, b)
 
     assert b.get_transaction(approve)
 
 
 @pytest.mark.bdb
-def test_upsert_validator_approve_without_tendermint(caplog, b, priv_validator_path, new_validator, node_key):
-    from bigchaindb.commands.bigchaindb import run_upsert_validator_approve
+def test_election_approve_without_tendermint(caplog, b, priv_validator_path, new_validator, node_key):
+    from bigchaindb.commands.bigchaindb import run_election_approve
     from argparse import Namespace
 
     b, election_id = call_election(b, new_validator, node_key)
@@ -451,14 +456,14 @@ def test_upsert_validator_approve_without_tendermint(caplog, b, priv_validator_p
 
     # assert returned id is in the db
     with caplog.at_level(logging.INFO):
-        approval_id = run_upsert_validator_approve(args, b)
+        approval_id = run_election_approve(args, b)
         assert caplog.records[0].msg == '[SUCCESS] Your vote has been submitted'
         assert b.get_transaction(approval_id)
 
 
 @pytest.mark.bdb
-def test_upsert_validator_approve_failure(caplog, b, priv_validator_path, new_validator, node_key):
-    from bigchaindb.commands.bigchaindb import run_upsert_validator_approve
+def test_election_approve_failure(caplog, b, priv_validator_path, new_validator, node_key):
+    from bigchaindb.commands.bigchaindb import run_election_approve
     from argparse import Namespace
 
     b, election_id = call_election(b, new_validator, node_key)
@@ -476,13 +481,13 @@ def test_upsert_validator_approve_failure(caplog, b, priv_validator_path, new_va
                      config={})
 
     with caplog.at_level(logging.ERROR):
-        assert not run_upsert_validator_approve(args, b)
+        assert not run_election_approve(args, b)
         assert caplog.records[0].msg == 'Failed to commit vote'
 
 
 @pytest.mark.bdb
-def test_upsert_validator_approve_called_with_bad_key(caplog, b, bad_validator_path, new_validator, node_key):
-    from bigchaindb.commands.bigchaindb import run_upsert_validator_approve
+def test_election_approve_called_with_bad_key(caplog, b, bad_validator_path, new_validator, node_key):
+    from bigchaindb.commands.bigchaindb import run_election_approve
     from argparse import Namespace
 
     b, election_id = call_election(b, new_validator, node_key)
@@ -494,7 +499,7 @@ def test_upsert_validator_approve_called_with_bad_key(caplog, b, bad_validator_p
                      config={})
 
     with caplog.at_level(logging.ERROR):
-        assert not run_upsert_validator_approve(args, b)
+        assert not run_election_approve(args, b)
         assert caplog.records[0].msg == 'The key you provided does not match any of '\
             'the eligible voters in this election.'
 

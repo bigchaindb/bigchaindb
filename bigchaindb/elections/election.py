@@ -12,7 +12,7 @@ from bigchaindb.common.exceptions import (InvalidSignature,
                                           InvalidProposer,
                                           UnequalValidatorSet,
                                           DuplicateTransaction)
-from bigchaindb.tendermint_utils import key_from_base64
+from bigchaindb.tendermint_utils import key_from_base64, public_key_to_base64
 from bigchaindb.common.crypto import (public_key_from_ed25519_key)
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.schema import (_validate_schema,
@@ -228,6 +228,18 @@ class Election(Transaction):
     @classmethod
     def store_election_results(cls, bigchain, election, height):
         bigchain.store_election_results(height, election)
+
+    def show_election(self, bigchain):
+        data = self.asset['data']
+        if 'public_key' in data.keys():
+            data['public_key'] = public_key_to_base64(data['public_key']['value'])
+        response = ''
+        for k, v in data.items():
+            if k != 'seed':
+                response += f'{k}={v}\n'
+        response += f'status={self.get_status(bigchain)}'
+
+        return response
 
     @classmethod
     def approved_update(cls, bigchain, new_height, txns):

@@ -28,7 +28,8 @@ from bigchaindb.commands import utils
 from bigchaindb.commands.utils import (configure_bigchaindb,
                                        input_on_stderr)
 from bigchaindb.log import setup_logging
-from bigchaindb.tendermint_utils import public_key_from_base64, public_key_to_base64
+from bigchaindb.tendermint_utils import public_key_from_base64
+from bigchaindb.commands.election_types import elections
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -101,16 +102,20 @@ def run_configure(args):
 
 
 @configure_bigchaindb
-def run_upsert_validator(args):
-    """Initiate and manage elections to change the validator set"""
+def run_election(args):
+    """Initiate and manage elections"""
 
     b = BigchainDB()
 
     # Call the function specified by args.action, as defined above
-    globals()[f'run_upsert_validator_{args.action}'](args, b)
+    globals()[f'run_election_{args.action}'](args, b)
 
 
-def run_upsert_validator_new(args, bigchain):
+def run_election_new(args, bigchain):
+    globals()[f'run_election_new_{args.election_type}'](args, bigchain)
+
+
+def run_election_new_upsert_validator(args, bigchain):
     """Initiates an election to add/update/remove a validator to an existing BigchainDB network
 
     :param args: dict
@@ -154,8 +159,8 @@ def run_upsert_validator_new(args, bigchain):
         return False
 
 
-def run_upsert_validator_approve(args, bigchain):
-    """Approve an election to add/update/remove a validator to an existing BigchainDB network
+def run_election_approve(args, bigchain):
+    """Approve an election
 
     :param args: dict
         args = {
@@ -192,8 +197,8 @@ def run_upsert_validator_approve(args, bigchain):
         return False
 
 
-def run_upsert_validator_show(args, bigchain):
-    """Retrieves information about an upsert-validator election
+def run_election_show(args, bigchain):
+    """Retrieves information about an election
 
     :param args: dict
         args = {
@@ -207,14 +212,7 @@ def run_upsert_validator_show(args, bigchain):
         logger.error(f'No election found with election_id {args.election_id}')
         return
 
-    new_validator = election.asset['data']
-
-    public_key = public_key_to_base64(new_validator['public_key']['value'])
-    power = new_validator['power']
-    node_id = new_validator['node_id']
-    status = election.get_status(bigchain)
-
-    response = f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
+    response = election.show_election(bigchain)
 
     logger.info(response)
 
@@ -317,41 +315,37 @@ def create_parser():
                                help='The backend to use. It can only be '
                                '"localmongodb", currently.')
 
-    # parser for managing validator elections
-    validator_parser = subparsers.add_parser('upsert-validator',
-                                             help='Add/update/delete a validator.')
+    # parser for managing elections
+    election_parser = subparsers.add_parser('election',
+                                            help='Manage elections.')
 
-    validator_subparser = validator_parser.add_subparsers(title='Action',
-                                                          dest='action')
+    election_subparser = election_parser.add_subparsers(title='Action',
+                                                        dest='action')
 
-    new_election_parser = validator_subparser.add_parser('new',
-                                                         help='Calls a new election.')
+    new_election_parser = election_subparser.add_parser('new',
+                                                        help='Calls a new election.')
 
-    new_election_parser.add_argument('public_key',
-                                     help='Public key of the validator to be added/updated/removed.')
+    new_election_subparser = new_election_parser.add_subparsers(title='Election_Type',
+                                                                dest='election_type')
 
-    new_election_parser.add_argument('power',
-                                     type=int,
-                                     help='The proposed power for the validator. '
-                                          'Setting to 0 will remove the validator.')
+    # Parser factory for each type of new election, so we get a bunch of commands that look like this:
+    # election new <some_election_type> <args>...
+    for name, data in elections.items():
+        args = data['args']
+        generic_parser = new_election_subparser.add_parser(name, help=data['help'])
+        for arg, kwargs in args.items():
+            generic_parser.add_argument(arg, **kwargs)
 
-    new_election_parser.add_argument('node_id',
-                                     help='The node_id of the validator.')
-
-    new_election_parser.add_argument('--private-key',
-                                     dest='sk',
-                                     help='Path to the private key of the election initiator.')
-
-    approve_election_parser = validator_subparser.add_parser('approve',
-                                                             help='Approve the election.')
+    approve_election_parser = election_subparser.add_parser('approve',
+                                                            help='Approve the election.')
     approve_election_parser.add_argument('election_id',
                                          help='The election_id of the election.')
     approve_election_parser.add_argument('--private-key',
                                          dest='sk',
                                          help='Path to the private key of the election initiator.')
 
-    show_election_parser = validator_subparser.add_parser('show',
-                                                          help='Provides information about an election.')
+    show_election_parser = election_subparser.add_parser('show',
+                                                         help='Provides information about an election.')
 
     show_election_parser.add_argument('election_id',
                                       help='The transaction id of the election you wish to query.')

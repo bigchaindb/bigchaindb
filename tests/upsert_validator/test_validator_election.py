@@ -159,7 +159,7 @@ def test_get_status_inconclusive(b, inconclusive_election, new_validator):
 
 
 def test_upsert_validator_show(caplog, ongoing_election, b):
-    from bigchaindb.commands.bigchaindb import run_upsert_validator_show
+    from bigchaindb.commands.bigchaindb import run_election_show
 
     election_id = ongoing_election.id
     public_key = public_key_to_base64(ongoing_election.asset['data']['public_key']['value'])
@@ -170,6 +170,6 @@ def test_upsert_validator_show(caplog, ongoing_election, b):
     show_args = Namespace(action='show',
                           election_id=election_id)
 
-    msg = run_upsert_validator_show(show_args, b)
+    msg = run_election_show(show_args, b)
 
     assert msg == f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
