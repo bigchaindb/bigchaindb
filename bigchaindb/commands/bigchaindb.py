@@ -331,9 +331,8 @@ def create_parser():
     # Parser factory for each type of new election, so we get a bunch of commands that look like this:
     # election new <some_election_type> <args>...
     for name, data in elections.items():
-        help = data['help']
         args = data['args']
-        generic_parser = new_election_subparser.add_parser(name, help=help)
+        generic_parser = new_election_subparser.add_parser(name, help=data['help'])
         for arg, kwargs in args.items():
             generic_parser.add_argument(arg, **kwargs)
 
