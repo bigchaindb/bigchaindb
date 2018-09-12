@@ -344,6 +344,28 @@ def test_election_new_upsert_validator_without_tendermint(caplog, b, priv_valida
 
 
 @pytest.mark.bdb
+def test_election_new_migration_without_tendermint(caplog, b, priv_validator_path, user_sk):
+    from bigchaindb.commands.bigchaindb import run_election_new_migration
+
+    def mock_write(tx, mode):
+        b.store_bulk_transactions([tx])
+        return (202, '')
+
+    b.get_validators = mock_get_validators
+    b.write_transaction = mock_write
+
+    args = Namespace(action='new',
+                     election_type='migration',
+                     sk=priv_validator_path,
+                     config={})
+
+    with caplog.at_level(logging.INFO):
+        election_id = run_election_new_migration(args, b)
+        assert caplog.records[0].msg == '[SUCCESS] Submitted proposal with id: ' + election_id
+        assert b.get_transaction(election_id)
+
+
+@pytest.mark.bdb
 def test_election_new_upsert_validator_invalid_election(caplog, b, priv_validator_path, user_sk):
     from bigchaindb.commands.bigchaindb import run_election_new_upsert_validator
 
