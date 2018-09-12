@@ -242,24 +242,32 @@ class Election(Transaction):
         return response
 
     @classmethod
-    def approved_update(cls, bigchain, new_height, txns):
-        votes = {}
+    def approved_elections(cls, bigchain, new_height, txns):
+        elections = {}
         for txn in txns:
             if not isinstance(txn, Vote):
                 continue
 
             election_id = txn.asset['id']
-            election_votes = votes.get(election_id, [])
+            e = bigchain.get_transaction(election_id)
+            election_operation = e.OPERATION
+            election_operation_votes = elections.get(election_operation, {})
+            # Once we conclude an election of a given type, we stop looking at that election class
+            if type(election_operation_votes) != dict:
+                continue
+            election_votes = election_operation_votes.get(election_id, [])
             election_votes.append(txn)
-            votes[election_id] = election_votes
+            election_operation_votes[election_id] = election_votes
+            elections[election_operation] = election_operation_votes
 
             election = cls.has_concluded(bigchain, election_id, election_votes, new_height)
-            # Once an election concludes any other conclusion for the same
-            # or any other election is invalidated
             if election:
+                # Once we conclude an election, we store the result in the db
                 cls.store_election_results(bigchain, election, new_height)
-                return cls.on_approval(bigchain, election, new_height)
-        return None
+                # And keep the transaction filed under the election_type
+                elections[election_operation] = election.on_approval(bigchain, election, new_height)
+        approved_elections = {k: v for (k, v) in elections.items() if type(v) != dict}
+        return approved_elections
 
     @classmethod
     def on_approval(cls, bigchain, election, new_height):
