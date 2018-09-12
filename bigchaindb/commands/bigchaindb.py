@@ -13,6 +13,7 @@ import copy
 import json
 import sys
 
+from bigchaindb.migrations.migration_election import MigrationElection
 from bigchaindb.utils import load_node_key
 from bigchaindb.common.exceptions import (DatabaseDoesNotExist,
                                           ValidationError)
@@ -142,6 +143,40 @@ def run_election_new_upsert_validator(args, bigchain):
         election = ValidatorElection.generate([key.public_key],
                                               voters,
                                               new_validator, None).sign([key.private_key])
+        election.validate(bigchain)
+    except ValidationError as e:
+        logger.error(e)
+        return False
+    except FileNotFoundError as fd_404:
+        logger.error(fd_404)
+        return False
+
+    resp = bigchain.write_transaction(election, 'broadcast_tx_commit')
+    if resp == (202, ''):
+        logger.info('[SUCCESS] Submitted proposal with id: {}'.format(election.id))
+        return election.id
+    else:
+        logger.error('Failed to commit election proposal')
+        return False
+
+
+def run_election_new_migration(args, bigchain):
+    """Initiates an election to halt block production
+
+    :param args: dict
+        args = {
+        'sk': the path to the private key of the node calling the election (str)
+        }
+    :param bigchain: an instance of BigchainDB
+    :return: election_id or `False` in case of failure
+    """
+
+    try:
+        key = load_node_key(args.sk)
+        voters = MigrationElection.recipients(bigchain)
+        election = MigrationElection.generate([key.public_key],
+                                              voters,
+                                              {}, None).sign([key.private_key])
         election.validate(bigchain)
     except ValidationError as e:
         logger.error(e)
