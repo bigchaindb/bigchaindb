@@ -83,7 +83,7 @@ configuration file as documented under
 
 ## bigchaindb election
 
-Manage elections to manage the BigChainDB network. The specifics of the election process are defined in [BEP-21](https://github.com/bigchaindb/BEPs/tree/master/21), please refer it for more details.
+Manage elections to manage the BigChainDB network. The specifics of the election process are defined in [BEP-18](https://github.com/bigchaindb/BEPs/tree/master/18), please refer it for more details.
 
 Election management is broken into several subcommands. Below is the command line syntax for each,
 
