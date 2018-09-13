@@ -111,9 +111,9 @@ def test_upsert_validator_invalid_election(b_mock, new_validator, node_key, fixe
         tx_election.validate(b_mock)
 
 
-def test_get_status_ongoing(b, ongoing_election, new_validator):
+def test_get_status_ongoing(b, ongoing_validator_election, new_validator):
     status = ValidatorElection.ONGOING
-    resp = ongoing_election.get_status(b)
+    resp = ongoing_validator_election.get_status(b)
     assert resp == status
 
 
@@ -158,13 +158,13 @@ def test_get_status_inconclusive(b, inconclusive_election, new_validator):
     assert resp == status
 
 
-def test_upsert_validator_show(caplog, ongoing_election, b):
+def test_upsert_validator_show(caplog, ongoing_validator_election, b):
     from bigchaindb.commands.bigchaindb import run_election_show
 
-    election_id = ongoing_election.id
-    public_key = public_key_to_base64(ongoing_election.asset['data']['public_key']['value'])
-    power = ongoing_election.asset['data']['power']
-    node_id = ongoing_election.asset['data']['node_id']
+    election_id = ongoing_validator_election.id
+    public_key = public_key_to_base64(ongoing_validator_election.asset['data']['public_key']['value'])
+    power = ongoing_validator_election.asset['data']['power']
+    node_id = ongoing_validator_election.asset['data']['node_id']
     status = ValidatorElection.ONGOING
 
     show_args = Namespace(action='show',

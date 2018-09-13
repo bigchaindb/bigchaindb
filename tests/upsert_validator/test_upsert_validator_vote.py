@@ -12,7 +12,7 @@ from bigchaindb.common.exceptions import AmountError
 from bigchaindb.common.crypto import generate_key_pair
 from bigchaindb.common.exceptions import ValidationError
 from bigchaindb.elections.vote import Vote
-from tests.utils import generate_block
+from tests.utils import generate_block, gen_vote
 
 pytestmark = [pytest.mark.execute]
 
@@ -341,22 +341,6 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
 # ============================================================================
 # Helper functions
 # ============================================================================
-def to_inputs(election, i, ed25519_node_keys):
-    input0 = election.to_inputs()[i]
-    votes = election.outputs[i].amount
-    public_key0 = input0.owners_before[0]
-    key0 = ed25519_node_keys[public_key0]
-    return (input0, votes, key0)
-
-
-def gen_vote(election, i, ed25519_node_keys):
-    (input_i, votes_i, key_i) = to_inputs(election, i, ed25519_node_keys)
-    election_pub_key = ValidatorElection.to_public_key(election.id)
-    return Vote.generate([input_i],
-                         [([election_pub_key], votes_i)],
-                         election_id=election.id)\
-        .sign([key_i.private_key])
-
 
 def reset_validator_set(b, node_keys, height):
     validators = []
