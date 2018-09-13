@@ -56,7 +56,7 @@ def test_write_assets():
 
     # check that 3 assets were written to the database
     cursor = conn.db.assets.find({}, projection={'_id': False})\
-                           .sort('id', pymongo.ASCENDING) 
+                           .sort('id', pymongo.ASCENDING)
 
     assert cursor.collection.count_documents({}) == 3
     assert list(cursor) == assets[:-1]

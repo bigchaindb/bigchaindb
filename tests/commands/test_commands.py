@@ -11,7 +11,6 @@ from argparse import Namespace
 import pytest
 
 from bigchaindb import ValidatorElection
-from tests.conftest import node_keys
 
 
 def test_make_sure_we_dont_remove_any_command():
