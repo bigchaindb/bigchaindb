@@ -121,7 +121,7 @@ class App(BaseApplication):
                 logger.info(f"Tendermint version: {request.version}")
             else:
                 logger.error(f"Error: Tendermint version {request.version} not supported."
-                f" Currently, BigchainDB only supports {__tm_supported_versions__} .Exiting!")
+                             f" Currently, BigchainDB only supports {__tm_supported_versions__} .Exiting!")
                 sys.exit(1)
         except AttributeError:
             logger.debug("Skipping Tendermint version check.")

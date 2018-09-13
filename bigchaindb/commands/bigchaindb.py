@@ -280,6 +280,7 @@ def run_start(args):
     from bigchaindb.start import start
     start()
 
+
 def run_tendermint_version(args):
     """Show the supported Tendermint version(s)"""
     supported_tm_ver = {
