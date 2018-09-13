@@ -159,3 +159,7 @@ status=<status>
 ```
 
 The election data is the same set of arguments used in the `election new` command that originally triggered the election. `status` takes three possible values, `ongoing`, if the election has not yet reached a 2/3 majority, `concluded`, if the election reached the 2/3 majority needed to pass, or `inconclusive`, if the validator set changed while the election was in process, rendering it undecidable.
+
+## bigchaindb tendermint-version
+
+Show the Tendermint versions supported by BigchainDB server.
