@@ -100,7 +100,14 @@ class BigchainDB(object):
 
         error = response.get('error')
         if error:
-            return (500, error)
+            status_code = 500
+            message = error.get('message', 'Internal Error')
+            data = error.get('data', '')
+
+            if 'Tx already exists in cache' in data:
+                status_code = 400
+
+            return (status_code, message + ' - ' + data)
 
         result = response['result']
         if mode == self.mode_commit:
