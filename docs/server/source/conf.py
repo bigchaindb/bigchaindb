@@ -60,9 +60,9 @@ extensions = [
 
 # autodoc settings
 autodoc_member_order = 'bysource'
-autodoc_default_flags = [
-    'members',
-]
+autodoc_default_options = {
+    'members': None,
+}
 
 todo_include_todos = True
 
