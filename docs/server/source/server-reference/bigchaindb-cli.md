@@ -163,3 +163,12 @@ The election data is the same set of arguments used in the `election new` comman
 ## bigchaindb tendermint-version
 
 Show the Tendermint versions supported by BigchainDB server.
+```bash
+$ bigchaindb tendermint-version
+{
+    "description": "BigchainDB supports the following Tendermint version(s)",
+    "tendermint": [
+        "0.22.8"
+    ]
+}
+```
