@@ -18,3 +18,4 @@ We also have a :ref:`kubernetes-deployment-template` (not simple).
    :maxdepth: 1
 
    network-setup
+   troubleshooting
