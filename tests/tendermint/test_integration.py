@@ -141,3 +141,14 @@ def test_post_transaction_responses(tendermint_ws_url, b):
         code, message = b.write_transaction(double_spend, mode)
         assert code == 500
         assert message == 'Transaction validation failed'
+
+
+@pytest.mark.bdb
+def test_exit_when_tm_ver_not_supported(b):
+    from bigchaindb import App
+
+    app = App(b)
+    p = ProtocolHandler(app)
+
+    with pytest.raises(SystemExit):
+        p.process('info', types.Request(info=types.RequestInfo(version='2')))

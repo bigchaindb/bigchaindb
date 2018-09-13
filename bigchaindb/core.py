@@ -126,7 +126,8 @@ class App(BaseApplication):
                              f" Currently, BigchainDB only supports {__tm_supported_versions__} .Exiting!")
                 sys.exit(1)
         except AttributeError:
-            logger.debug("Skipping Tendermint version check.")
+            logger.info("Tendermint version not found. Exiting!")
+            sys.exit(1)
 
         r = ResponseInfo()
         block = self.bigchaindb.get_latest_block()

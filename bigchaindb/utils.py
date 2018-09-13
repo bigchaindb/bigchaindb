@@ -198,11 +198,10 @@ def check_tendermint_version(running_tm_ver):
     :rtype: bool
     """
     tm_ver = running_tm_ver.split('-')
-    if len(tm_ver) >= 1:
-        for ver in __tm_supported_versions__:
-            if version.parse(ver) == version.parse(tm_ver[0]):
-                return True
-            else:
-                return False
+    if not tm_ver:
+        return False
+    for ver in __tm_supported_versions__:
+        if version.parse(ver) == version.parse(tm_ver[0]):
+            return True
     else:
         return False

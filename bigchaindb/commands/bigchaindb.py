@@ -284,10 +284,9 @@ def run_start(args):
 def run_tendermint_version(args):
     """Show the supported Tendermint version(s)"""
     supported_tm_ver = {
-        "description": "BigchainDB supports the following Tendermint version(s)",
-        "tendermint": [],
+        'description': 'BigchainDB supports the following Tendermint version(s)',
+        'tendermint': __tm_supported_versions__,
     }
-    [supported_tm_ver["tendermint"].append(ver) for ver in __tm_supported_versions__]
     print(json.dumps(supported_tm_ver, indent=4, sort_keys=True))
 
 
