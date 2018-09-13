@@ -100,10 +100,9 @@ class BigchainDB(object):
 
         error = response.get('error')
         if error:
-            status = error.get('status', 500)
-            message = error.get('message', 'Internal error')
+            message = error.get('message', 'Internal Error')
             data = error.get('data', '')
-            return (status, message + ' - ' + data)
+            return (400, message + ' - ' + data)
 
         result = response['result']
         if mode == self.mode_commit:
