@@ -119,11 +119,11 @@ class App(BaseApplication):
 
         # Check if BigchainDB supports the Tendermint version
         try:
-            if check_tendermint_version(request.version):
+            if tendermint_version_is_compatible(request.version):
                 logger.info(f"Tendermint version: {request.version}")
             else:
                 logger.error(f"Error: Tendermint version {request.version} not supported."
-                             f" Currently, BigchainDB only supports {__tm_supported_versions__} .Exiting!")
+                             f" Currently, BigchainDB only supports {__tm_supported_versions__}. Exiting!")
                 sys.exit(1)
         except AttributeError:
             logger.info("Tendermint version not found. Exiting!")

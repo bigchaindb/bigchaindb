@@ -188,7 +188,7 @@ def load_node_key(path):
         return key_pair_from_ed25519_key(hex_private_key)
 
 
-def check_tendermint_version(running_tm_ver):
+def tendermint_version_is_compatible(running_tm_ver):
     """
     Check Tendermint compatability with BigchainDB server
 
@@ -197,6 +197,8 @@ def check_tendermint_version(running_tm_ver):
     :return: True/False depending on the compatability with BigchainDB server
     :rtype: bool
     """
+
+    # Splitting because version can look like this e.g. 0.22.8-40d6dc2e
     tm_ver = running_tm_ver.split('-')
     if not tm_ver:
         return False
