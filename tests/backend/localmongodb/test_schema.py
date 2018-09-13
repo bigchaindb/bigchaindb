@@ -16,7 +16,7 @@ def test_init_creates_db_tables_and_indexes():
 
     init_database()
 
-    collection_names = conn.conn[dbname].collection_names()
+    collection_names = conn.conn[dbname].list_collection_names()
     assert set(collection_names) == {
         'transactions', 'assets', 'metadata', 'blocks', 'utxos', 'pre_commit',
         'validators', 'elections', 'abci_chains',
@@ -57,7 +57,7 @@ def test_init_database_is_graceful_if_db_exists():
     dbname = bigchaindb.config['database']['name']
 
     # The db is set up by the fixtures
-    assert dbname in conn.conn.database_names()
+    assert dbname in conn.conn.list_database_names()
 
     init_database()
 
@@ -75,7 +75,7 @@ def test_create_tables():
     schema.create_database(conn, dbname)
     schema.create_tables(conn, dbname)
 
-    collection_names = conn.conn[dbname].collection_names()
+    collection_names = conn.conn[dbname].list_collection_names()
     assert set(collection_names) == {
         'transactions', 'assets', 'metadata', 'blocks', 'utxos', 'validators', 'elections',
         'pre_commit', 'abci_chains',
@@ -115,6 +115,6 @@ def test_drop(dummy_db):
     from bigchaindb.backend import schema
 
     conn = backend.connect()
-    assert dummy_db in conn.conn.database_names()
+    assert dummy_db in conn.conn.list_database_names()
     schema.drop_database(conn, dummy_db)
-    assert dummy_db not in conn.conn.database_names()
+    assert dummy_db not in conn.conn.list_database_names()

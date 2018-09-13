@@ -485,10 +485,8 @@ def test_bigchain_tendermint_version(capsys):
 
 
 def mock_get_validators(height):
-    keys = node_keys()
-    pub_key = list(keys.keys())[0]
     return [
-        {'public_key': {'value': pub_key,
+        {'public_key': {'value': "zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=",
                         'type': 'ed25519-base64'},
          'voting_power': 10}
     ]

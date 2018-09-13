@@ -234,7 +234,7 @@ def store_unspent_outputs(conn, *unspent_outputs):
 def delete_unspent_outputs(conn, *unspent_outputs):
     if unspent_outputs:
         return conn.run(
-            conn.collection('utxos').remove({
+            conn.collection('utxos').delete_many({
                 '$or': [{
                     '$and': [
                         {'transaction_id': unspent_output['transaction_id']},
@@ -258,7 +258,7 @@ def store_pre_commit_state(conn, state):
     commit_id = state['commit_id']
     return conn.run(
         conn.collection('pre_commit')
-        .update({'commit_id': commit_id}, state, upsert=True)
+        .replace_one({'commit_id': commit_id}, state, upsert=True)
     )
 
 
