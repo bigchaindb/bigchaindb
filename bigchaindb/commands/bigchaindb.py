@@ -116,6 +116,31 @@ def run_election_new(args, bigchain):
     globals()[f'run_election_new_{args.election_type}'](args, bigchain)
 
 
+def create_new_election(sk, bigchain, election_class, data):
+
+    try:
+        key = load_node_key(sk)
+        voters = election_class.recipients(bigchain)
+        election = election_class.generate([key.public_key],
+                                           voters,
+                                           data, None).sign([key.private_key])
+        election.validate(bigchain)
+    except ValidationError as e:
+        logger.error(e)
+        return False
+    except FileNotFoundError as fd_404:
+        logger.error(fd_404)
+        return False
+
+    resp = bigchain.write_transaction(election, 'broadcast_tx_commit')
+    if resp == (202, ''):
+        logger.info('[SUCCESS] Submitted proposal with id: {}'.format(election.id))
+        return election.id
+    else:
+        logger.error('Failed to commit election proposal')
+        return False
+
+
 def run_election_new_upsert_validator(args, bigchain):
     """Initiates an election to add/update/remove a validator to an existing BigchainDB network
 
@@ -137,27 +162,7 @@ def run_election_new_upsert_validator(args, bigchain):
         'node_id': args.node_id
     }
 
-    try:
-        key = load_node_key(args.sk)
-        voters = ValidatorElection.recipients(bigchain)
-        election = ValidatorElection.generate([key.public_key],
-                                              voters,
-                                              new_validator, None).sign([key.private_key])
-        election.validate(bigchain)
-    except ValidationError as e:
-        logger.error(e)
-        return False
-    except FileNotFoundError as fd_404:
-        logger.error(fd_404)
-        return False
-
-    resp = bigchain.write_transaction(election, 'broadcast_tx_commit')
-    if resp == (202, ''):
-        logger.info('[SUCCESS] Submitted proposal with id: {}'.format(election.id))
-        return election.id
-    else:
-        logger.error('Failed to commit election proposal')
-        return False
+    return create_new_election(args.sk, bigchain, ValidatorElection, new_validator)
 
 
 def run_election_new_migration(args, bigchain):
@@ -171,27 +176,7 @@ def run_election_new_migration(args, bigchain):
     :return: election_id or `False` in case of failure
     """
 
-    try:
-        key = load_node_key(args.sk)
-        voters = MigrationElection.recipients(bigchain)
-        election = MigrationElection.generate([key.public_key],
-                                              voters,
-                                              {}, None).sign([key.private_key])
-        election.validate(bigchain)
-    except ValidationError as e:
-        logger.error(e)
-        return False
-    except FileNotFoundError as fd_404:
-        logger.error(fd_404)
-        return False
-
-    resp = bigchain.write_transaction(election, 'broadcast_tx_commit')
-    if resp == (202, ''):
-        logger.info('[SUCCESS] Submitted proposal with id: {}'.format(election.id))
-        return election.id
-    else:
-        logger.error('Failed to commit election proposal')
-        return False
+    return create_new_election(args.sk, bigchain, MigrationElection, {})
 
 
 def run_election_approve(args, bigchain):
