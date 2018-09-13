@@ -264,28 +264,9 @@ If MongoDB isn't running, then you can start it using the command `mongod`, but 
 
 If you installed MongoDB using `sudo apt install mongodb`, then a MongoDB startup script should already be installed (so MongoDB will start automatically when the machine is restarted). Otherwise, you should install a startup script for MongoDB.
 
-## Member: Start BigchainDB and Tendermint
+## Member: Start BigchainDB and Tendermint Using Monit
 
-If you want to use a process manager, jump to the [next section](member-start-bigchaindb-and-tendermint-using-monit).
-
-To start BigchainDB, one uses the command `bigchaindb start` but that will run it in the foreground. If you want to run it in the background (so it will continue running after you logout), you can use `nohup`, `tmux`, or `screen`. For example, `nohup bigchaindb start 2>&1 > bigchaindb.log &`
-
-The _recommended_ approach is to create a startup script for BigchainDB, so it will start right after the boot of the operating system. (As mentioned earlier, MongoDB should already have a startup script.)
-
-To start Tendermint, one uses the command `tendermint node` but that will run it in the foreground. If you want to run it in the background (so it will continue running after you logout), you can use `nohup`, `tmux`, or `screen`. For example, `nohup tendermint node 2>&1 > tendermint.log &`
-
-The _recommended_ approach is to create a startup script for Tendermint, so it will start right after the boot of the operating system.
-
-Note: We'll share some example startup scripts in the future. This document is a work in progress.
-
-If you followed the recommended approach and created startup scripts for BigchainDB and Tendermint, then you can reboot the machine now. MongoDB, BigchainDB and Tendermint should all start.
-
-
-### Member: Start BigchainDB and Tendermint using Monit
-
-This section describes how to manage the BigchainDB and Tendermint processes using [Monit][monit] - a small open-source utility for managing and monitoring Unix processes.
-
-This section assumes that you followed the guide down to the [start MongoDB section](#member-start-mongodb) inclusive.
+This section describes how to manage the BigchainDB and Tendermint processes using [Monit][monit], a small open-source utility for managing and monitoring Unix processes. BigchainDB and Tendermint are managed together, because if BigchainDB is stopped (or crashes) and is restarted, *Tendermint won't try reconnecting to it*. (That's not a bug. It's just how Tendermint works.)
 
 Install Monit:
 
@@ -293,15 +274,11 @@ Install Monit:
 sudo apt install monit
 ```
 
-If you installed the `bigchaindb` Python package, you should have the `bigchaindb-monit-config` script in your `PATH` now.
-
-Run the script:
+If you installed the `bigchaindb` Python package as above, you should have the `bigchaindb-monit-config` script in your `PATH` now. Run the script to build a configuration file for Monit:
 
 ```
 bigchaindb-monit-config
 ```
-
-The script builds a configuration file for Monit.
 
 Run Monit as a daemon, instructing it to wake up every second to check on processes:
 
@@ -309,15 +286,17 @@ Run Monit as a daemon, instructing it to wake up every second to check on proces
 monit -d 1
 ```
 
-It will run the processes and restart them when they crash. If the root `bigchaindb_` process crashes, Monit will also restart the Tendermint process.
+Monit will run the BigchainDB and Tendermint processes and restart them when they crash. If the root `bigchaindb_` process crashes, Monit will also restart the Tendermint process.
 
-Check the status by running `monit status` or `monit summary`.
+You can check the status by running `monit status` or `monit summary`.
 
 By default, it will collect program logs into the `~/.bigchaindb-monit/logs` folder.
 
-Consult `monit -h` or [the Monit documentation][monit-manual] to know more about the operational power you've just got the taste of.
+To learn more about Monit, use `monit -h` (help) or read [the Monit documentation][monit-manual].
 
 Check `bigchaindb-monit-config -h` if you want to arrange a different folder for logs or some of the Monit internal artifacts.
+
+If you want to start and manage the BigchainDB and Tendermint processes yourself, then look inside the file [bigchaindb/pkg/scripts/bigchaindb-monit-config](https://github.com/bigchaindb/bigchaindb/blob/master/pkg/scripts/bigchaindb-monit-config) to see how *it* starts BigchainDB and Tendermint.
 
 ## How Others Can Access Your Node
 
