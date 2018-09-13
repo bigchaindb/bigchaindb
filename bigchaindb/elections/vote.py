@@ -42,16 +42,14 @@ class Vote(Transaction):
     def generate(cls, inputs, recipients, election_id, metadata=None):
         (inputs, outputs) = cls.validate_transfer(inputs, recipients, election_id, metadata)
         election_vote = cls(cls.OPERATION, {'id': election_id}, inputs, outputs, metadata)
-        cls.validate_schema(election_vote.to_dict(), skip_id=True)
+        cls.validate_schema(election_vote.to_dict())
         return election_vote
 
     @classmethod
-    def validate_schema(cls, tx, skip_id=False):
+    def validate_schema(cls, tx):
         """Validate the validator election vote transaction. Since `VOTE` extends `TRANSFER`
            transaction, all the validations for `CREATE` transaction should be inherited
         """
-        if not skip_id:
-            cls.validate_id(tx)
         _validate_schema(TX_SCHEMA_COMMON, tx)
         _validate_schema(TX_SCHEMA_TRANSFER, tx)
         _validate_schema(cls.TX_SCHEMA_CUSTOM, tx)

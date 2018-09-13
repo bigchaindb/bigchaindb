@@ -278,7 +278,7 @@ def run_start(args):
 
     logger.info('Starting BigchainDB main process.')
     from bigchaindb.start import start
-    start()
+    start(args)
 
 
 def run_tendermint_version(args):
@@ -373,6 +373,12 @@ def create_parser():
 
     subparsers.add_parser('tendermint-version',
                           help='Show the Tendermint supported versions')
+
+    start_parser.add_argument('--experimental-parallel-validation',
+                              dest='experimental_parallel_validation',
+                              default=False,
+                              action='store_true',
+                              help='💀 EXPERIMENTAL: parallelize validation for better throughput 💀')
 
     return parser
 
