@@ -118,16 +118,12 @@ class App(BaseApplication):
         self.abort_if_abci_chain_is_not_synced()
 
         # Check if BigchainDB supports the Tendermint version
-        try:
-            if tendermint_version_is_compatible(request.version):
-                logger.info(f"Tendermint version: {request.version}")
-            else:
-                logger.error(f"Error: Tendermint version {request.version} not supported."
-                             f" Currently, BigchainDB only supports {__tm_supported_versions__}. Exiting!")
-                sys.exit(1)
-        except AttributeError:
-            logger.info("Tendermint version not found. Exiting!")
+        if not (hasattr(request, 'version') and tendermint_version_is_compatible(request.version)):
+            logger.error(f'Unsupported Tendermint version: {getattr(request, "version", "no version")}.'
+                         f' Currently, BigchainDB only supports {__tm_supported_versions__}. Exiting!')
             sys.exit(1)
+
+        logger.info(f"Tendermint version: {request.version}")
 
         r = ResponseInfo()
         block = self.bigchaindb.get_latest_block()

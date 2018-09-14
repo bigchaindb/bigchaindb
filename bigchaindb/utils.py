@@ -205,5 +205,4 @@ def tendermint_version_is_compatible(running_tm_ver):
     for ver in __tm_supported_versions__:
         if version.parse(ver) == version.parse(tm_ver[0]):
             return True
-    else:
-        return False
+    return False
