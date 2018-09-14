@@ -21,7 +21,7 @@ from abci.types_pb2 import (
 
 from bigchaindb import BigchainDB
 from bigchaindb.version import __tm_supported_versions__
-from bigchaindb.utils import check_tendermint_version
+from bigchaindb.utils import tendermint_version_is_compatible
 from bigchaindb.tendermint_utils import (decode_transaction,
                                          calculate_hash)
 from bigchaindb.lib import Block, PreCommitState
