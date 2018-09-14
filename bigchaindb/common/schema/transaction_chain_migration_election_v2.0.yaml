@@ -5,7 +5,7 @@
 ---
 "$schema": "http://json-schema.org/draft-04/schema#"
 type: object
-title: Migration Election Schema - Propose a halt in block production to allow for a version change
+title: Chain Migration Election Schema - Propose a halt in block production to allow for a version change
 required:
 - operation
 - asset
@@ -13,7 +13,7 @@ required:
 properties:
   operation:
     type: string
-    value: "MIGRATION_ELECTION"
+    value: "CHAIN_MIGRATION_ELECTION"
   asset:
     additionalProperties: false
     properties:

@@ -13,7 +13,7 @@ import copy
 import json
 import sys
 
-from bigchaindb.migrations.migration_election import MigrationElection
+from bigchaindb.migrations.chain_migration_election import ChainMigrationElection
 from bigchaindb.utils import load_node_key
 from bigchaindb.common.exceptions import (DatabaseDoesNotExist,
                                           ValidationError)
@@ -165,7 +165,7 @@ def run_election_new_upsert_validator(args, bigchain):
     return create_new_election(args.sk, bigchain, ValidatorElection, new_validator)
 
 
-def run_election_new_migration(args, bigchain):
+def run_election_new_chain_migration(args, bigchain):
     """Initiates an election to halt block production
 
     :param args: dict
@@ -176,7 +176,7 @@ def run_election_new_migration(args, bigchain):
     :return: election_id or `False` in case of failure
     """
 
-    return create_new_election(args.sk, bigchain, MigrationElection, {})
+    return create_new_election(args.sk, bigchain, ChainMigrationElection, {})
 
 
 def run_election_approve(args, bigchain):

@@ -17,7 +17,7 @@ elections = {
             }
         }
     },
-    'migration': {
+    'chain-migration': {
         'help': 'Call for a halt to block production to allow for a version change across breaking changes.',
         'args': {
             '--private-key': {

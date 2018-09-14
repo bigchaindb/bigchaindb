@@ -7,7 +7,7 @@ import logging
 
 from bigchaindb.log import DEFAULT_LOGGING_CONFIG as log_config
 from bigchaindb.lib import BigchainDB  # noqa
-from bigchaindb.migrations.migration_election import MigrationElection
+from bigchaindb.migrations.chain_migration_election import ChainMigrationElection
 from bigchaindb.version import __version__  # noqa
 from bigchaindb.core import App  # noqa
 
@@ -100,5 +100,5 @@ from bigchaindb.elections.vote import Vote  # noqa
 Transaction.register_type(Transaction.CREATE, models.Transaction)
 Transaction.register_type(Transaction.TRANSFER, models.Transaction)
 Transaction.register_type(ValidatorElection.OPERATION, ValidatorElection)
-Transaction.register_type(MigrationElection.OPERATION, MigrationElection)
+Transaction.register_type(ChainMigrationElection.OPERATION, ChainMigrationElection)
 Transaction.register_type(Vote.OPERATION, Vote)

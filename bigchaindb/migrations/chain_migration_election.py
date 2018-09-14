@@ -1,13 +1,13 @@
-from bigchaindb.common.schema import TX_SCHEMA_MIGRATION_ELECTION
+from bigchaindb.common.schema import TX_SCHEMA_CHAIN_MIGRATION_ELECTION
 from bigchaindb.elections.election import Election
 
 
-class MigrationElection(Election):
+class ChainMigrationElection(Election):
 
-    OPERATION = 'MIGRATION_ELECTION'
+    OPERATION = 'CHAIN_MIGRATION_ELECTION'
     CREATE = OPERATION
     ALLOWED_OPERATIONS = (OPERATION,)
-    TX_SCHEMA_CUSTOM = TX_SCHEMA_MIGRATION_ELECTION
+    TX_SCHEMA_CUSTOM = TX_SCHEMA_CHAIN_MIGRATION_ELECTION
     CHANGES_VALIDATOR_SET = False
 
     @classmethod

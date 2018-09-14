@@ -6,37 +6,43 @@ from bigchaindb.elections.election import Election
 
 
 @pytest.mark.bdb
-def test_approved_elections_one_migration_one_upsert(b,
-                                                     ongoing_validator_election, validator_election_votes,
-                                                     ongoing_migration_election, migration_election_votes):
+def test_approved_elections_one_migration_one_upsert(
+        b,
+        ongoing_validator_election, validator_election_votes,
+        ongoing_chain_migration_election, chain_migration_election_votes
+):
     txns = validator_election_votes + \
-           migration_election_votes
+           chain_migration_election_votes
     mock_chain_migration, mock_store_validator = run_approved_elections(b, txns)
     mock_chain_migration.assert_called_once()
     mock_store_validator.assert_called_once()
 
 
 @pytest.mark.bdb
-def test_approved_elections_one_migration_two_upsert(b,
-                                                     ongoing_validator_election, validator_election_votes,
-                                                     ongoing_validator_election_2, validator_election_votes_2,
-                                                     ongoing_migration_election, migration_election_votes):
+def test_approved_elections_one_migration_two_upsert(
+        b,
+        ongoing_validator_election, validator_election_votes,
+        ongoing_validator_election_2, validator_election_votes_2,
+        ongoing_chain_migration_election, chain_migration_election_votes
+):
     txns = validator_election_votes + \
            validator_election_votes_2 + \
-           migration_election_votes
+           chain_migration_election_votes
     mock_chain_migration, mock_store_validator = run_approved_elections(b, txns)
     mock_chain_migration.assert_called_once()
     mock_store_validator.assert_called_once()
 
 
 @pytest.mark.bdb
-def test_approved_elections_two_migrations_one_upsert(b,
-                                                      ongoing_validator_election, validator_election_votes,
-                                                      ongoing_migration_election, migration_election_votes,
-                                                      ongoing_migration_election_2, migration_election_votes_2):
+def test_approved_elections_two_migrations_one_upsert(
+        b,
+        ongoing_validator_election, validator_election_votes,
+        ongoing_chain_migration_election, chain_migration_election_votes,
+        ongoing_chain_migration_election_2, chain_migration_election_votes_2
+):
     txns = validator_election_votes + \
-           migration_election_votes + \
-           migration_election_votes_2
+           chain_migration_election_votes + \
+           chain_migration_election_votes_2
     mock_chain_migration, mock_store_validator = run_approved_elections(b, txns)
     assert mock_chain_migration.call_count == 2
     mock_store_validator.assert_called_once()
