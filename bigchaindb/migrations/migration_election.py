@@ -8,6 +8,7 @@ class MigrationElection(Election):
     CREATE = OPERATION
     ALLOWED_OPERATIONS = (OPERATION,)
     TX_SCHEMA_CUSTOM = TX_SCHEMA_MIGRATION_ELECTION
+    CHANGES_VALIDATOR_SET = False
 
     @classmethod
     def on_approval(cls, bigchain, election, new_height):

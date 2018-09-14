@@ -124,6 +124,9 @@ def test_get_status_concluded(b, concluded_election, new_validator):
 
 
 def test_get_status_inconclusive(b, inconclusive_election, new_validator):
+    def set_block_height_to_3():
+        return {'height': 3}
+
     def custom_mock_get_validators(height):
         if height >= 3:
             return [{'pub_key': {'data': 'zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=',
@@ -153,6 +156,7 @@ def test_get_status_inconclusive(b, inconclusive_election, new_validator):
                      'voting_power': 8}]
 
     b.get_validators = custom_mock_get_validators
+    b.get_latest_block = set_block_height_to_3
     status = ValidatorElection.INCONCLUSIVE
     resp = inconclusive_election.get_status(b)
     assert resp == status

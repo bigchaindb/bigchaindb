@@ -294,19 +294,19 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
     assert not ValidatorElection.has_concluded(b, election.id, [tx_vote0, tx_vote1])
     assert ValidatorElection.has_concluded(b, election.id, [tx_vote0, tx_vote1, tx_vote2])
 
-    assert not Election.approved_elections(b, 4, [tx_vote0]).get('VALIDATOR_ELECTION')
-    assert not Election.approved_elections(b, 4, [tx_vote0, tx_vote1]).get('VALIDATOR_ELECTION')
+    assert Election.approved_elections(b, 4, [tx_vote0]) == []
+    assert Election.approved_elections(b, 4, [tx_vote0, tx_vote1]) == []
 
-    update = Election.approved_elections(b, 4, [tx_vote0, tx_vote1, tx_vote2]).get('VALIDATOR_ELECTION')
-    assert update
-    update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
+    update = Election.approved_elections(b, 4, [tx_vote0, tx_vote1, tx_vote2])
+    assert len(update) == 1
+    update_public_key = codecs.encode(update[0].pub_key.data, 'base64').decode().rstrip('\n')
     assert update_public_key == public_key64
 
     b.store_bulk_transactions([tx_vote0, tx_vote1])
 
-    update = Election.approved_elections(b, 4, [tx_vote2]).get('VALIDATOR_ELECTION')
-    assert update
-    update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
+    update = Election.approved_elections(b, 4, [tx_vote2])
+    assert len(update) == 1
+    update_public_key = codecs.encode(update[0].pub_key.data, 'base64').decode().rstrip('\n')
     assert update_public_key == public_key64
 
     # remove validator
@@ -327,10 +327,9 @@ def test_get_validator_update(b, node_keys, node_key, ed25519_node_keys):
 
     b.store_bulk_transactions([tx_vote0, tx_vote1])
 
-    update = Election.approved_elections(b, 9, [tx_vote2]).get('VALIDATOR_ELECTION')
-    if update:
-        update_public_key = codecs.encode(update.pub_key.data, 'base64').decode().rstrip('\n')
-    assert update
+    update = Election.approved_elections(b, 9, [tx_vote2])
+    assert len(update) == 1
+    update_public_key = codecs.encode(update[0].pub_key.data, 'base64').decode().rstrip('\n')
     assert update_public_key == public_key64
 
     # assert that the public key is not a part of the current validator set
