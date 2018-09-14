@@ -216,8 +216,6 @@ def test_valid_election_conclude(b_mock, valid_upsert_validator_election, ed2551
 
 @pytest.mark.abci
 def test_upsert_validator(b, node_key, node_keys, ed25519_node_keys):
-    import time
-    import requests
 
     if b.get_latest_block()['height'] == 0:
         generate_block(b)
@@ -245,20 +243,17 @@ def test_upsert_validator(b, node_key, node_keys, ed25519_node_keys):
                                           new_validator, None).sign([node_key.private_key])
     code, message = b.write_transaction(election, 'broadcast_tx_commit')
     assert code == 202
-    time.sleep(1)
-
     assert b.get_transaction(election.id)
 
     tx_vote = gen_vote(election, 0, ed25519_node_keys)
     assert tx_vote.validate(b)
     code, message = b.write_transaction(tx_vote, 'broadcast_tx_commit')
     assert code == 202
-    time.sleep(1)
 
-    resp = requests.get(b.endpoint + 'validators')
+    resp = b.get_validators()
     validator_pub_keys = []
-    for v in resp.json()['result']['validators']:
-        validator_pub_keys.append(v['pub_key']['value'])
+    for v in resp:
+        validator_pub_keys.append(v['public_key']['value'])
 
     assert (public_key64 in validator_pub_keys)
     new_validator_set = b.get_validators()
