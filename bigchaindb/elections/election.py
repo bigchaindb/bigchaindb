@@ -35,7 +35,7 @@ class Election(Transaction):
     ELECTION_THRESHOLD = 2 / 3
 
     @classmethod
-    def get_validator_change(cls, bigchain, height=None):
+    def get_validator_change(cls, bigchain):
         """Return the latest change to the validator set
 
         :return: {
@@ -44,6 +44,7 @@ class Election(Transaction):
             'election_id': <election_id_that_approved_the_change>
         }
         """
+        height = bigchain.get_latest_block()['height']
         return bigchain.get_validator_change(height)
 
     @classmethod
