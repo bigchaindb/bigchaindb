@@ -61,8 +61,10 @@ For example, if you're on a machine that's running a default BigchainDB node, th
     > use bigchain
     switched to db bigchain
     > show collections
+    abci_chains
     assets
     blocks
+    elections
     metadata
     pre_commit
     transactions
