@@ -38,12 +38,11 @@ class Election(Transaction):
 
     @classmethod
     def get_validator_change(cls, bigchain):
-        """Return the latest change to the validator set
+        """Return the validator set from the most recent approved block
 
         :return: {
             'height': <block_height>,
-            'validators': <validator_set>,
-            'election_id': <election_id_that_approved_the_change>
+            'validators': <validator_set>
         }
         """
         height = bigchain.get_latest_block()['height']
