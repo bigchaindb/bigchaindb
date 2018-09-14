@@ -199,16 +199,6 @@ def alice():
 
 
 @pytest.fixture
-def alice_privkey(alice):
-    return alice.private_key
-
-
-@pytest.fixture
-def alice_pubkey(alice):
-    return alice.public_key
-
-
-@pytest.fixture
 def bob():
     from bigchaindb.common.crypto import generate_key_pair
     return generate_key_pair()
@@ -300,10 +290,10 @@ def inputs(user_pk, b, alice):
     for height in range(1, 4):
         transactions = [
             Transaction.create(
-                [alice_pubkey(alice)],
+                [alice.public_key],
                 [([user_pk], 1)],
                 metadata={'msg': random.random()},
-            ).sign([alice_privkey(alice)])
+            ).sign([alice.private_key])
             for _ in range(10)
         ]
         tx_ids = [tx.id for tx in transactions]

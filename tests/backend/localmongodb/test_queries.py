@@ -58,7 +58,7 @@ def test_write_assets():
     cursor = conn.db.assets.find({}, projection={'_id': False})\
                            .sort('id', pymongo.ASCENDING)
 
-    assert cursor.count() == 3
+    assert cursor.collection.count_documents({}) == 3
     assert list(cursor) == assets[:-1]
 
 
@@ -180,7 +180,7 @@ def test_write_metadata():
     cursor = conn.db.metadata.find({}, projection={'_id': False})\
                              .sort('id', pymongo.ASCENDING)
 
-    assert cursor.count() == 3
+    assert cursor.collection.count_documents({}) == 3
     assert list(cursor) == metadata
 
 
@@ -244,7 +244,7 @@ def test_store_block():
                   transactions=[])
     query.store_block(conn, block._asdict())
     cursor = conn.db.blocks.find({}, projection={'_id': False})
-    assert cursor.count() == 1
+    assert cursor.collection.count_documents({}) == 1
 
 
 def test_get_block():
@@ -267,14 +267,14 @@ def test_delete_zero_unspent_outputs(db_context, utxoset):
     unspent_outputs, utxo_collection = utxoset
     delete_res = query.delete_unspent_outputs(db_context.conn)
     assert delete_res is None
-    assert utxo_collection.count() == 3
-    assert utxo_collection.find(
+    assert utxo_collection.count_documents({}) == 3
+    assert utxo_collection.count_documents(
         {'$or': [
             {'transaction_id': 'a', 'output_index': 0},
             {'transaction_id': 'b', 'output_index': 0},
             {'transaction_id': 'a', 'output_index': 1},
         ]}
-    ).count() == 3
+    ) == 3
 
 
 def test_delete_one_unspent_outputs(db_context, utxoset):
@@ -282,15 +282,15 @@ def test_delete_one_unspent_outputs(db_context, utxoset):
     unspent_outputs, utxo_collection = utxoset
     delete_res = query.delete_unspent_outputs(db_context.conn,
                                               unspent_outputs[0])
-    assert delete_res['n'] == 1
-    assert utxo_collection.find(
+    assert delete_res.raw_result['n'] == 1
+    assert utxo_collection.count_documents(
         {'$or': [
             {'transaction_id': 'a', 'output_index': 1},
             {'transaction_id': 'b', 'output_index': 0},
         ]}
-    ).count() == 2
-    assert utxo_collection.find(
-            {'transaction_id': 'a', 'output_index': 0}).count() == 0
+    ) == 2
+    assert utxo_collection.count_documents(
+            {'transaction_id': 'a', 'output_index': 0}) == 0
 
 
 def test_delete_many_unspent_outputs(db_context, utxoset):
@@ -298,22 +298,22 @@ def test_delete_many_unspent_outputs(db_context, utxoset):
     unspent_outputs, utxo_collection = utxoset
     delete_res = query.delete_unspent_outputs(db_context.conn,
                                               *unspent_outputs[::2])
-    assert delete_res['n'] == 2
-    assert utxo_collection.find(
+    assert delete_res.raw_result['n'] == 2
+    assert utxo_collection.count_documents(
         {'$or': [
             {'transaction_id': 'a', 'output_index': 0},
             {'transaction_id': 'b', 'output_index': 0},
         ]}
-    ).count() == 0
-    assert utxo_collection.find(
-            {'transaction_id': 'a', 'output_index': 1}).count() == 1
+    ) == 0
+    assert utxo_collection.count_documents(
+            {'transaction_id': 'a', 'output_index': 1}) == 1
 
 
 def test_store_zero_unspent_output(db_context, utxo_collection):
     from bigchaindb.backend import query
     res = query.store_unspent_outputs(db_context.conn)
     assert res is None
-    assert utxo_collection.count() == 0
+    assert utxo_collection.count_documents({}) == 0
 
 
 def test_store_one_unspent_output(db_context,
@@ -322,10 +322,10 @@ def test_store_one_unspent_output(db_context,
     res = query.store_unspent_outputs(db_context.conn, unspent_output_1)
     assert res.acknowledged
     assert len(res.inserted_ids) == 1
-    assert utxo_collection.find(
+    assert utxo_collection.count_documents(
         {'transaction_id': unspent_output_1['transaction_id'],
          'output_index': unspent_output_1['output_index']}
-    ).count() == 1
+    ) == 1
 
 
 def test_store_many_unspent_outputs(db_context,
@@ -334,15 +334,15 @@ def test_store_many_unspent_outputs(db_context,
     res = query.store_unspent_outputs(db_context.conn, *unspent_outputs)
     assert res.acknowledged
     assert len(res.inserted_ids) == 3
-    assert utxo_collection.find(
+    assert utxo_collection.count_documents(
         {'transaction_id': unspent_outputs[0]['transaction_id']}
-    ).count() == 3
+    ) == 3
 
 
 def test_get_unspent_outputs(db_context, utxoset):
     from bigchaindb.backend import query
     cursor = query.get_unspent_outputs(db_context.conn)
-    assert cursor.count() == 3
+    assert cursor.collection.count_documents({}) == 3
     retrieved_utxoset = list(cursor)
     unspent_outputs, utxo_collection = utxoset
     assert retrieved_utxoset == list(
@@ -361,7 +361,7 @@ def test_store_pre_commit_state(db_context):
     query.store_pre_commit_state(db_context.conn, state._asdict())
     cursor = db_context.conn.db.pre_commit.find({'commit_id': 'test'},
                                                 projection={'_id': False})
-    assert cursor.count() == 1
+    assert cursor.collection.count_documents({}) == 1
 
 
 def test_get_pre_commit_state(db_context):
@@ -372,7 +372,7 @@ def test_get_pre_commit_state(db_context):
                            height=3,
                            transactions=[])
 
-    db_context.conn.db.pre_commit.insert(state._asdict())
+    db_context.conn.db.pre_commit.insert_one(state._asdict())
     resp = query.get_pre_commit_state(db_context.conn, 'test2')
     assert resp == state._asdict()
 

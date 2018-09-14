@@ -11,7 +11,6 @@ from argparse import Namespace
 import pytest
 
 from bigchaindb import ValidatorElection
-from tests.conftest import node_keys
 
 
 def test_make_sure_we_dont_remove_any_command():
@@ -30,6 +29,7 @@ def test_make_sure_we_dont_remove_any_command():
     assert parser.parse_args(['election', 'approve', 'ELECTION_ID', '--private-key',
                               'TEMP_PATH_TO_PRIVATE_KEY']).command
     assert parser.parse_args(['election', 'show', 'ELECTION_ID']).command
+    assert parser.parse_args(['tendermint-version']).command
 
 
 @patch('bigchaindb.commands.utils.start')
@@ -226,6 +226,9 @@ def test_calling_main(start_mock, monkeypatch):
     subparsers.add_parser.assert_any_call('drop', help='Drop the database')
 
     subparsers.add_parser.assert_any_call('start', help='Start BigchainDB')
+    subparsers.add_parser.assert_any_call('tendermint-version',
+                                          help='Show the Tendermint supported '
+                                          'versions')
 
     assert start_mock.called is True
 
@@ -468,11 +471,21 @@ def test_election_approve_called_with_bad_key(caplog, b, bad_validator_path, new
             'the eligible voters in this election.'
 
 
+def test_bigchain_tendermint_version(capsys):
+    from bigchaindb.commands.bigchaindb import run_tendermint_version
+
+    args = Namespace(config=None)
+    _, _ = capsys.readouterr()
+    run_tendermint_version(args)
+    output_config = json.loads(capsys.readouterr()[0])
+    from bigchaindb.version import __tm_supported_versions__
+    assert len(output_config["tendermint"]) == len(__tm_supported_versions__)
+    assert sorted(output_config["tendermint"]) == sorted(__tm_supported_versions__)
+
+
 def mock_get_validators(height):
-    keys = node_keys()
-    pub_key = list(keys.keys())[0]
     return [
-        {'public_key': {'value': pub_key,
+        {'public_key': {'value': "zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=",
                         'type': 'ed25519-base64'},
          'voting_power': 10}
     ]

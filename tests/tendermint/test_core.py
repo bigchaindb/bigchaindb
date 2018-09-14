@@ -26,6 +26,7 @@ from bigchaindb.core import (CodeTypeOk,
 from bigchaindb.lib import Block
 from bigchaindb.upsert_validator.validator_utils import new_validator_set
 from bigchaindb.tendermint_utils import public_key_to_base64
+from bigchaindb.version import __tm_supported_versions__
 
 
 pytestmark = pytest.mark.bdb
@@ -168,7 +169,7 @@ def test_init_chain_recognizes_new_chain_after_migration(b):
 
 
 def test_info(b):
-    r = RequestInfo()
+    r = RequestInfo(version=__tm_supported_versions__[0])
     app = App(b)
 
     res = app.info(r)

@@ -29,6 +29,7 @@ from bigchaindb.commands.utils import (configure_bigchaindb,
 from bigchaindb.log import setup_logging
 from bigchaindb.tendermint_utils import public_key_from_base64
 from bigchaindb.commands.election_types import elections
+from bigchaindb.version import __tm_supported_versions__
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -280,6 +281,15 @@ def run_start(args):
     start(args)
 
 
+def run_tendermint_version(args):
+    """Show the supported Tendermint version(s)"""
+    supported_tm_ver = {
+        'description': 'BigchainDB supports the following Tendermint version(s)',
+        'tendermint': __tm_supported_versions__,
+    }
+    print(json.dumps(supported_tm_ver, indent=4, sort_keys=True))
+
+
 def create_parser():
     parser = argparse.ArgumentParser(
         description='Control your BigchainDB node.',
@@ -359,6 +369,9 @@ def create_parser():
                               default=False,
                               action='store_true',
                               help='Skip database initialization')
+
+    subparsers.add_parser('tendermint-version',
+                          help='Show the Tendermint supported versions')
 
     start_parser.add_argument('--experimental-parallel-validation',
                               dest='experimental_parallel_validation',

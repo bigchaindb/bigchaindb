@@ -20,6 +20,8 @@ from abci.types_pb2 import (
 )
 
 from bigchaindb import BigchainDB
+from bigchaindb.version import __tm_supported_versions__
+from bigchaindb.utils import tendermint_version_is_compatible
 from bigchaindb.tendermint_utils import (decode_transaction,
                                          calculate_hash)
 from bigchaindb.lib import Block, PreCommitState
@@ -114,6 +116,14 @@ class App(BaseApplication):
         """Return height of the latest committed block."""
 
         self.abort_if_abci_chain_is_not_synced()
+
+        # Check if BigchainDB supports the Tendermint version
+        if not (hasattr(request, 'version') and tendermint_version_is_compatible(request.version)):
+            logger.error(f'Unsupported Tendermint version: {getattr(request, "version", "no version")}.'
+                         f' Currently, BigchainDB only supports {__tm_supported_versions__}. Exiting!')
+            sys.exit(1)
+
+        logger.info(f"Tendermint version: {request.version}")
 
         r = ResponseInfo()
         block = self.bigchaindb.get_latest_block()
