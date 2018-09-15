@@ -356,10 +356,6 @@ If you started BigchainDB in the foreground, a `Ctrl + C` or `Ctrl + Z` would sh
 
 TBD.
 
-## Log rotation
-
-Please go over the [document describing log rotation of a BigchainDB node](../appendices/log-rotation.md).
-
 
 [bdb:software]: https://github.com/bigchaindb/bigchaindb/
 [bdb:pypi]: https://pypi.org/project/BigchainDB/#history
