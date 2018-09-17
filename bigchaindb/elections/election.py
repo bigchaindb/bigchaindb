@@ -255,9 +255,9 @@ class Election(Transaction):
         validator_set_updated = False
         validator_set_change = []
         for election_id, votes in elections.items():
-            election = bigchain.get_transaction(election_id)
+            election = Election.has_concluded(bigchain, election_id, votes, new_height)
 
-            if not election.has_concluded(bigchain, election_id, votes, new_height):
+            if not election:
                 continue
 
             if election.makes_validator_set_change():
