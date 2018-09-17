@@ -54,7 +54,7 @@ def send_naughty_tx(asset, metadata):
 
     # The fulfilled tx gets sent to the BDB network
     try:
-        sent_transaction = bdb.transactions.send(fulfilled_transaction)
+        sent_transaction = bdb.transactions.send_commit(fulfilled_transaction)
     except BadRequest as e:
         sent_transaction = e
 
