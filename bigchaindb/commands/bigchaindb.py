@@ -113,7 +113,8 @@ def run_election(args):
 
 
 def run_election_new(args, bigchain):
-    globals()[f'run_election_new_{args.election_type}'](args, bigchain)
+    election_type = args.election_type.replace('-', '_')
+    globals()[f'run_election_new_{election_type}'](args, bigchain)
 
 
 def create_new_election(sk, bigchain, election_class, data):

@@ -306,7 +306,7 @@ def test_election_new_upsert_validator_with_tendermint(b, priv_validator_path, u
     from bigchaindb.commands.bigchaindb import run_election_new_upsert_validator
 
     new_args = Namespace(action='new',
-                         election_type='upsert_validator',
+                         election_type='upsert-validator',
                          public_key='HHG0IQRybpT6nJMIWWFWhMczCLHt6xcm7eP52GnGuPY=',
                          power=1,
                          node_id='unique_node_id_for_test_upsert_validator_new_with_tendermint',
@@ -330,7 +330,7 @@ def test_election_new_upsert_validator_without_tendermint(caplog, b, priv_valida
     b.write_transaction = mock_write
 
     args = Namespace(action='new',
-                     election_type='upsert_validator',
+                     election_type='upsert-validator',
                      public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',
                      power=1,
                      node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
@@ -384,7 +384,7 @@ def test_election_new_upsert_validator_invalid_election(caplog, b, priv_validato
     from bigchaindb.commands.bigchaindb import run_election_new_upsert_validator
 
     args = Namespace(action='new',
-                     election_type='upsert_validator',
+                     election_type='upsert-validator',
                      public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',
                      power=10,
                      node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
@@ -408,7 +408,7 @@ def test_election_new_upsert_validator_invalid_power(caplog, b, priv_validator_p
     b.write_transaction = mock_write
     b.get_validators = mock_get_validators
     args = Namespace(action='new',
-                     election_type='upsert_validator',
+                     election_type='upsert-validator',
                      public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',
                      power=10,
                      node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
@@ -427,7 +427,7 @@ def test_election_approve_with_tendermint(b, priv_validator_path, user_sk, valid
 
     public_key = 'CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg='
     new_args = Namespace(action='new',
-                         election_type='upsert_validator',
+                         election_type='upsert-validator',
                          public_key=public_key,
                          power=1,
                          node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
