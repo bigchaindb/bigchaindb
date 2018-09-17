@@ -4,8 +4,10 @@
 
 from functools import singledispatch
 
+from bigchaindb import Vote
 from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 from bigchaindb.backend.schema import TABLES
+from bigchaindb.elections.election import Election
 
 
 @singledispatch
@@ -33,3 +35,20 @@ def generate_block(bigchain):
     code, message = bigchain.write_transaction(tx, 'broadcast_tx_commit')
     assert code == 202
     time.sleep(2)
+
+
+def to_inputs(election, i, ed25519_node_keys):
+    input0 = election.to_inputs()[i]
+    votes = election.outputs[i].amount
+    public_key0 = input0.owners_before[0]
+    key0 = ed25519_node_keys[public_key0]
+    return (input0, votes, key0)
+
+
+def gen_vote(election, i, ed25519_node_keys):
+    (input_i, votes_i, key_i) = to_inputs(election, i, ed25519_node_keys)
+    election_pub_key = Election.to_public_key(election.id)
+    return Vote.generate([input_i],
+                         [([election_pub_key], votes_i)],
+                         election_id=election.id)\
+        .sign([key_i.private_key])

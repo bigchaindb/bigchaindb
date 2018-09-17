@@ -16,5 +16,14 @@ elections = {
                 'help': 'Path to the private key of the election initiator.'
             }
         }
+    },
+    'chain-migration': {
+        'help': 'Call for a halt to block production to allow for a version change across breaking changes.',
+        'args': {
+            '--private-key': {
+                'dest': 'sk',
+                'help': 'Path to the private key of the election initiator.'
+            }
+        }
     }
 }

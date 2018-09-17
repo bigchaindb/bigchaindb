@@ -20,13 +20,13 @@ from abci.types_pb2 import (
 )
 
 from bigchaindb import BigchainDB
+from bigchaindb.elections.election import Election
 from bigchaindb.version import __tm_supported_versions__
 from bigchaindb.utils import tendermint_version_is_compatible
 from bigchaindb.tendermint_utils import (decode_transaction,
                                          calculate_hash)
 from bigchaindb.lib import Block, PreCommitState
 from bigchaindb.backend.query import PRE_COMMIT_ID
-from bigchaindb.upsert_validator import ValidatorElection
 import bigchaindb.upsert_validator.validator_utils as vutils
 from bigchaindb.events import EventTypes, Event
 
@@ -219,15 +219,12 @@ class App(BaseApplication):
         else:
             self.block_txn_hash = block['app_hash']
 
-        # Check if the current block concluded any validator elections and
-        # update the locally tracked validator set
-        validator_update = ValidatorElection.approved_update(self.bigchaindb,
-                                                             self.new_height,
-                                                             self.block_transactions)
-        update = [validator_update] if validator_update else []
+        # Process all concluded elections in the current block and get any update to the validator set
+        update = Election.approved_elections(self.bigchaindb,
+                                             self.new_height,
+                                             self.block_transactions)
 
-        # Store pre-commit state to recover in case there is a crash
-        # during `commit`
+        # Store pre-commit state to recover in case there is a crash  during `commit`
         pre_commit_state = PreCommitState(commit_id=PRE_COMMIT_ID,
                                           height=self.new_height,
                                           transactions=self.block_txn_ids)

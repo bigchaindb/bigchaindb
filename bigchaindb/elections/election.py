@@ -1,6 +1,7 @@
 # Copyright BigchainDB GmbH and BigchainDB contributors
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
+from collections import defaultdict
 
 import base58
 from uuid import uuid4
@@ -33,17 +34,18 @@ class Election(Transaction):
     INCONCLUSIVE = 'inconclusive'
     # Vote ratio to approve an election
     ELECTION_THRESHOLD = 2 / 3
+    CHANGES_VALIDATOR_SET = True
 
     @classmethod
-    def get_validator_change(cls, bigchain, height=None):
-        """Return the latest change to the validator set
+    def get_validator_change(cls, bigchain):
+        """Return the validator set from the most recent approved block
 
         :return: {
             'height': <block_height>,
-            'validators': <validator_set>,
-            'election_id': <election_id_that_approved_the_change>
+            'validators': <validator_set>
         }
         """
+        height = bigchain.get_latest_block()['height']
         return bigchain.get_validator_change(height)
 
     @classmethod
@@ -242,24 +244,41 @@ class Election(Transaction):
         return response
 
     @classmethod
-    def approved_update(cls, bigchain, new_height, txns):
-        votes = {}
-        for txn in txns:
-            if not isinstance(txn, Vote):
+    def approved_elections(cls, bigchain, new_height, txns):
+        elections = defaultdict(list)
+        for tx in txns:
+            if not isinstance(tx, Vote):
+                continue
+            election_id = tx.asset['id']
+            elections[election_id].append(tx)
+
+        validator_set_updated = False
+        validator_set_change = []
+        for election_id, votes in elections.items():
+            election = Election.has_concluded(bigchain, election_id, votes, new_height)
+
+            if not election:
                 continue
 
-            election_id = txn.asset['id']
-            election_votes = votes.get(election_id, [])
-            election_votes.append(txn)
-            votes[election_id] = election_votes
+            if election.makes_validator_set_change():
+                if validator_set_updated:
+                    continue
+                validator_set_change.append(election.get_validator_set_change(bigchain, new_height))
+                validator_set_updated = True
 
-            election = cls.has_concluded(bigchain, election_id, election_votes, new_height)
-            # Once an election concludes any other conclusion for the same
-            # or any other election is invalidated
-            if election:
-                cls.store_election_results(bigchain, election, new_height)
-                return cls.on_approval(bigchain, election, new_height)
-        return None
+            election.on_approval(bigchain, election, new_height)
+
+        return validator_set_change
+
+    def makes_validator_set_change(self):
+        return self.CHANGES_VALIDATOR_SET
+
+    def get_validator_set_change(self, bigchain, new_height):
+        if self.makes_validator_set_change():
+            return self.change_validator_set(bigchain, new_height)
+
+    def change_validator_set(self, bigchain, new_height):
+        raise NotImplementedError
 
     @classmethod
     def on_approval(cls, bigchain, election, new_height):
