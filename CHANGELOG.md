@@ -24,23 +24,21 @@ For reference, the possible headings are:
 * **Known Issues**
 * **Notes**
 
-## [2.0 Beta 6] - 2018-09-???????????????????????
+## [2.0 Beta 6] - 2018-09-17
 
 Tag name: v2.0.0b6
 
 ### Added
 
-* Created an all-in-one Docker image containing BigchainDB Server, Tendermint and MongoDB. It was created for a particular user and is not recommended for production use unless you really know what you're doing. [Pull request #2424](https://github.com/bigchaindb/bigchaindb/pull/2424)
 * [New documentation about privacy and handling private data](https://docs.bigchaindb.com/en/latest/private-data.html). [Pull request #2437](https://github.com/bigchaindb/bigchaindb/pull/2437)
-* New documentation about log rotation. [Pull request #2528](https://github.com/bigchaindb/bigchaindb/pull/2528)
-* Implemented one of the migration strategies outlined in [BEP-42](https://github.com/bigchaindb/BEPs/tree/master/42). That involved creating a more general-purpose election process and commands. Pull requests
-[#2488](https://github.com/bigchaindb/bigchaindb/pull/2488),
-[#2495](https://github.com/bigchaindb/bigchaindb/pull/2495),
-[#2498](https://github.com/bigchaindb/bigchaindb/pull/2498)
+* New documentation about log rotation. Also rotate Tendermint logs if started using Monit. [Pull request #2528](https://github.com/bigchaindb/bigchaindb/pull/2528)
+* Began implementing one of the migration strategies outlined in [BEP-42](https://github.com/bigchaindb/BEPs/tree/master/42). That involved creating a more general-purpose election process and commands. Pull requests [#2488](https://github.com/bigchaindb/bigchaindb/pull/2488), [#2495](https://github.com/bigchaindb/bigchaindb/pull/2495), [#2498](https://github.com/bigchaindb/bigchaindb/pull/2498), [#2515](https://github.com/bigchaindb/bigchaindb/pull/2515), [#2535](https://github.com/bigchaindb/bigchaindb/pull/2535)
 * Used memoization to avoid doing some validation checks multiple times. [Pull request #2490](https://github.com/bigchaindb/bigchaindb/pull/2490)
+* Created an all-in-one Docker image containing BigchainDB Server, Tendermint and MongoDB. It was created for a particular user and is not recommended for production use unless you really know what you're doing. [Pull request #2424](https://github.com/bigchaindb/bigchaindb/pull/2424)
 
 ### Changed
 
+* The supported versions of Tendermint are now hard-wired into BigchainDB Server: it checks to see what version the connected Tendermint has, and if it's not compatible, BigchainDB Server exits with an error message. [Pull request #2541](https://github.com/bigchaindb/bigchaindb/pull/2541)
 * The docs no longer say to install the highest version of Tendermint: they say to install a specific version. [Pull request #2524](https://github.com/bigchaindb/bigchaindb/pull/2524)
 * The setup docs include more recommended settings for `config.toml`. [Pull request #2516](https://github.com/bigchaindb/bigchaindb/pull/2516)
 * The process to add, remove or update the voting power of a validator at run time (using the `bigchaindb upsert-validator` subcommands) was completely changed and is now fully working. See [issue #2372](https://github.com/bigchaindb/bigchaindb/issues/2372) and all the pull requests it references. Pull requests [#2439](https://github.com/bigchaindb/bigchaindb/pull/2439) and [#2440](https://github.com/bigchaindb/bigchaindb/pull/2440)
@@ -62,6 +60,8 @@ Tag name: v2.0.0b6
 
 ### Fixed
 
+* Fixed the Events API so that it only sends valid transactions to subscribers. Also changed how it works internally, so now it is more reliable. [Pull request #2529](https://github.com/bigchaindb/bigchaindb/pull/2529)
+* Fixed a bug where MongoDB database initialization would abort if a collection already existed. [Pull request #2520](https://github.com/bigchaindb/bigchaindb/pull/2520)
 * Fixed a unit test that was failing randomly. [Pull request #2423](https://github.com/bigchaindb/bigchaindb/pull/2423)
 * Fixed the validator curl port. [Pull request #2447](https://github.com/bigchaindb/bigchaindb/pull/2447)
 * Fixed an error in the docs about the HTTP POST /transactions endpoint. [Pull request #2481](https://github.com/bigchaindb/bigchaindb/pull/2481)
