@@ -283,12 +283,11 @@ def store_validator_set(conn, validators_update):
 
 @register_query(LocalMongoDBConnection)
 def store_election_results(conn, election):
-    height = election['height']
     return conn.run(
         conn.collection('elections').replace_one(
-            {'height': height},
+            {'election_id': election['election_id']},
             election,
-            upsert=True
+            upsert=True,
         )
     )
 
