@@ -118,7 +118,6 @@ def run_election_new(args, bigchain):
 
 
 def create_new_election(sk, bigchain, election_class, data):
-
     try:
         key = load_node_key(sk)
         voters = election_class.recipients(bigchain)
@@ -362,6 +361,7 @@ def create_parser():
                                          help='The election_id of the election.')
     approve_election_parser.add_argument('--private-key',
                                          dest='sk',
+                                         required=True,
                                          help='Path to the private key of the election initiator.')
 
     show_election_parser = election_subparser.add_parser('show',

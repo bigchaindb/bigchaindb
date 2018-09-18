@@ -13,6 +13,7 @@ elections = {
             },
             '--private-key': {
                 'dest': 'sk',
+                'required': True,
                 'help': 'Path to the private key of the election initiator.'
             }
         }
@@ -22,6 +23,7 @@ elections = {
         'args': {
             '--private-key': {
                 'dest': 'sk',
+                'required': True,
                 'help': 'Path to the private key of the election initiator.'
             }
         }
