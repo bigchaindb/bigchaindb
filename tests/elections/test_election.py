@@ -17,18 +17,19 @@ def test_approved_elections_concludes_all_elections(b):
 
     public_key = validators[0]['public_key']
     private_key = validators[0]['private_key']
-    election, votes = generate_election(b,
-                                        ValidatorElection,
-                                        public_key, private_key,
-                                        new_validator['election'])
-    txs = [election]
-    total_votes = votes
 
     election, votes = generate_election(b,
                                         ChainMigrationElection,
                                         public_key, private_key,
                                         {})
 
+    txs = [election]
+    total_votes = votes
+
+    election, votes = generate_election(b,
+                                        ValidatorElection,
+                                        public_key, private_key,
+                                        new_validator['election'])
     txs += [election]
     total_votes += votes
 
@@ -58,7 +59,7 @@ def test_approved_elections_concludes_all_elections(b):
 
 
 @pytest.mark.bdb
-def test_approved_elections_applies_only_one_validator_update(b):
+def test_approved_elections_approves_only_one_validator_update(b):
     validators = generate_validators([1] * 4)
     b.store_validator_set(1, [v['storage'] for v in validators])
 
@@ -96,6 +97,104 @@ def test_approved_elections_applies_only_one_validator_update(b):
 
     assert b.get_election(txs[0].id)
     assert not b.get_election(txs[1].id)
+
+
+@pytest.mark.bdb
+def test_approved_elections_approves_after_pending_validator_update(b):
+    validators = generate_validators([1] * 4)
+    b.store_validator_set(1, [v['storage'] for v in validators])
+
+    new_validator = generate_validators([1])[0]
+
+    public_key = validators[0]['public_key']
+    private_key = validators[0]['private_key']
+    election, votes = generate_election(b,
+                                        ValidatorElection,
+                                        public_key, private_key,
+                                        new_validator['election'])
+    txs = [election]
+    total_votes = votes
+
+    another_validator = generate_validators([1])[0]
+
+    election, votes = generate_election(b,
+                                        ValidatorElection,
+                                        public_key, private_key,
+                                        another_validator['election'])
+    txs += [election]
+    total_votes += votes
+
+    election, votes = generate_election(b,
+                                        ChainMigrationElection,
+                                        public_key, private_key,
+                                        {})
+
+    txs += [election]
+    total_votes += votes
+
+    b.store_abci_chain(1, 'chain-X')
+    b.store_block(Block(height=1,
+                        transactions=[tx.id for tx in txs],
+                        app_hash='')._asdict())
+    b.store_bulk_transactions(txs)
+
+    Election.approved_elections(b, 1, total_votes)
+
+    validators = b.get_validators()
+    assert len(validators) == 5
+    assert new_validator['storage'] in validators
+    assert another_validator['storage'] not in validators
+
+    assert b.get_election(txs[0].id)
+    assert not b.get_election(txs[1].id)
+    assert b.get_election(txs[2].id)
+
+    assert b.get_latest_abci_chain() == {'height': 2,
+                                         'chain_id': 'chain-X-migrated-at-height-1',
+                                         'is_synced': False}
+
+
+@pytest.mark.bdb
+def test_approved_elections_does_not_approve_after_validator_update(b):
+    validators = generate_validators([1] * 4)
+    b.store_validator_set(1, [v['storage'] for v in validators])
+
+    new_validator = generate_validators([1])[0]
+
+    public_key = validators[0]['public_key']
+    private_key = validators[0]['private_key']
+    election, votes = generate_election(b,
+                                        ValidatorElection,
+                                        public_key, private_key,
+                                        new_validator['election'])
+    txs = [election]
+    total_votes = votes
+
+    b.store_block(Block(height=1,
+                        transactions=[tx.id for tx in txs],
+                        app_hash='')._asdict())
+    b.store_bulk_transactions(txs)
+
+    Election.approved_elections(b, 1, total_votes)
+
+    b.store_block(Block(height=2,
+                        transactions=[v.id for v in total_votes],
+                        app_hash='')._asdict())
+
+    election, votes = generate_election(b,
+                                        ChainMigrationElection,
+                                        public_key, private_key,
+                                        {})
+    txs = [election]
+    total_votes = votes
+
+    b.store_abci_chain(1, 'chain-X')
+    Election.approved_elections(b, 2, total_votes)
+
+    assert not b.get_election(election.id)
+    assert b.get_latest_abci_chain() == {'height': 1,
+                                         'chain_id': 'chain-X',
+                                         'is_synced': True}
 
 
 @pytest.mark.bdb

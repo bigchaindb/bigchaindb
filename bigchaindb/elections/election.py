@@ -1,7 +1,7 @@
 # Copyright BigchainDB GmbH and BigchainDB contributors
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
-from collections import defaultdict
+from collections import OrderedDict
 
 import base58
 from uuid import uuid4
@@ -22,9 +22,13 @@ from bigchaindb.common.schema import (_validate_schema,
 
 
 class Election(Transaction):
+    """Represents election transactions.
 
-    # NOTE: this transaction class extends create so the operation inheritance is achieved
-    # by setting an ELECTION_TYPE and renaming CREATE = ELECTION_TYPE and ALLOWED_OPERATIONS = (ELECTION_TYPE,)
+       To implement a custom election, create a class deriving from this one
+       with OPERATION set to the election operation, ALLOWED_OPERATIONS
+       set to (OPERATION,), CREATE set to OPERATION.
+    """
+
     OPERATION = None
     # Custom validation schema
     TX_SCHEMA_CUSTOM = None
@@ -34,7 +38,6 @@ class Election(Transaction):
     INCONCLUSIVE = 'inconclusive'
     # Vote ratio to approve an election
     ELECTION_THRESHOLD = 2 / 3
-    CHANGES_VALIDATOR_SET = True
 
     @classmethod
     def get_validator_change(cls, bigchain):
@@ -45,8 +48,10 @@ class Election(Transaction):
             'validators': <validator_set>
         }
         """
-        height = bigchain.get_latest_block()['height']
-        return bigchain.get_validator_change(height)
+        latest_block = bigchain.get_latest_block()
+        if latest_block is None:
+            return None
+        return bigchain.get_validator_change(latest_block['height'])
 
     @classmethod
     def get_validators(cls, bigchain, height=None):
@@ -186,11 +191,11 @@ class Election(Transaction):
                                                                   election_pk))
         return self.count_votes(election_pk, txns, dict.get)
 
-    def has_concluded(self, bigchain, current_votes=[], height=None):
+    def has_concluded(self, bigchain, current_votes=[]):
         """Check if the election can be concluded or not.
 
-        * Elections can only be concluded if the current validator set
-          is exactly equal to the validator set encoded in the election outputs.
+        * Elections can only be concluded if the validator set has not changed
+          since the election was initiated.
         * Elections can be concluded only if the current votes form a supermajority.
 
         Custom elections may override this function and introduce additional checks.
@@ -199,13 +204,16 @@ class Election(Transaction):
         election_pk = self.to_public_key(self.id)
         votes_committed = self.get_commited_votes(bigchain, election_pk)
         votes_current = self.count_votes(election_pk, current_votes)
-        current_validators = self.get_validators(bigchain, height)
 
-        if self.is_same_topology(current_validators, self.outputs):
-            total_votes = sum(current_validators.values())
-            if (votes_committed < (2/3) * total_votes) and \
-                    (votes_committed + votes_current >= (2/3)*total_votes):
-                return True
+        if self.has_validator_set_changed(bigchain):
+            return False
+
+        current_validators = self.get_validators(bigchain)
+        total_votes = sum(current_validators.values())
+        if (votes_committed < (2/3) * total_votes) and \
+                (votes_committed + votes_current >= (2/3)*total_votes):
+            return True
+
         return False
 
     def get_status(self, bigchain):
@@ -213,14 +221,21 @@ class Election(Transaction):
         if concluded:
             return self.CONCLUDED
 
-        latest_change = self.get_validator_change(bigchain)
-        latest_change_height = latest_change['height']
-        election_height = bigchain.get_block_containing_tx(self.id)[0]
+        return self.INCONCLUSIVE if self.has_validator_set_changed(bigchain) else self.ONGOING
 
-        if latest_change_height >= election_height:
-            return self.INCONCLUSIVE
-        else:
-            return self.ONGOING
+    def has_validator_set_changed(self, bigchain):
+        latest_change = self.get_validator_change(bigchain)
+        if latest_change is None:
+            return False
+
+        latest_change_height = latest_change['height']
+
+        blocks = bigchain.get_block_containing_tx(self.id)
+        if not blocks:
+            return False
+        election_height = blocks[0]
+
+        return latest_change_height > election_height
 
     def get_election(self, election_id, bigchain):
         result = bigchain.get_election(election_id)
@@ -244,44 +259,28 @@ class Election(Transaction):
 
     @classmethod
     def approved_elections(cls, bigchain, new_height, txns):
-        elections = defaultdict(list)
+        elections = OrderedDict()
         for tx in txns:
             if not isinstance(tx, Vote):
                 continue
             election_id = tx.asset['id']
+            if election_id not in elections:
+                elections[election_id] = []
             elections[election_id].append(tx)
 
-        validator_set_updated = False
-        validator_set_change = []
+        validator_update = None
         for election_id, votes in elections.items():
             election = bigchain.get_transaction(election_id)
             if election is None:
                 continue
 
-            if not election.has_concluded(bigchain, votes, new_height):
+            if not election.has_concluded(bigchain, votes):
                 continue
 
-            if election.makes_validator_set_change():
-                if validator_set_updated:
-                    continue
-                validator_set_change.append(election.get_validator_set_change(bigchain, new_height))
-                validator_set_updated = True
-
-            election.on_approval(bigchain, election, new_height)
+            validator_update = election.on_approval(bigchain, new_height)
             election.store_election_results(bigchain, election, new_height)
 
-        return validator_set_change
+        return [validator_update] if validator_update else []
 
-    def makes_validator_set_change(self):
-        return self.CHANGES_VALIDATOR_SET
-
-    def get_validator_set_change(self, bigchain, new_height):
-        if self.makes_validator_set_change():
-            return self.change_validator_set(bigchain, new_height)
-
-    def change_validator_set(self, bigchain, new_height):
-        raise NotImplementedError
-
-    @classmethod
-    def on_approval(cls, bigchain, election, new_height):
+    def on_approval(self, bigchain, new_height):
         raise NotImplementedError

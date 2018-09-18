@@ -8,7 +8,6 @@ class ChainMigrationElection(Election):
     CREATE = OPERATION
     ALLOWED_OPERATIONS = (OPERATION,)
     TX_SCHEMA_CUSTOM = TX_SCHEMA_CHAIN_MIGRATION_ELECTION
-    CHANGES_VALIDATOR_SET = False
 
     def has_concluded(self, bigchaindb, *args, **kwargs):
         chain = bigchaindb.get_latest_abci_chain()
@@ -19,6 +18,5 @@ class ChainMigrationElection(Election):
 
         return super().has_concluded(bigchaindb, *args, **kwargs)
 
-    @classmethod
-    def on_approval(cls, bigchain, election, new_height):
+    def on_approval(self, bigchain, *args, **kwargs):
         bigchain.migrate_abci_chain()
