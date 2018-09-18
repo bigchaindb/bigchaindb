@@ -23,7 +23,6 @@ from pymongo import MongoClient
 from bigchaindb import ValidatorElection
 from bigchaindb.common import crypto
 from bigchaindb.log import setup_logging
-from bigchaindb.migrations.chain_migration_election import ChainMigrationElection
 from bigchaindb.tendermint_utils import key_from_base64
 from bigchaindb.backend import schema, query
 from bigchaindb.common.crypto import (key_pair_from_ed25519_key,
@@ -715,22 +714,6 @@ def valid_upsert_validator_election_2(b_mock, node_key, new_validator):
 
 
 @pytest.fixture
-def valid_chain_migration_election(b_mock, node_key):
-    voters = ChainMigrationElection.recipients(b_mock)
-    return ChainMigrationElection.generate([node_key.public_key],
-                                           voters,
-                                           {}, None).sign([node_key.private_key])
-
-
-@pytest.fixture
-def valid_chain_migration_election_2(b_mock, node_key):
-    voters = ChainMigrationElection.recipients(b_mock)
-    return ChainMigrationElection.generate([node_key.public_key],
-                                           voters,
-                                           {}, None).sign([node_key.private_key])
-
-
-@pytest.fixture
 def ongoing_validator_election(b, valid_upsert_validator_election, ed25519_node_keys):
     validators = b.get_validators(height=1)
     genesis_validators = {'validators': validators,
@@ -759,24 +742,6 @@ def ongoing_validator_election_2(b, valid_upsert_validator_election_2, ed25519_n
 
 
 @pytest.fixture
-def ongoing_chain_migration_election(b, valid_chain_migration_election, ed25519_node_keys):
-
-    b.store_bulk_transactions([valid_chain_migration_election])
-    block_1 = Block(app_hash='hash_1', height=1, transactions=[valid_chain_migration_election.id])
-    b.store_block(block_1._asdict())
-    return valid_chain_migration_election
-
-
-@pytest.fixture
-def ongoing_chain_migration_election_2(b, valid_chain_migration_election_2, ed25519_node_keys):
-
-    b.store_bulk_transactions([valid_chain_migration_election_2])
-    block_1 = Block(app_hash='hash_2', height=1, transactions=[valid_chain_migration_election_2.id])
-    b.store_block(block_1._asdict())
-    return valid_chain_migration_election_2
-
-
-@pytest.fixture
 def validator_election_votes(b_mock, ongoing_validator_election, ed25519_node_keys):
     voters = ValidatorElection.recipients(b_mock)
     votes = generate_votes(ongoing_validator_election, voters, ed25519_node_keys)
@@ -790,23 +755,9 @@ def validator_election_votes_2(b_mock, ongoing_validator_election_2, ed25519_nod
     return votes
 
 
-@pytest.fixture
-def chain_migration_election_votes(b_mock, ongoing_chain_migration_election, ed25519_node_keys):
-    voters = ChainMigrationElection.recipients(b_mock)
-    votes = generate_votes(ongoing_chain_migration_election, voters, ed25519_node_keys)
-    return votes
-
-
-@pytest.fixture
-def chain_migration_election_votes_2(b_mock, ongoing_chain_migration_election_2, ed25519_node_keys):
-    voters = ChainMigrationElection.recipients(b_mock)
-    votes = generate_votes(ongoing_chain_migration_election_2, voters, ed25519_node_keys)
-    return votes
-
-
 def generate_votes(election, voters, keys):
     votes = []
-    for voter in range(len(voters)):
+    for voter, _ in enumerate(voters):
         v = gen_vote(election, voter, keys)
         votes.append(v)
     return votes

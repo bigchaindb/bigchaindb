@@ -186,27 +186,26 @@ class Election(Transaction):
                                                                   election_pk))
         return self.count_votes(election_pk, txns, dict.get)
 
-    @classmethod
-    def has_concluded(cls, bigchain, election_id, current_votes=[], height=None):
-        """Check if the given `election_id` can be concluded or not
-        NOTE:
-        * Election is concluded iff the current validator set is exactly equal
-          to the validator set encoded in election outputs
-        * Election can concluded only if the current votes achieves a supermajority
+    def has_concluded(self, bigchain, current_votes=[], height=None):
+        """Check if the election can be concluded or not.
+
+        * Elections can only be concluded if the current validator set
+          is exactly equal to the validator set encoded in the election outputs.
+        * Elections can be concluded only if the current votes form a supermajority.
+
+        Custom elections may override this function and introduce additional checks.
         """
-        election = bigchain.get_transaction(election_id)
 
-        if election:
-            election_pk = election.to_public_key(election.id)
-            votes_committed = election.get_commited_votes(bigchain, election_pk)
-            votes_current = election.count_votes(election_pk, current_votes)
-            current_validators = election.get_validators(bigchain, height)
+        election_pk = self.to_public_key(self.id)
+        votes_committed = self.get_commited_votes(bigchain, election_pk)
+        votes_current = self.count_votes(election_pk, current_votes)
+        current_validators = self.get_validators(bigchain, height)
 
-            if election.is_same_topology(current_validators, election.outputs):
-                total_votes = sum(current_validators.values())
-                if (votes_committed < (2/3)*total_votes) and \
-                        (votes_committed + votes_current >= (2/3)*total_votes):
-                    return election
+        if self.is_same_topology(current_validators, self.outputs):
+            total_votes = sum(current_validators.values())
+            if (votes_committed < (2/3) * total_votes) and \
+                    (votes_committed + votes_current >= (2/3)*total_votes):
+                return True
         return False
 
     def get_status(self, bigchain):
@@ -255,9 +254,11 @@ class Election(Transaction):
         validator_set_updated = False
         validator_set_change = []
         for election_id, votes in elections.items():
-            election = Election.has_concluded(bigchain, election_id, votes, new_height)
+            election = bigchain.get_transaction(election_id)
+            if election is None:
+                continue
 
-            if not election:
+            if not election.has_concluded(bigchain, votes, new_height):
                 continue
 
             if election.makes_validator_set_change():
@@ -267,6 +268,7 @@ class Election(Transaction):
                 validator_set_updated = True
 
             election.on_approval(bigchain, election, new_height)
+            election.store_election_results(bigchain, election, new_height)
 
         return validator_set_change
 

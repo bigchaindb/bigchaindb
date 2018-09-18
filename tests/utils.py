@@ -2,12 +2,17 @@
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
+import base58
+import base64
+import random
+
 from functools import singledispatch
 
-from bigchaindb import Vote
 from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 from bigchaindb.backend.schema import TABLES
-from bigchaindb.elections.election import Election
+from bigchaindb.common import crypto
+from bigchaindb.elections.election import Election, Vote
+from bigchaindb.tendermint_utils import key_to_base64
 
 
 @singledispatch
@@ -24,7 +29,6 @@ def flush_localmongo_db(connection, dbname):
 def generate_block(bigchain):
     from bigchaindb.common.crypto import generate_key_pair
     from bigchaindb.models import Transaction
-    import time
 
     alice = generate_key_pair()
     tx = Transaction.create([alice.public_key],
@@ -34,7 +38,6 @@ def generate_block(bigchain):
 
     code, message = bigchain.write_transaction(tx, 'broadcast_tx_commit')
     assert code == 202
-    time.sleep(2)
 
 
 def to_inputs(election, i, ed25519_node_keys):
@@ -52,3 +55,56 @@ def gen_vote(election, i, ed25519_node_keys):
                          [([election_pub_key], votes_i)],
                          election_id=election.id)\
         .sign([key_i.private_key])
+
+
+def generate_validators(powers):
+    """Generates an arbitrary number of validators with random public keys.
+
+       The object under the `storage` key is in the format expected by DB.
+
+       The object under the `eleciton` key is in the format expected by
+       the upsert validator election.
+
+       `public_key`, `private_key` are in the format used for signing transactions.
+
+       Args:
+           powers: A list of intergers representing the voting power to
+                   assign to the corresponding validators.
+    """
+    validators = []
+    for power in powers:
+        kp = crypto.generate_key_pair()
+        validators.append({
+            'storage': {
+                'public_key': {
+                    'value': key_to_base64(base58.b58decode(kp.public_key).hex()),
+                    'type': 'ed25519-base64',
+                },
+                'voting_power': power,
+            },
+            'election': {
+                'node_id': f'node-{random.choice(range(100))}',
+                'power': power,
+                'public_key': {
+                    'value': base64.b16encode(base58.b58decode(kp.public_key)).decode('utf-8'),
+                    'type': 'ed25519-base16',
+                },
+            },
+            'public_key': kp.public_key,
+            'private_key': kp.private_key,
+        })
+    return validators
+
+
+def generate_election(b, cls, public_key, private_key, asset_data):
+    voters = cls.recipients(b)
+    election = cls.generate([public_key],
+                            voters,
+                            asset_data,
+                            None).sign([private_key])
+
+    votes = [Vote.generate([election.to_inputs()[i]],
+                           [([Election.to_public_key(election.id)], power)],
+                           election.id) for i, (_, power) in enumerate(voters)]
+
+    return election, votes
