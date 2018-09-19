@@ -9,7 +9,7 @@ from bigchaindb.upsert_validator.validator_election import ValidatorElection
 
 
 @pytest.mark.bdb
-def test_approved_elections_concludes_all_elections(b):
+def test_process_block_concludes_all_elections(b):
     validators = generate_validators([1] * 4)
     b.store_validator_set(1, [v['storage'] for v in validators])
 
@@ -39,7 +39,7 @@ def test_approved_elections_concludes_all_elections(b):
                         app_hash='')._asdict())
     b.store_bulk_transactions(txs)
 
-    Election.approved_elections(b, 1, total_votes)
+    Election.process_block(b, 1, txs + total_votes)
 
     validators = b.get_validators()
     assert len(validators) == 5
@@ -54,12 +54,11 @@ def test_approved_elections_concludes_all_elections(b):
     }
 
     for tx in txs:
-        election = b.get_election(tx.id)
-        assert election
+        assert b.get_election(tx.id)['is_concluded']
 
 
 @pytest.mark.bdb
-def test_approved_elections_approves_only_one_validator_update(b):
+def test_process_block_approves_only_one_validator_update(b):
     validators = generate_validators([1] * 4)
     b.store_validator_set(1, [v['storage'] for v in validators])
 
@@ -88,19 +87,19 @@ def test_approved_elections_approves_only_one_validator_update(b):
                         app_hash='')._asdict())
     b.store_bulk_transactions(txs)
 
-    Election.approved_elections(b, 1, total_votes)
+    Election.process_block(b, 1, txs + total_votes)
 
     validators = b.get_validators()
     assert len(validators) == 5
     assert new_validator['storage'] in validators
     assert another_validator['storage'] not in validators
 
-    assert b.get_election(txs[0].id)
-    assert not b.get_election(txs[1].id)
+    assert b.get_election(txs[0].id)['is_concluded']
+    assert not b.get_election(txs[1].id)['is_concluded']
 
 
 @pytest.mark.bdb
-def test_approved_elections_approves_after_pending_validator_update(b):
+def test_process_block_approves_after_pending_validator_update(b):
     validators = generate_validators([1] * 4)
     b.store_validator_set(1, [v['storage'] for v in validators])
 
@@ -138,16 +137,16 @@ def test_approved_elections_approves_after_pending_validator_update(b):
                         app_hash='')._asdict())
     b.store_bulk_transactions(txs)
 
-    Election.approved_elections(b, 1, total_votes)
+    Election.process_block(b, 1, txs + total_votes)
 
     validators = b.get_validators()
     assert len(validators) == 5
     assert new_validator['storage'] in validators
     assert another_validator['storage'] not in validators
 
-    assert b.get_election(txs[0].id)
-    assert not b.get_election(txs[1].id)
-    assert b.get_election(txs[2].id)
+    assert b.get_election(txs[0].id)['is_concluded']
+    assert not b.get_election(txs[1].id)['is_concluded']
+    assert b.get_election(txs[2].id)['is_concluded']
 
     assert b.get_latest_abci_chain() == {'height': 2,
                                          'chain_id': 'chain-X-migrated-at-height-1',
@@ -155,7 +154,7 @@ def test_approved_elections_approves_after_pending_validator_update(b):
 
 
 @pytest.mark.bdb
-def test_approved_elections_does_not_approve_after_validator_update(b):
+def test_process_block_does_not_approve_after_validator_update(b):
     validators = generate_validators([1] * 4)
     b.store_validator_set(1, [v['storage'] for v in validators])
 
@@ -175,7 +174,7 @@ def test_approved_elections_does_not_approve_after_validator_update(b):
                         app_hash='')._asdict())
     b.store_bulk_transactions(txs)
 
-    Election.approved_elections(b, 1, total_votes)
+    Election.process_block(b, 1, txs + total_votes)
 
     b.store_block(Block(height=2,
                         transactions=[v.id for v in total_votes],
@@ -189,16 +188,16 @@ def test_approved_elections_does_not_approve_after_validator_update(b):
     total_votes = votes
 
     b.store_abci_chain(1, 'chain-X')
-    Election.approved_elections(b, 2, total_votes)
+    Election.process_block(b, 2, txs + total_votes)
 
-    assert not b.get_election(election.id)
+    assert not b.get_election(election.id)['is_concluded']
     assert b.get_latest_abci_chain() == {'height': 1,
                                          'chain_id': 'chain-X',
                                          'is_synced': True}
 
 
 @pytest.mark.bdb
-def test_approved_elections_applies_only_one_migration(b):
+def test_process_block_applies_only_one_migration(b):
     validators = generate_validators([1] * 4)
     b.store_validator_set(1, [v['storage'] for v in validators])
 
@@ -225,7 +224,7 @@ def test_approved_elections_applies_only_one_migration(b):
                         app_hash='')._asdict())
     b.store_bulk_transactions(txs)
 
-    Election.approved_elections(b, 1, total_votes)
+    Election.process_block(b, 1, txs + total_votes)
     chain = b.get_latest_abci_chain()
     assert chain
     assert chain == {
@@ -234,9 +233,9 @@ def test_approved_elections_applies_only_one_migration(b):
         'chain_id': 'chain-X-migrated-at-height-1',
     }
 
-    assert b.get_election(txs[0].id)
-    assert not b.get_election(txs[1].id)
+    assert b.get_election(txs[0].id)['is_concluded']
+    assert not b.get_election(txs[1].id)['is_concluded']
 
 
-def test_approved_elections_gracefully_handles_empty_block(b):
-    Election.approved_elections(b, 1, [])
+def test_process_block_gracefully_handles_empty_block(b):
+    Election.process_block(b, 1, [])

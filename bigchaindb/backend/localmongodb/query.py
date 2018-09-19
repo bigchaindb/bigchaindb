@@ -282,11 +282,14 @@ def store_validator_set(conn, validators_update):
 
 
 @register_query(LocalMongoDBConnection)
-def store_election_results(conn, election):
+def store_election(conn, election_id, height, is_concluded):
     return conn.run(
         conn.collection('elections').replace_one(
-            {'election_id': election['election_id']},
-            election,
+            {'election_id': election_id,
+             'height': height},
+            {'election_id': election_id,
+             'height': height,
+             'is_concluded': is_concluded},
             upsert=True,
         )
     )
@@ -315,6 +318,7 @@ def get_election(conn, election_id):
     cursor = conn.run(
         conn.collection('elections')
         .find(query, projection={'_id': False})
+        .sort([('height', DESCENDING)])
     )
 
     return next(cursor, None)

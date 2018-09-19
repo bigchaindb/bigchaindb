@@ -217,8 +217,8 @@ class Election(Transaction):
         return False
 
     def get_status(self, bigchain):
-        concluded = self.get_election(self.id, bigchain)
-        if concluded:
+        election = self.get_election(self.id, bigchain)
+        if election and election['is_concluded']:
             return self.CONCLUDED
 
         return self.INCONCLUSIVE if self.has_validator_set_changed(bigchain) else self.ONGOING
@@ -230,20 +230,17 @@ class Election(Transaction):
 
         latest_change_height = latest_change['height']
 
-        blocks = bigchain.get_block_containing_tx(self.id)
-        if not blocks:
-            return False
-        election_height = blocks[0]
+        election = self.get_election(self.id, bigchain)
+        if not election:
+            return True
 
-        return latest_change_height > election_height
+        return latest_change_height > election['height']
 
     def get_election(self, election_id, bigchain):
-        result = bigchain.get_election(election_id)
-        return result
+        return bigchain.get_election(election_id)
 
-    @classmethod
-    def store_election_results(cls, bigchain, election, height):
-        bigchain.store_election_results(height, election)
+    def store(self, bigchain, height, is_concluded):
+        bigchain.store_election(self.id, height, is_concluded)
 
     def show_election(self, bigchain):
         data = self.asset['data']
@@ -258,9 +255,33 @@ class Election(Transaction):
         return response
 
     @classmethod
-    def approved_elections(cls, bigchain, new_height, txns):
+    def process_block(cls, bigchain, new_height, txns):
+        """Looks for election and vote transactions inside the block, records
+           and processes elections.
+
+           Every election is recorded in the database.
+
+           Every vote has a chance to conclude the corresponding election. When
+           an election is concluded, the corresponding database record is
+           marked as such.
+
+           Elections and votes are processed in the order in which they
+           appear in the block.
+
+           For every election concluded in the block, calls its `on_approval`
+           method. The returned value of the last `on_approval`, if any,
+           is a validator set update to be applied in one of the following blocks.
+
+           `on_approval` methods are implemented by elections of particular type.
+           The method may contain side effects but should be idempotent. To account
+           for other concluded elections, if it requires so, the method should
+           rely on the database state.
+        """
         elections = OrderedDict()
         for tx in txns:
+            if isinstance(tx, Election):
+                tx.store(bigchain, new_height, is_concluded=False)
+
             if not isinstance(tx, Vote):
                 continue
             election_id = tx.asset['id']
@@ -278,7 +299,7 @@ class Election(Transaction):
                 continue
 
             validator_update = election.on_approval(bigchain, new_height)
-            election.store_election_results(bigchain, election, new_height)
+            election.store(bigchain, new_height, is_concluded=True)
 
         return [validator_update] if validator_update else []
 
