@@ -24,21 +24,12 @@ and [log rotation](https://docs.mongodb.com/v3.6/tutorial/rotate-log-files/).
 
 ## BigchainDB Server Logging and Log Rotation
 
-BigchainDB Server writes its logs to the files:
+BigchainDB Server writes its logs to two files: normal logs and error logs. The names of those files, and their locations, are set as part of the BigchainDB configuration settings. The default names and locations are:
 
-- `bigchaindb.log`
-- `bigchaindb-errors.log`
-- `bigchaindb-benchmark.log`
+- `~/bigchaindb.log`
+- `~/bigchaindb-errors.log`
 
-The default is for those files to be created in the same directory where you ran `bigchaindb start`.
-If you started BigchainDB Server and Tendermint using Monit, as suggested by our guide on
-[How to Set Up a BigchainDB Network](../simple-deployment-template/network-setup.html),
-then the logs will be written to `$HOME/.bigchaindb-monit/logs/`.
-
-Log rotation is baked into BigchainDB Server using Python's `logging` module.
-The logs for BigchainDB Server are rotated when any of the above mentioned files exceeds 209715200 bytes (i.e. approximately 209 MB).
-
-See also: [the BigchainDB Server configuration settings related to logging](../server-reference/configuration.html#log).
+For more information, see the docs about [the BigchainDB Server configuration settings related to logging](../server-reference/configuration.html#log).
 
 ## Tendermint Logging and Log Rotation
 
