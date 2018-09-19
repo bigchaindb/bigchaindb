@@ -40,8 +40,7 @@ class App(BaseApplication):
     """Bridge between BigchainDB and Tendermint.
 
     The role of this class is to expose the BigchainDB
-    transactional logic to the Tendermint Consensus
-    State Machine.
+    transaction logic to Tendermint Core.
     """
 
     def __init__(self, bigchaindb=None, events_queue=None):

@@ -35,20 +35,20 @@ def config(request, monkeypatch):
 
 def test_bigchain_class_default_initialization(config):
     from bigchaindb import BigchainDB
-    from bigchaindb.consensus import BaseConsensusRules
+    from bigchaindb.validation import BaseValidationRules
     from bigchaindb.backend.connection import Connection
     bigchain = BigchainDB()
     assert isinstance(bigchain.connection, Connection)
     assert bigchain.connection.host == config['database']['host']
     assert bigchain.connection.port == config['database']['port']
     assert bigchain.connection.dbname == config['database']['name']
-    assert bigchain.consensus == BaseConsensusRules
+    assert bigchain.validation == BaseValidationRules
 
 
 def test_bigchain_class_initialization_with_parameters():
     from bigchaindb import BigchainDB
     from bigchaindb.backend import connect
-    from bigchaindb.consensus import BaseConsensusRules
+    from bigchaindb.validation import BaseValidationRules
     init_db_kwargs = {
         'backend': 'localmongodb',
         'host': 'this_is_the_db_host',
@@ -61,7 +61,7 @@ def test_bigchain_class_initialization_with_parameters():
     assert bigchain.connection.host == init_db_kwargs['host']
     assert bigchain.connection.port == init_db_kwargs['port']
     assert bigchain.connection.dbname == init_db_kwargs['name']
-    assert bigchain.consensus == BaseConsensusRules
+    assert bigchain.validation == BaseValidationRules
 
 
 def test_get_spent_issue_1271(b, alice, bob, carol):

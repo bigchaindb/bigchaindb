@@ -28,7 +28,7 @@ from bigchaindb.common import exceptions
 
 import bigchaindb
 
-from bigchaindb.consensus import BaseConsensusRules
+from bigchaindb.validation import BaseValidationRules
 
 # TODO: move this to a proper configuration file for logging
 logging.getLogger('requests').setLevel(logging.WARNING)
@@ -258,38 +258,38 @@ def autoconfigure(filename=None, config=None, force=False):
 
 
 @lru_cache()
-def load_consensus_plugin(name=None):
-    """Find and load the chosen consensus plugin.
+def load_validation_plugin(name=None):
+    """Find and load the chosen validation plugin.
 
     Args:
         name (string): the name of the entry_point, as advertised in the
             setup.py of the providing package.
 
     Returns:
-        an uninstantiated subclass of ``bigchaindb.consensus.AbstractConsensusRules``
+        an uninstantiated subclass of ``bigchaindb.validation.AbstractValidationRules``
     """
     if not name:
-        return BaseConsensusRules
+        return BaseValidationRules
 
-    # TODO: This will return the first plugin with group `bigchaindb.consensus`
+    # TODO: This will return the first plugin with group `bigchaindb.validation`
     #       and name `name` in the active WorkingSet.
     #       We should probably support Requirements specs in the config, e.g.
-    #       consensus_plugin: 'my-plugin-package==0.0.1;default'
+    #       validation_plugin: 'my-plugin-package==0.0.1;default'
     plugin = None
-    for entry_point in iter_entry_points('bigchaindb.consensus', name):
+    for entry_point in iter_entry_points('bigchaindb.validation', name):
         plugin = entry_point.load()
 
     # No matching entry_point found
     if not plugin:
         raise ResolutionError(
-            'No plugin found in group `bigchaindb.consensus` with name `{}`'.
+            'No plugin found in group `bigchaindb.validation` with name `{}`'.
             format(name))
 
     # Is this strictness desireable?
     # It will probably reduce developer headaches in the wild.
-    if not issubclass(plugin, (BaseConsensusRules,)):
+    if not issubclass(plugin, (BaseValidationRules,)):
         raise TypeError('object of type "{}" does not implement `bigchaindb.'
-                        'consensus.BaseConsensusRules`'.format(type(plugin)))
+                        'validation.BaseValidationRules`'.format(type(plugin)))
 
     return plugin
 
