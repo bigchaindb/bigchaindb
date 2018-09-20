@@ -292,7 +292,7 @@ defined by [Python](https://docs.python.org/3.6/library/logging.html#levels),
 but case-insensitive for the sake of convenience:
 
 ```text
-"critical", "error", "warning", "info", "benchmark", "debug", "notset"
+"critical", "error", "warning", "info", "debug", "notset"
 ```
 
 ### log.level_logfile
@@ -302,7 +302,7 @@ defined by [Python](https://docs.python.org/3.6/library/logging.html#levels),
 but case-insensitive for the sake of convenience:
 
 ```text
-"critical", "error", "warning", "info", "benchmark", "debug", "notset"
+"critical", "error", "warning", "info", "debug", "notset"
 ```
 
 ### log.datefmt_console

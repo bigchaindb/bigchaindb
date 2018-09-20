@@ -146,16 +146,13 @@ class App(BaseApplication):
 
         self.abort_if_abci_chain_is_not_synced()
 
-        logger.benchmark('CHECK_TX_INIT')
         logger.debug('check_tx: %s', raw_transaction)
         transaction = decode_transaction(raw_transaction)
         if self.bigchaindb.is_valid_transaction(transaction):
             logger.debug('check_tx: VALID')
-            logger.benchmark('CHECK_TX_END, tx_id:%s', transaction['id'])
             return ResponseCheckTx(code=CodeTypeOk)
         else:
             logger.debug('check_tx: INVALID')
-            logger.benchmark('CHECK_TX_END, tx_id:%s', transaction['id'])
             return ResponseCheckTx(code=CodeTypeError)
 
     def begin_block(self, req_begin_block):
@@ -167,9 +164,9 @@ class App(BaseApplication):
         self.abort_if_abci_chain_is_not_synced()
 
         chain_shift = 0 if self.chain is None else self.chain['height']
-        logger.benchmark('BEGIN BLOCK, height:%s, num_txs:%s',
-                         req_begin_block.header.height + chain_shift,
-                         req_begin_block.header.num_txs)
+        logger.debug('BEGIN BLOCK, height:%s, num_txs:%s',
+                     req_begin_block.header.height + chain_shift,
+                     req_begin_block.header.num_txs)
 
         self.block_txn_ids = []
         self.block_transactions = []
@@ -253,7 +250,6 @@ class App(BaseApplication):
         logger.debug('Commit-ing new block with hash: apphash=%s ,'
                      'height=%s, txn ids=%s', data, self.new_height,
                      self.block_txn_ids)
-        logger.benchmark('COMMIT_BLOCK, height:%s', self.new_height)
 
         if self.events_queue:
             event = Event(EventTypes.BLOCK_VALID, {
