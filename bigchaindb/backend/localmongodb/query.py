@@ -296,6 +296,13 @@ def store_election(conn, election_id, height, is_concluded):
 
 
 @register_query(LocalMongoDBConnection)
+def store_elections(conn, elections):
+    return conn.run(
+        conn.collection('elections').insert_many(elections)
+    )
+
+
+@register_query(LocalMongoDBConnection)
 def get_validator_set(conn, height=None):
     query = {}
     if height is not None:

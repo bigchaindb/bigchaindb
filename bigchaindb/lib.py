@@ -484,6 +484,9 @@ class BigchainDB(object):
         return backend.query.store_election(self.connection, election_id,
                                             height, is_concluded)
 
+    def store_elections(self, elections):
+        return backend.query.store_elections(self.connection, elections)
+
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))
 

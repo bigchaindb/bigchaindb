@@ -359,6 +359,13 @@ def store_election(conn, election_id, height, is_concluded):
 
 
 @singledispatch
+def store_elections(conn, elections):
+    """Store election records in bulk"""
+
+    raise NotImplementedError
+
+
+@singledispatch
 def get_validator_set(conn, height):
     """Get validator set for a given `height`, if `height` is not specified
     then return the latest validator set

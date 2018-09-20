@@ -277,17 +277,24 @@ class Election(Transaction):
            for other concluded elections, if it requires so, the method should
            rely on the database state.
         """
+        # elections placed in this block
+        initiated_elections = []
+        # elections voted for in this block and their votes
         elections = OrderedDict()
         for tx in txns:
             if isinstance(tx, Election):
-                tx.store(bigchain, new_height, is_concluded=False)
-
+                initiated_elections.append({'election_id': tx.id,
+                                            'height': new_height,
+                                            'is_concluded': False})
             if not isinstance(tx, Vote):
                 continue
             election_id = tx.asset['id']
             if election_id not in elections:
                 elections[election_id] = []
             elections[election_id].append(tx)
+
+        if initiated_elections:
+            bigchain.store_elections(initiated_elections)
 
         validator_update = None
         for election_id, votes in elections.items():
