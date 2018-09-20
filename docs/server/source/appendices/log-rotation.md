@@ -25,7 +25,6 @@ please refer to [MongoDB docs](https://docs.mongodb.com/v3.6/tutorial/rotate-log
 Log rotation is baked into BigchainDB server using the `logging` module. BigchainDB server logs information into the following files:
  - `bigchaindb.log`
  - `bigchaindb-errors.log`
- - `bigchaindb-benchmark.log`
 
 These log files are created by default in the directory from where you run `bigchaindb start`, if you are using `monit`, from 
 [How to Set Up a BigchainDB Network](../simple-deployment-template/network-setup.md) guide, the default directory is: `$HOME/.bigchaindb-monit/logs`
