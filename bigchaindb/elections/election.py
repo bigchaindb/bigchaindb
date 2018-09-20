@@ -229,8 +229,6 @@ class Election(Transaction):
         latest_change_height = latest_change['height']
 
         election = self.get_election(self.id, bigchain)
-        if not election:
-            return True
 
         return latest_change_height > election['height']
 
