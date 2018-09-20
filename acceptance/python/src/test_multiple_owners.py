@@ -64,7 +64,7 @@ def test_multiple_owners():
         prepared_dw_tx,
         private_keys=[alice.private_key, bob.private_key])
 
-    bdb.transactions.send(fulfilled_dw_tx, mode='commit')
+    bdb.transactions.send_commit(fulfilled_dw_tx)
 
     # We store the `id` of the transaction to use it later on.
     dw_id = fulfilled_dw_tx['id']
@@ -109,8 +109,7 @@ def test_multiple_owners():
         prepared_transfer_tx,
         private_keys=[alice.private_key, bob.private_key])
 
-    sent_transfer_tx = bdb.transactions.send(fulfilled_transfer_tx,
-                                             mode='commit')
+    sent_transfer_tx = bdb.transactions.send_commit(fulfilled_transfer_tx)
 
     # They check if the transaction was successful.
     assert bdb.transactions.retrieve(
