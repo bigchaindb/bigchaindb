@@ -207,8 +207,7 @@ class Election(Transaction):
         votes_committed = self.get_commited_votes(bigchain, election_pk)
         votes_current = self.count_votes(election_pk, current_votes)
 
-        current_validators = self.get_validators(bigchain)
-        total_votes = sum(current_validators.values())
+        total_votes = sum(output.amount for output in self.outputs)
         if (votes_committed < (2/3) * total_votes) and \
                 (votes_committed + votes_current >= (2/3)*total_votes):
             return True
