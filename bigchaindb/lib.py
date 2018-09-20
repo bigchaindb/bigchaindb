@@ -27,7 +27,7 @@ from bigchaindb.common.exceptions import (SchemaValidationError,
                                           DoubleSpend)
 from bigchaindb.tendermint_utils import encode_transaction, merkleroot
 from bigchaindb import exceptions as core_exceptions
-from bigchaindb.consensus import BaseConsensusRules
+from bigchaindb.validation import BaseValidationRules
 
 
 logger = logging.getLogger(__name__)
@@ -64,12 +64,12 @@ class BigchainDB(object):
         self.tendermint_port = bigchaindb.config['tendermint']['port']
         self.endpoint = 'http://{}:{}/'.format(self.tendermint_host, self.tendermint_port)
 
-        consensusPlugin = bigchaindb.config.get('consensus_plugin')
+        validationPlugin = bigchaindb.config.get('validation_plugin')
 
-        if consensusPlugin:
-            self.consensus = config_utils.load_consensus_plugin(consensusPlugin)
+        if validationPlugin:
+            self.validation = config_utils.load_validation_plugin(validationPlugin)
         else:
-            self.consensus = BaseConsensusRules
+            self.validation = BaseValidationRules
 
         self.connection = connection if connection else backend.connect(**bigchaindb.config['database'])
 

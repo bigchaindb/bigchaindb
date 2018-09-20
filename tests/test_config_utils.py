@@ -31,24 +31,24 @@ def test_bigchain_instance_is_initialized_when_conf_provided():
     assert bigchaindb.config['CONFIGURED'] is True
 
 
-def test_load_consensus_plugin_loads_default_rules_without_name():
+def test_load_validation_plugin_loads_default_rules_without_name():
     from bigchaindb import config_utils
-    from bigchaindb.consensus import BaseConsensusRules
+    from bigchaindb.validation import BaseValidationRules
 
-    assert config_utils.load_consensus_plugin() == BaseConsensusRules
+    assert config_utils.load_validation_plugin() == BaseValidationRules
 
 
-def test_load_consensus_plugin_raises_with_unknown_name():
+def test_load_validation_plugin_raises_with_unknown_name():
     from pkg_resources import ResolutionError
     from bigchaindb import config_utils
 
     with pytest.raises(ResolutionError):
-        config_utils.load_consensus_plugin('bogus')
+        config_utils.load_validation_plugin('bogus')
 
 
-def test_load_consensus_plugin_raises_with_invalid_subclass(monkeypatch):
+def test_load_validation_plugin_raises_with_invalid_subclass(monkeypatch):
     # Monkeypatch entry_point.load to return something other than a
-    # ConsensusRules instance
+    # ValidationRules instance
     from bigchaindb import config_utils
     import time
     monkeypatch.setattr(config_utils,
@@ -58,7 +58,7 @@ def test_load_consensus_plugin_raises_with_invalid_subclass(monkeypatch):
     with pytest.raises(TypeError):
         # Since the function is decorated with `lru_cache`, we need to
         # "miss" the cache using a name that has not been used previously
-        config_utils.load_consensus_plugin(str(time.time()))
+        config_utils.load_validation_plugin(str(time.time()))
 
 
 def test_load_events_plugins(monkeypatch):
