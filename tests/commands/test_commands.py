@@ -259,8 +259,7 @@ def test_recover_db_on_start(mock_run_recover,
 def test_run_recover(b, alice, bob):
     from bigchaindb.commands.bigchaindb import run_recover
     from bigchaindb.models import Transaction
-    from bigchaindb.lib import Block, PreCommitState
-    from bigchaindb.backend.query import PRE_COMMIT_ID
+    from bigchaindb.lib import Block
     from bigchaindb.backend import query
 
     tx1 = Transaction.create([alice.public_key],
@@ -288,8 +287,7 @@ def test_run_recover(b, alice, bob):
     b.store_block(block9)
 
     # create a pre_commit state which is ahead of the commit state
-    pre_commit_state = PreCommitState(commit_id=PRE_COMMIT_ID, height=10,
-                                      transactions=[tx2.id])._asdict()
+    pre_commit_state = dict(height=10, transactions=[tx2.id])
     b.store_pre_commit_state(pre_commit_state)
 
     run_recover(b)
@@ -522,11 +520,13 @@ def test_chain_migration_election_show_shows_inconclusive(b):
 
     public_key = validators[0]['public_key']
     private_key = validators[0]['private_key']
+    voter_keys = [v['private_key'] for v in validators]
 
     election, votes = generate_election(b,
                                         ChainMigrationElection,
                                         public_key, private_key,
-                                        {})
+                                        {},
+                                        voter_keys)
 
     assert not run_election_show(Namespace(election_id=election.id), b)
 
@@ -556,11 +556,13 @@ def test_chain_migration_election_show_shows_concluded(b):
 
     public_key = validators[0]['public_key']
     private_key = validators[0]['private_key']
+    voter_keys = [v['private_key'] for v in validators]
 
     election, votes = generate_election(b,
                                         ChainMigrationElection,
                                         public_key, private_key,
-                                        {})
+                                        {},
+                                        voter_keys)
 
     assert not run_election_show(Namespace(election_id=election.id), b)
 

@@ -13,6 +13,7 @@ import copy
 import json
 import sys
 
+from bigchaindb.core import rollback
 from bigchaindb.migrations.chain_migration_election import ChainMigrationElection
 from bigchaindb.utils import load_node_key
 from bigchaindb.common.exceptions import (DatabaseDoesNotExist,
@@ -22,8 +23,6 @@ import bigchaindb
 from bigchaindb import (backend, ValidatorElection,
                         BigchainDB)
 from bigchaindb.backend import schema
-from bigchaindb.backend import query
-from bigchaindb.backend.query import PRE_COMMIT_ID
 from bigchaindb.commands import utils
 from bigchaindb.commands.utils import (configure_bigchaindb,
                                        input_on_stderr)
@@ -270,16 +269,7 @@ def run_drop(args):
 
 
 def run_recover(b):
-    pre_commit = query.get_pre_commit_state(b.connection, PRE_COMMIT_ID)
-
-    # Initially the pre-commit collection would be empty
-    if pre_commit:
-        latest_block = query.get_latest_block(b.connection)
-
-        # NOTE: the pre-commit state can only be ahead of the commited state
-        # by 1 block
-        if latest_block and (latest_block['height'] < pre_commit['height']):
-            query.delete_transactions(b.connection, pre_commit['transactions'])
+    rollback(b)
 
 
 @configure_bigchaindb

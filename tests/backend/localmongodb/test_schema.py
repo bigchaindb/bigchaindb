@@ -61,8 +61,8 @@ def test_create_tables():
     assert indexes['election_id_height']['unique']
 
     indexes = conn.conn[dbname]['pre_commit'].index_information()
-    assert set(indexes.keys()) == {'_id_', 'pre_commit_id'}
-    assert indexes['pre_commit_id']['unique']
+    assert set(indexes.keys()) == {'_id_', 'height'}
+    assert indexes['height']['unique']
 
 
 def test_drop(dummy_db):

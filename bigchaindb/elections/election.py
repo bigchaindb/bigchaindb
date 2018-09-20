@@ -251,6 +251,30 @@ class Election(Transaction):
         return response
 
     @classmethod
+    def _get_initiated_elections(cls, height, txns):
+        elections = []
+        for tx in txns:
+            if not isinstance(tx, Election):
+                continue
+
+            elections.append({'election_id': tx.id, 'height': height,
+                              'is_concluded': False})
+        return elections
+
+    @classmethod
+    def _get_votes(cls, txns):
+        elections = OrderedDict()
+        for tx in txns:
+            if not isinstance(tx, Vote):
+                continue
+
+            election_id = tx.asset['id']
+            if election_id not in elections:
+                elections[election_id] = []
+            elections[election_id].append(tx)
+        return elections
+
+    @classmethod
     def process_block(cls, bigchain, new_height, txns):
         """Looks for election and vote transactions inside the block, records
            and processes elections.
@@ -274,24 +298,14 @@ class Election(Transaction):
            for other concluded elections, if it requires so, the method should
            rely on the database state.
         """
-        # elections placed in this block
-        initiated_elections = []
-        # elections voted for in this block and their votes
-        elections = OrderedDict()
-        for tx in txns:
-            if isinstance(tx, Election):
-                initiated_elections.append({'election_id': tx.id,
-                                            'height': new_height,
-                                            'is_concluded': False})
-            if not isinstance(tx, Vote):
-                continue
-            election_id = tx.asset['id']
-            if election_id not in elections:
-                elections[election_id] = []
-            elections[election_id].append(tx)
+        # elections initiated in this block
+        initiated_elections = cls._get_initiated_elections(new_height, txns)
 
         if initiated_elections:
             bigchain.store_elections(initiated_elections)
+
+        # elections voted for in this block and their votes
+        elections = cls._get_votes(txns)
 
         validator_update = None
         for election_id, votes in elections.items():
@@ -307,5 +321,34 @@ class Election(Transaction):
 
         return [validator_update] if validator_update else []
 
+    @classmethod
+    def rollback(cls, bigchain, new_height, txn_ids):
+        """Looks for election and vote transactions inside the block and
+           cleans up the database artifacts possibly created in `process_blocks`.
+
+           Part of the `end_block`/`commit` crash recovery.
+        """
+
+        # delete election records for elections initiated at this height and
+        # elections concluded at this height
+        bigchain.delete_elections(new_height)
+
+        txns = [bigchain.get_transaction(tx_id) for tx_id in txn_ids]
+
+        elections = cls._get_votes(txns)
+        for election_id in elections:
+            election = bigchain.get_transaction(election_id)
+            election.on_rollback(bigchain, new_height)
+
     def on_approval(self, bigchain, new_height):
+        """Override to update the database state according to the
+           election rules. Consider the current database state to account for
+           other concluded elections, if required.
+        """
+        raise NotImplementedError
+
+    def on_rollback(self, bigchain, new_height):
+        """Override to clean up the database artifacts possibly created
+           in `on_approval`. Part of the `end_block`/`commit` crash recovery.
+        """
         raise NotImplementedError

@@ -25,8 +25,7 @@ from bigchaindb.version import __tm_supported_versions__
 from bigchaindb.utils import tendermint_version_is_compatible
 from bigchaindb.tendermint_utils import (decode_transaction,
                                          calculate_hash)
-from bigchaindb.lib import Block, PreCommitState
-from bigchaindb.backend.query import PRE_COMMIT_ID
+from bigchaindb.lib import Block
 import bigchaindb.upsert_validator.validator_utils as vutils
 from bigchaindb.events import EventTypes, Event
 
@@ -207,6 +206,14 @@ class App(BaseApplication):
 
         height = request_end_block.height + chain_shift
         self.new_height = height
+
+        # store pre-commit state to recover in case there is a crash during
+        # `end_block` or `commit`
+        logger.debug(f'Updating pre-commit state: {self.new_height}')
+        pre_commit_state = dict(height=self.new_height,
+                                transactions=self.block_txn_ids)
+        self.bigchaindb.store_pre_commit_state(pre_commit_state)
+
         block_txn_hash = calculate_hash(self.block_txn_ids)
         block = self.bigchaindb.get_latest_block()
 
@@ -219,12 +226,6 @@ class App(BaseApplication):
                                                   self.new_height,
                                                   self.block_transactions)
 
-        # Store pre-commit state to recover in case there is a crash  during `commit`
-        pre_commit_state = PreCommitState(commit_id=PRE_COMMIT_ID,
-                                          height=self.new_height,
-                                          transactions=self.block_txn_ids)
-        logger.debug('Updating PreCommitState: %s', self.new_height)
-        self.bigchaindb.store_pre_commit_state(pre_commit_state._asdict())
         return ResponseEndBlock(validator_updates=validator_update)
 
     def commit(self):
@@ -257,3 +258,21 @@ class App(BaseApplication):
             self.events_queue.put(event)
 
         return ResponseCommit(data=data)
+
+
+def rollback(b):
+    pre_commit = b.get_pre_commit_state()
+
+    if pre_commit is None:
+        # the pre_commit record is first stored in the first `end_block`
+        return
+
+    latest_block = b.get_latest_block()
+    if latest_block is None:
+        logger.error('Found precommit state but no blocks!')
+        sys.exit(1)
+
+    # NOTE: the pre-commit state is always at most 1 block ahead of the commited state
+    if latest_block['height'] < pre_commit['height']:
+        Election.rollback(b, pre_commit['height'], pre_commit['transactions'])
+        b.delete_transactions(pre_commit['transactions'])
