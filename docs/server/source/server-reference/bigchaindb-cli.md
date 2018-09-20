@@ -87,7 +87,7 @@ Manage elections to govern the BigchainDB network. The specifics of the election
 
 Election management is broken into several subcommands. Below is the command line syntax for each of them.
 
-#### election new
+### election new
 
 Create a new election which proposes a change to the BigchainDB network.
 
@@ -99,7 +99,7 @@ Every election has a type. See below for how to create an election of a particul
 
 Note that elections can only be proposed and approved by existing validators.
 
-###### election new upsert-validator
+#### election new upsert-validator
 
 Create an election to add, update, or remove a validator.
 
@@ -111,7 +111,7 @@ $ bigchaindb election new upsert-validator <public-key> <power> <node-id> --priv
 - `<public-key>` is the public key of the node to be added/updated/removed. The encoding and type of the key have to match those specified in `genesis.json` in the supported Tendermint version.
 - `<power>` is the new power for the validator. To remove the validator, set the power to `0`.
 - `<node-id>` is the node identifier from Tendermint. A node operator can learn his node identifier by executing `tendermint show_node_id`.
-- `<path-to-the-private-key>` is the path to the private key of the validator who proposes the election. Tendemint places it at  `.tendermint/config/priv_validator.json`.
+- `<path-to-the-private-key>` is the path to the private key of the validator who proposes the election. Tendermint places it at  `.tendermint/config/priv_validator.json`.
 
 Example:
 
@@ -127,16 +127,16 @@ Note that election proposers do not automatically approve elections by proposing
 
 For more details about how validator set changes work, refer to [BEP-21](https://github.com/bigchaindb/BEPs/tree/master/21).
 
-###### election new chain-migration
+#### election new chain-migration
 
 Create an election to halt block production, to coordinate on making a Tendermint upgrade with a backwards-incompatible chain.
 
 
 ```bash
-$ bigchaindb election new chain-migration --private-key <path-to-theprivate-key>
+$ bigchaindb election new chain-migration --private-key <path-to-the-private-key>
 ```
 
-- `<path-to-the-private-key>` is the path to the private key of the validator who proposes the election. Tendemint places it at  `.tendermint/config/priv_validator.json`.
+- `<path-to-the-private-key>` is the path to the private key of the validator who proposes the election. Tendermint places it at  `.tendermint/config/priv_validator.json`.
 
 
 Example:
@@ -152,7 +152,7 @@ Afterwards, validators are supposed to upgrade Tendermint, set new `chain_id`, `
 
 For more details about how chain migrations work, refer to [BEP-42](https://github.com/bigchaindb/BEPs/tree/master/42).
 
-#### election approve
+### election approve
 
 Approve an election by voting for it. The command places a `VOTE` transaction, spending all of the validator's vote tokens to the election address.
 
@@ -162,7 +162,7 @@ $ bigchaindb election approve <election-id> --private-key <path-to-the-private-k
 ```
 
 - `election-id` is the election identifier the approval is given for.
-- `<path-to-the-private-key>` is the path to the private key of the validator who votes for the election. Tendemint places it at  `.tendermint/config/priv_validator.json`.
+- `<path-to-the-private-key>` is the path to the private key of the validator who votes for the election. Tendermint places it at  `.tendermint/config/priv_validator.json`.
 
 Example:
  ```bash
@@ -172,7 +172,7 @@ $ bigchaindb election approve 04a067582cf03eba2b53b82e4adb5ece424474cbd4f7183780
 
 Once a proposal has been approved by the sufficient amount of validators (contributing more than `2/3` of the total voting power), the proposed change is applied to the network.
 
-#### election show
+### election show
 
 Retrieves the information about elections.
 
