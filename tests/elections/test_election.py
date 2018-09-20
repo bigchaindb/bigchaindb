@@ -39,7 +39,7 @@ def test_process_block_concludes_all_elections(b):
                         app_hash='')._asdict())
     b.store_bulk_transactions(txs)
 
-    Election.process_block(b, 1, txs + total_votes)
+    Election.process_block(b, 2, txs + total_votes)
 
     validators = b.get_validators()
     assert len(validators) == 5
@@ -87,7 +87,7 @@ def test_process_block_approves_only_one_validator_update(b):
                         app_hash='')._asdict())
     b.store_bulk_transactions(txs)
 
-    Election.process_block(b, 1, txs + total_votes)
+    Election.process_block(b, 2, txs + total_votes)
 
     validators = b.get_validators()
     assert len(validators) == 5
@@ -137,7 +137,7 @@ def test_process_block_approves_after_pending_validator_update(b):
                         app_hash='')._asdict())
     b.store_bulk_transactions(txs)
 
-    Election.process_block(b, 1, txs + total_votes)
+    Election.process_block(b, 2, txs + total_votes)
 
     validators = b.get_validators()
     assert len(validators) == 5
@@ -174,7 +174,7 @@ def test_process_block_does_not_approve_after_validator_update(b):
                         app_hash='')._asdict())
     b.store_bulk_transactions(txs)
 
-    Election.process_block(b, 1, txs + total_votes)
+    Election.process_block(b, 2, txs + total_votes)
 
     b.store_block(Block(height=2,
                         transactions=[v.id for v in total_votes],
@@ -188,7 +188,7 @@ def test_process_block_does_not_approve_after_validator_update(b):
     total_votes = votes
 
     b.store_abci_chain(1, 'chain-X')
-    Election.process_block(b, 2, txs + total_votes)
+    Election.process_block(b, 3, txs + total_votes)
 
     assert not b.get_election(election.id)['is_concluded']
     assert b.get_latest_abci_chain() == {'height': 1,

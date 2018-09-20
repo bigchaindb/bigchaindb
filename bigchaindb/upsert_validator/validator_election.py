@@ -42,8 +42,8 @@ class ValidatorElection(Election):
             latest_block_height = latest_block['height']
             latest_validator_change = bigchain.get_validator_change()['height']
 
-            # TODO change to `latest_block_height + 2` when upgrading to Tendermint 0.24.0.
-            if latest_validator_change == latest_block_height + 1:
+            # TODO change to `latest_block_height + 3` when upgrading to Tendermint 0.24.0.
+            if latest_validator_change == latest_block_height + 2:
                 # do not conclude the election if there is a change assigned already
                 return False
 
