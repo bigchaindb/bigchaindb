@@ -322,13 +322,11 @@ def get_validator_set(conn, height=None):
 def get_election(conn, election_id):
     query = {'election_id': election_id}
 
-    cursor = conn.run(
+    return conn.run(
         conn.collection('elections')
-        .find(query, projection={'_id': False})
-        .sort([('height', DESCENDING)])
+        .find_one(query, projection={'_id': False},
+                  sort=[('height', DESCENDING)])
     )
-
-    return next(cursor, None)
 
 
 @register_query(LocalMongoDBConnection)
