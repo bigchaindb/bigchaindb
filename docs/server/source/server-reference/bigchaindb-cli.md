@@ -95,7 +95,7 @@ If the command succeeds, it will post an election transaction and output `electi
 
 The election proposal consists of vote tokens allocated to every current validator proportional to his voting power. Validators spend their votes to approve the election using the [election-approve command](#election-approve).
 
-Every election has a type. See below for how to create an election of a particular type.
+Every election has a type. Currently supported types are `upsert-validator` and `chain-migration`. Their transaction operations are `VALIDATOR_ELECTION` and `CHAIN_MIGRATION` accordingly. See below for how to create an election of a particular type.
 
 Note that elections can only be proposed and approved by existing validators.
 
