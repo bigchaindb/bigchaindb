@@ -150,7 +150,7 @@ Concluded chain migration elections halt block production at whichever block hei
 Afterwards, validators are supposed to upgrade Tendermint, set new `chain_id`, `app_hash`, and `validators` (to learn these values, use the [election show](#election-show) command) in `genesis.json`, make and save a MongoDB dump, and restart the system.
 
 
-For more details about how chain migrations work, refer to [BEP-42](https://github.com/bigchaindb/BEPs/tree/master/42).
+For more details about how chain migrations work, refer to [Type 3 scenarios in BEP-42](https://github.com/bigchaindb/BEPs/tree/master/42).
 
 ### election approve
 
