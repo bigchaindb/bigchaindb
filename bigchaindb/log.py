@@ -61,6 +61,7 @@ DEFAULT_LOGGING_CONFIG = {
     },
 }
 
+
 def _normalize_log_level(level):
     try:
         return level.upper()
