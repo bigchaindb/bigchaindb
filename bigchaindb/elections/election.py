@@ -200,13 +200,12 @@ class Election(Transaction):
 
         Custom elections may override this function and introduce additional checks.
         """
+        if self.has_validator_set_changed(bigchain):
+            return False
 
         election_pk = self.to_public_key(self.id)
         votes_committed = self.get_commited_votes(bigchain, election_pk)
         votes_current = self.count_votes(election_pk, current_votes)
-
-        if self.has_validator_set_changed(bigchain):
-            return False
 
         current_validators = self.get_validators(bigchain)
         total_votes = sum(current_validators.values())
@@ -266,7 +265,8 @@ class Election(Transaction):
            marked as such.
 
            Elections and votes are processed in the order in which they
-           appear in the block.
+           appear in the block. Elections are concluded in the order of
+           appearance of their first votes in the block.
 
            For every election concluded in the block, calls its `on_approval`
            method. The returned value of the last `on_approval`, if any,
