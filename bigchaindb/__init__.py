@@ -96,8 +96,12 @@ from bigchaindb.common.transaction import Transaction  # noqa
 from bigchaindb import models                          # noqa
 from bigchaindb.upsert_validator import ValidatorElection  # noqa
 from bigchaindb.elections.vote import Vote  # noqa
+from bigchaindb.rbac import LinkedTransaction  # noqa
 
-Transaction.register_type(Transaction.CREATE, models.Transaction)
+# Use validations from LinkedTransaction for CREATE transactions for RBAC
+Transaction.register_type(Transaction.CREATE, LinkedTransaction)
+
+# Use default validation for other operaions
 Transaction.register_type(Transaction.TRANSFER, models.Transaction)
 Transaction.register_type(ValidatorElection.OPERATION, ValidatorElection)
 Transaction.register_type(ChainMigrationElection.OPERATION, ChainMigrationElection)
