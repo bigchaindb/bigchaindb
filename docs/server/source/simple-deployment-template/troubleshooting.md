@@ -26,4 +26,6 @@ addr_book_strict = false
 
 ## Other Problems
 
+See the [Tendermint tips in the vrde/notes repository](https://github.com/vrde/notes/tree/master/tendermint).
+
 If you're stuck, maybe [file a new issue on GitHub](https://github.com/bigchaindb/bigchaindb/issues/new). If your problem occurs often enough, we'll write about it here.
