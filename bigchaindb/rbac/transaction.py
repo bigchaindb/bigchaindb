@@ -30,7 +30,7 @@ class LinkedTransaction(Transaction):
             return
 
         # Don't do anything when there is no asset.data
-        if not hasattr(transaction.asset, 'data'):
+        if transaction.asset.get('data', None) is None:
             return
 
         # If link is not being used, don't do anything
@@ -86,7 +86,7 @@ class LinkedTransaction(Transaction):
 
     def validate_can_link(self, bigchain, can_link, public_key):
         logger.info('validating can_link, looking up assets in owner wallet')
-        wallet_tx = bigchain.get_owned_ids(public_key)
+        wallet_tx = bigchain.get_outputs_filtered(public_key, spent=False)
         wallet_tx_ids = [tx.txid for tx in wallet_tx]
         logger.info('Wallet has %s assets', len(wallet_tx_ids))
 
