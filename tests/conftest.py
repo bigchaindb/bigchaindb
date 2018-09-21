@@ -712,12 +712,13 @@ def valid_upsert_validator_election_2(b_mock, node_key, new_validator):
 def ongoing_validator_election(b, valid_upsert_validator_election, ed25519_node_keys):
     validators = b.get_validators(height=1)
     genesis_validators = {'validators': validators,
-                          'height': 0,
-                          'election_id': None}
+                          'height': 0}
     query.store_validator_set(b.connection, genesis_validators)
-
     b.store_bulk_transactions([valid_upsert_validator_election])
-    block_1 = Block(app_hash='hash_1', height=1, transactions=[valid_upsert_validator_election.id])
+    query.store_election(b.connection, valid_upsert_validator_election.id, 1,
+                         is_concluded=False)
+    block_1 = Block(app_hash='hash_1', height=1,
+                    transactions=[valid_upsert_validator_election.id])
     b.store_block(block_1._asdict())
     return valid_upsert_validator_election
 

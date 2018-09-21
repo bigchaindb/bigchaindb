@@ -215,10 +215,9 @@ class App(BaseApplication):
         else:
             self.block_txn_hash = block['app_hash']
 
-        # Process all concluded elections in the current block and get any update to the validator set
-        update = Election.approved_elections(self.bigchaindb,
-                                             self.new_height,
-                                             self.block_transactions)
+        validator_update = Election.process_block(self.bigchaindb,
+                                                  self.new_height,
+                                                  self.block_transactions)
 
         # Store pre-commit state to recover in case there is a crash  during `commit`
         pre_commit_state = PreCommitState(commit_id=PRE_COMMIT_ID,
@@ -226,7 +225,7 @@ class App(BaseApplication):
                                           transactions=self.block_txn_ids)
         logger.debug('Updating PreCommitState: %s', self.new_height)
         self.bigchaindb.store_pre_commit_state(pre_commit_state._asdict())
-        return ResponseEndBlock(validator_updates=update)
+        return ResponseEndBlock(validator_updates=validator_update)
 
     def commit(self):
         """Store the new height and along with block hash."""

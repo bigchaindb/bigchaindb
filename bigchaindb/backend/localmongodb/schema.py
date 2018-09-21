@@ -45,7 +45,8 @@ INDEXES = {
         ('commit_id', dict(name='pre_commit_id', unique=True)),
     ],
     'elections': [
-        ('election_id', dict(name='election_id', unique=True)),
+        ([('height', DESCENDING), ('election_id', ASCENDING)],
+         dict(name='election_id_height', unique=True)),
     ],
     'validators': [
         ('height', dict(name='height', unique=True)),

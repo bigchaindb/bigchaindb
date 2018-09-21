@@ -28,10 +28,8 @@ def fixed_seed_election(b_mock, node_key, new_validator):
 
 @pytest.fixture
 def concluded_election(b, ongoing_validator_election, ed25519_node_keys):
-    election_result = {'height': 2,
-                       'election_id': ongoing_validator_election.id}
-
-    query.store_election_results(b.connection, election_result)
+    query.store_election(b.connection, ongoing_validator_election.id,
+                         2, is_concluded=True)
     return ongoing_validator_election
 
 

@@ -352,8 +352,15 @@ def store_validator_set(conn, validator_update):
 
 
 @singledispatch
-def store_election_results(conn, election):
-    """Store election results"""
+def store_election(conn, election_id, height, is_concluded):
+    """Store election record"""
+
+    raise NotImplementedError
+
+
+@singledispatch
+def store_elections(conn, elections):
+    """Store election records in bulk"""
 
     raise NotImplementedError
 
@@ -369,7 +376,7 @@ def get_validator_set(conn, height):
 
 @singledispatch
 def get_election(conn, election_id):
-    """Return a validator set change with the specified election_id
+    """Return the election record
     """
 
     raise NotImplementedError
