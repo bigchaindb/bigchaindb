@@ -71,10 +71,6 @@ tests_require = [
     'tox',
 ] + docs_require
 
-benchmarks_require = [
-    'line-profiler==1.0',
-]
-
 install_requires = [
     # TODO Consider not installing the db drivers, or putting them in extras.
     'pymongo~=3.6',
@@ -92,6 +88,7 @@ install_requires = [
     'aiohttp~=3.0',
     'bigchaindb-abci==0.5.1',
     'setproctitle~=1.1.0',
+    'packaging~=17.0',
 ]
 
 setup(
@@ -143,7 +140,7 @@ setup(
     tests_require=tests_require,
     extras_require={
         'test': tests_require,
-        'dev': dev_require + tests_require + docs_require + benchmarks_require,
+        'dev': dev_require + tests_require + docs_require,
         'docs': docs_require,
     },
     package_data={'bigchaindb.common.schema': ['*.yaml']},

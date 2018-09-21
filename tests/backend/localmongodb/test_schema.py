@@ -3,51 +3,6 @@
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
 
-def test_init_creates_db_tables_and_indexes():
-    import bigchaindb
-    from bigchaindb import backend
-    from bigchaindb.backend.schema import init_database
-
-    conn = backend.connect()
-    dbname = bigchaindb.config['database']['name']
-
-    # the db is set up by the fixture so we need to remove it
-    conn.conn.drop_database(dbname)
-
-    init_database()
-
-    collection_names = conn.conn[dbname].list_collection_names()
-    assert set(collection_names) == {
-        'transactions', 'assets', 'metadata', 'blocks', 'utxos', 'pre_commit',
-        'validators', 'elections', 'abci_chains',
-    }
-
-    indexes = conn.conn[dbname]['assets'].index_information().keys()
-    assert set(indexes) == {'_id_', 'asset_id', 'text'}
-
-    indexes = conn.conn[dbname]['transactions'].index_information().keys()
-    assert set(indexes) == {
-            '_id_', 'transaction_id', 'asset_id', 'outputs', 'inputs'}
-
-    indexes = conn.conn[dbname]['blocks'].index_information().keys()
-    assert set(indexes) == {'_id_', 'height'}
-
-    indexes = conn.conn[dbname]['utxos'].index_information().keys()
-    assert set(indexes) == {'_id_', 'utxo'}
-
-    indexes = conn.conn[dbname]['pre_commit'].index_information().keys()
-    assert set(indexes) == {'_id_', 'pre_commit_id'}
-
-    indexes = conn.conn[dbname]['validators'].index_information().keys()
-    assert set(indexes) == {'_id_', 'height'}
-
-    indexes = conn.conn[dbname]['abci_chains'].index_information().keys()
-    assert set(indexes) == {'_id_', 'height', 'chain_id'}
-
-    indexes = conn.conn[dbname]['elections'].index_information().keys()
-    assert set(indexes) == {'_id_', 'election_id'}
-
-
 def test_init_database_is_graceful_if_db_exists():
     import bigchaindb
     from bigchaindb import backend
@@ -102,8 +57,8 @@ def test_create_tables():
                                          ('output_index', 1)]
 
     indexes = conn.conn[dbname]['elections'].index_information()
-    assert set(indexes.keys()) == {'_id_', 'election_id'}
-    assert indexes['election_id']['unique']
+    assert set(indexes.keys()) == {'_id_', 'election_id_height'}
+    assert indexes['election_id_height']['unique']
 
     indexes = conn.conn[dbname]['pre_commit'].index_information()
     assert set(indexes.keys()) == {'_id_', 'pre_commit_id'}

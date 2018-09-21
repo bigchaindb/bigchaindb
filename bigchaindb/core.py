@@ -20,13 +20,13 @@ from abci.types_pb2 import (
 )
 
 from bigchaindb import BigchainDB
+from bigchaindb.elections.election import Election
 from bigchaindb.version import __tm_supported_versions__
 from bigchaindb.utils import tendermint_version_is_compatible
 from bigchaindb.tendermint_utils import (decode_transaction,
                                          calculate_hash)
 from bigchaindb.lib import Block, PreCommitState
 from bigchaindb.backend.query import PRE_COMMIT_ID
-from bigchaindb.upsert_validator import ValidatorElection
 import bigchaindb.upsert_validator.validator_utils as vutils
 from bigchaindb.events import EventTypes, Event
 
@@ -40,8 +40,7 @@ class App(BaseApplication):
     """Bridge between BigchainDB and Tendermint.
 
     The role of this class is to expose the BigchainDB
-    transactional logic to the Tendermint Consensus
-    State Machine.
+    transaction logic to Tendermint Core.
     """
 
     def __init__(self, bigchaindb=None, events_queue=None):
@@ -146,16 +145,13 @@ class App(BaseApplication):
 
         self.abort_if_abci_chain_is_not_synced()
 
-        logger.benchmark('CHECK_TX_INIT')
         logger.debug('check_tx: %s', raw_transaction)
         transaction = decode_transaction(raw_transaction)
         if self.bigchaindb.is_valid_transaction(transaction):
             logger.debug('check_tx: VALID')
-            logger.benchmark('CHECK_TX_END, tx_id:%s', transaction['id'])
             return ResponseCheckTx(code=CodeTypeOk)
         else:
             logger.debug('check_tx: INVALID')
-            logger.benchmark('CHECK_TX_END, tx_id:%s', transaction['id'])
             return ResponseCheckTx(code=CodeTypeError)
 
     def begin_block(self, req_begin_block):
@@ -167,9 +163,9 @@ class App(BaseApplication):
         self.abort_if_abci_chain_is_not_synced()
 
         chain_shift = 0 if self.chain is None else self.chain['height']
-        logger.benchmark('BEGIN BLOCK, height:%s, num_txs:%s',
-                         req_begin_block.header.height + chain_shift,
-                         req_begin_block.header.num_txs)
+        logger.debug('BEGIN BLOCK, height:%s, num_txs:%s',
+                     req_begin_block.header.height + chain_shift,
+                     req_begin_block.header.num_txs)
 
         self.block_txn_ids = []
         self.block_transactions = []
@@ -219,21 +215,17 @@ class App(BaseApplication):
         else:
             self.block_txn_hash = block['app_hash']
 
-        # Check if the current block concluded any validator elections and
-        # update the locally tracked validator set
-        validator_update = ValidatorElection.approved_update(self.bigchaindb,
-                                                             self.new_height,
-                                                             self.block_transactions)
-        update = [validator_update] if validator_update else []
+        validator_update = Election.process_block(self.bigchaindb,
+                                                  self.new_height,
+                                                  self.block_transactions)
 
-        # Store pre-commit state to recover in case there is a crash
-        # during `commit`
+        # Store pre-commit state to recover in case there is a crash  during `commit`
         pre_commit_state = PreCommitState(commit_id=PRE_COMMIT_ID,
                                           height=self.new_height,
                                           transactions=self.block_txn_ids)
         logger.debug('Updating PreCommitState: %s', self.new_height)
         self.bigchaindb.store_pre_commit_state(pre_commit_state._asdict())
-        return ResponseEndBlock(validator_updates=update)
+        return ResponseEndBlock(validator_updates=validator_update)
 
     def commit(self):
         """Store the new height and along with block hash."""
@@ -256,7 +248,6 @@ class App(BaseApplication):
         logger.debug('Commit-ing new block with hash: apphash=%s ,'
                      'height=%s, txn ids=%s', data, self.new_height,
                      self.block_txn_ids)
-        logger.benchmark('COMMIT_BLOCK, height:%s', self.new_height)
 
         if self.events_queue:
             event = Event(EventTypes.BLOCK_VALID, {

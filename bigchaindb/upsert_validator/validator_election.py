@@ -4,7 +4,7 @@
 
 from bigchaindb.common.exceptions import InvalidPowerChange
 from bigchaindb.elections.election import Election
-from bigchaindb.common.schema import (TX_SCHEMA_VALIDATOR_ELECTION)
+from bigchaindb.common.schema import TX_SCHEMA_VALIDATOR_ELECTION
 from .validator_utils import (new_validator_set, encode_validator, validate_asset_public_key)
 
 
@@ -36,14 +36,28 @@ class ValidatorElection(Election):
         super(ValidatorElection, cls).validate_schema(tx)
         validate_asset_public_key(tx['asset']['data']['public_key'])
 
-    @classmethod
-    def on_approval(cls, bigchain, election, new_height):
-        # The new validator set comes into effect from height = new_height+1
-        validator_updates = [election.asset['data']]
+    def has_concluded(self, bigchain, *args, **kwargs):
+        latest_block = bigchain.get_latest_block()
+        if latest_block is not None:
+            latest_block_height = latest_block['height']
+            latest_validator_change = bigchain.get_validator_change()['height']
+
+            # TODO change to `latest_block_height + 3` when upgrading to Tendermint 0.24.0.
+            if latest_validator_change == latest_block_height + 2:
+                # do not conclude the election if there is a change assigned already
+                return False
+
+        return super().has_concluded(bigchain, *args, **kwargs)
+
+    def on_approval(self, bigchain, new_height):
+        validator_updates = [self.asset['data']]
         curr_validator_set = bigchain.get_validators(new_height)
         updated_validator_set = new_validator_set(curr_validator_set,
                                                   validator_updates)
 
-        updated_validator_set = [v for v in updated_validator_set if v['voting_power'] > 0]
-        bigchain.store_validator_set(new_height+1, updated_validator_set)
-        return encode_validator(election.asset['data'])
+        updated_validator_set = [v for v in updated_validator_set
+                                 if v['voting_power'] > 0]
+
+        # TODO change to `new_height + 2` when upgrading to Tendermint 0.24.0.
+        bigchain.store_validator_set(new_height + 1, updated_validator_set)
+        return encode_validator(self.asset['data'])

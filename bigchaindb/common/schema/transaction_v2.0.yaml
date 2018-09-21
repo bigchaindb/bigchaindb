@@ -63,6 +63,7 @@ definitions:
     - CREATE
     - TRANSFER
     - VALIDATOR_ELECTION
+    - CHAIN_MIGRATION_ELECTION
     - VOTE
   asset:
     type: object

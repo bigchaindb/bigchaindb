@@ -37,6 +37,9 @@ _, TX_SCHEMA_TRANSFER = _load_schema('transaction_transfer_' +
 _, TX_SCHEMA_VALIDATOR_ELECTION = _load_schema('transaction_validator_election_' +
                                                TX_SCHEMA_VERSION)
 
+_, TX_SCHEMA_CHAIN_MIGRATION_ELECTION = _load_schema('transaction_chain_migration_election_' +
+                                                     TX_SCHEMA_VERSION)
+
 _, TX_SCHEMA_VOTE = _load_schema('transaction_vote_' + TX_SCHEMA_VERSION)
 
 

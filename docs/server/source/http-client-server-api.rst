@@ -616,14 +616,8 @@ Validators
    :statuscode 200: The query was executed successfully and validators set was returned.
 
 
-Advanced Usage
---------------------------------
-
-The following endpoints are more advanced
-and meant for debugging and transparency purposes.
-
 Blocks
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------
 
 .. http:get:: /api/v1/blocks/{block_height}
 

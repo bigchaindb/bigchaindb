@@ -91,6 +91,10 @@ Election management is broken into several subcommands. Below is the command lin
 
 Create a new election which proposes a change to your BigChainDB network.
 
+If the command succeeds, it will create an election and return an `election_id`.
+
+**NOTE**: The election proposal consists of vote tokens allocated to each current validator as per their voting power. Validators then cast their votes to approve the election by spending their vote tokens, (see the documentation on `election approve`).
+
 There are multiple types of election, which each take different parameters. Below is a short description of each type of election, as well as their command line syntax and the return value.
 
 ###### election new upsert-validator
@@ -106,7 +110,9 @@ $ bigchaindb election new upsert-validator E_PUBKEY E_POWER E_NODE_ID --private-
 - `E_PUBKEY`: Public key of the node to be added/updated/removed.
 - `E_POWER`: The new power for the `E_PUBKEY`. NOTE, if power is set to `0` then `E_PUBKEY` will be removed from the validator set when the election concludes.
 - `E_NODE_ID`: Node id of `E_PUBKEY`. The node operator of `E_PUBKEY` can generate the node id via `tendermint show_node_id`. 
-- `--private-key`: The path to Tendermint's private key which can be generally found at `/home/user/.tendermint/config/priv_validator.json`. For example, to add a new validator, provide the public key and node id for some node not already in the validator set, along with whatever voting power you'd like them to have. To remove an existing validator, provide their public key and node id, and set `E_POWER` to `0`. Please note that the private key provided here is of the node which is generating this election i.e. 
+- `--private-key`: The path to Tendermint's private key which can be generally found at `/home/user/.tendermint/config/priv_validator.json`.
+
+For example, to add a new validator, provide the public key and node id for some node not already in the validator set, along with whatever voting power you'd like them to have. To remove an existing validator, provide their public key and node id, and set `E_POWER` to `0`. Please note that the private key provided here is of the node which is generating this election i.e. 
 
 
 NOTE: A change to the validator set can only be proposed by one of the exisitng validators.
@@ -118,10 +124,29 @@ $ bigchaindb election new upsert-validator HHG0IQRybpT6nJMIWWFWhMczCLHt6xcm7eP52
 [SUCCESS] Submitted proposal with id: 04a067582cf03eba2b53b82e4adb5ece424474cbd4f7183780855a93ac5e3caa
 ```
 
-If the command succeeds, it will create an election and return an `election_id`. A successful execution of the above command **doesn't** imply that the validator set will be immediately updated but rather it means the proposal has been succcessfully accepted by the network. Once the `election_id` has been generated the node operator should share this `election_id` with other validators in the network and urge them to approve the proposal. Note that the node operator should themsleves also approve the proposal.
+A successful execution of the above command **doesn't** imply that the validator set will be immediately updated but rather it means the proposal has been succcessfully accepted by the network. Once the `election_id` has been generated the node operator should share this `election_id` with other validators in the network and urge them to approve the proposal. Note that the node operator should themsleves also approve the proposal.
 
 
-**NOTE**: The election proposal consists of vote tokens allocated to each current validator as per their voting power. Validators then cast their votes to approve the change to the validator set by spending their vote tokens.
+###### election new migration
+
+Create an election to halt block production, to allow for a version change across breaking changes.
+
+
+```bash
+$ bigchaindb election new migration --private-key PATH_TO_YOUR_PRIVATE_KEY
+[SUCCESS] Submitted proposal with id: <election_id>
+```
+
+- `--private-key`: The path to Tendermint's private key which can be generally found at `/home/user/.tendermint/config/priv_validator.json`.
+
+Example usage,
+
+```bash
+$ bigchaindb election new migration --private-key /home/user/.tendermint/config/priv_validator.json
+[SUCCESS] Submitted proposal with id: 04a067582cf03eba2b53b82e4adb5ece424474cbd4f7183780855a93ac5e3caa
+```
+
+**NOTE** `migration` elections will halt block production at whichever blockheight they are approved. Once the election is concluded, the validators will need to restart their systems with a new `chain_id` to resume normal operations.
 
 
 #### election approve

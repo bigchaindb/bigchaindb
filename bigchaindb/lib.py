@@ -27,7 +27,7 @@ from bigchaindb.common.exceptions import (SchemaValidationError,
                                           DoubleSpend)
 from bigchaindb.tendermint_utils import encode_transaction, merkleroot
 from bigchaindb import exceptions as core_exceptions
-from bigchaindb.consensus import BaseConsensusRules
+from bigchaindb.validation import BaseValidationRules
 
 
 logger = logging.getLogger(__name__)
@@ -64,12 +64,12 @@ class BigchainDB(object):
         self.tendermint_port = bigchaindb.config['tendermint']['port']
         self.endpoint = 'http://{}:{}/'.format(self.tendermint_host, self.tendermint_port)
 
-        consensusPlugin = bigchaindb.config.get('consensus_plugin')
+        validationPlugin = bigchaindb.config.get('validation_plugin')
 
-        if consensusPlugin:
-            self.consensus = config_utils.load_consensus_plugin(consensusPlugin)
+        if validationPlugin:
+            self.validation = config_utils.load_validation_plugin(validationPlugin)
         else:
-            self.consensus = BaseConsensusRules
+            self.validation = BaseValidationRules
 
         self.connection = connection if connection else backend.connect(**bigchaindb.config['database'])
 
@@ -436,8 +436,7 @@ class BigchainDB(object):
         return [] if result is None else result['validators']
 
     def get_election(self, election_id):
-        result = backend.query.get_election(self.connection, election_id)
-        return result
+        return backend.query.get_election(self.connection, election_id)
 
     def store_pre_commit_state(self, state):
         return backend.query.store_pre_commit_state(self.connection, state)
@@ -481,13 +480,12 @@ class BigchainDB(object):
 
         self.store_abci_chain(block['height'] + 1, new_chain_id, False)
 
-    def store_election_results(self, height, election):
-        """Store election results
-        :param height: the block height at which the election concluded
-        :param election: a concluded election
-        """
-        return backend.query.store_election_results(self.connection, {'height': height,
-                                                                      'election_id': election.id})
+    def store_election(self, election_id, height, is_concluded):
+        return backend.query.store_election(self.connection, election_id,
+                                            height, is_concluded)
+
+    def store_elections(self, elections):
+        return backend.query.store_elections(self.connection, elections)
 
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))

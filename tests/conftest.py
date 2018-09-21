@@ -20,15 +20,15 @@ from logging.config import dictConfig
 import pytest
 from pymongo import MongoClient
 
+from bigchaindb import ValidatorElection
 from bigchaindb.common import crypto
-from bigchaindb.log import setup_logging
 from bigchaindb.tendermint_utils import key_from_base64
-from bigchaindb.backend import schema
+from bigchaindb.backend import schema, query
 from bigchaindb.common.crypto import (key_pair_from_ed25519_key,
                                       public_key_from_ed25519_key)
 from bigchaindb.common.exceptions import DatabaseDoesNotExist
 from bigchaindb.lib import Block
-
+from tests.utils import gen_vote
 
 TEST_DB_NAME = 'bigchain_test'
 
@@ -106,10 +106,6 @@ def _configure_bigchaindb(request):
     config['database']['name'] = test_db_name
     config = config_utils.env_config(config)
     config_utils.set_config(config)
-
-    # NOTE: since we use a custom log level
-    # for benchmark logging we need to setup logging
-    setup_logging()
 
 
 @pytest.fixture(scope='session')
@@ -240,6 +236,26 @@ def merlin():
 def b():
     from bigchaindb import BigchainDB
     return BigchainDB()
+
+
+@pytest.fixture
+def b_mock(b, network_validators):
+    b.get_validators = mock_get_validators(network_validators)
+
+    return b
+
+
+def mock_get_validators(network_validators):
+    def validator_set(height):
+        validators = []
+        for public_key, power in network_validators.items():
+            validators.append({
+                'public_key': {'type': 'ed25519-base64', 'value': public_key},
+                'voting_power': power
+            })
+        return validators
+
+    return validator_set
 
 
 @pytest.fixture
@@ -674,3 +690,70 @@ def new_validator():
                            'type': 'ed25519-base16'},
             'power': power,
             'node_id': node_id}
+
+
+@pytest.fixture
+def valid_upsert_validator_election(b_mock, node_key, new_validator):
+    voters = ValidatorElection.recipients(b_mock)
+    return ValidatorElection.generate([node_key.public_key],
+                                      voters,
+                                      new_validator, None).sign([node_key.private_key])
+
+
+@pytest.fixture
+def valid_upsert_validator_election_2(b_mock, node_key, new_validator):
+    voters = ValidatorElection.recipients(b_mock)
+    return ValidatorElection.generate([node_key.public_key],
+                                      voters,
+                                      new_validator, None).sign([node_key.private_key])
+
+
+@pytest.fixture
+def ongoing_validator_election(b, valid_upsert_validator_election, ed25519_node_keys):
+    validators = b.get_validators(height=1)
+    genesis_validators = {'validators': validators,
+                          'height': 0}
+    query.store_validator_set(b.connection, genesis_validators)
+    b.store_bulk_transactions([valid_upsert_validator_election])
+    query.store_election(b.connection, valid_upsert_validator_election.id, 1,
+                         is_concluded=False)
+    block_1 = Block(app_hash='hash_1', height=1,
+                    transactions=[valid_upsert_validator_election.id])
+    b.store_block(block_1._asdict())
+    return valid_upsert_validator_election
+
+
+@pytest.fixture
+def ongoing_validator_election_2(b, valid_upsert_validator_election_2, ed25519_node_keys):
+    validators = b.get_validators(height=1)
+    genesis_validators = {'validators': validators,
+                          'height': 0,
+                          'election_id': None}
+    query.store_validator_set(b.connection, genesis_validators)
+
+    b.store_bulk_transactions([valid_upsert_validator_election_2])
+    block_1 = Block(app_hash='hash_2', height=1, transactions=[valid_upsert_validator_election_2.id])
+    b.store_block(block_1._asdict())
+    return valid_upsert_validator_election_2
+
+
+@pytest.fixture
+def validator_election_votes(b_mock, ongoing_validator_election, ed25519_node_keys):
+    voters = ValidatorElection.recipients(b_mock)
+    votes = generate_votes(ongoing_validator_election, voters, ed25519_node_keys)
+    return votes
+
+
+@pytest.fixture
+def validator_election_votes_2(b_mock, ongoing_validator_election_2, ed25519_node_keys):
+    voters = ValidatorElection.recipients(b_mock)
+    votes = generate_votes(ongoing_validator_election_2, voters, ed25519_node_keys)
+    return votes
+
+
+def generate_votes(election, voters, keys):
+    votes = []
+    for voter, _ in enumerate(voters):
+        v = gen_vote(election, voter, keys)
+        votes.append(v)
+    return votes

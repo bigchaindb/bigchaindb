@@ -26,6 +26,8 @@ def test_make_sure_we_dont_remove_any_command():
     assert parser.parse_args(['start']).command
     assert parser.parse_args(['election', 'new', 'upsert-validator', 'TEMP_PUB_KEYPAIR', '10', 'TEMP_NODE_ID',
                               '--private-key', 'TEMP_PATH_TO_PRIVATE_KEY']).command
+    assert parser.parse_args(['election', 'new', 'chain-migration',
+                              '--private-key', 'TEMP_PATH_TO_PRIVATE_KEY']).command
     assert parser.parse_args(['election', 'approve', 'ELECTION_ID', '--private-key',
                               'TEMP_PATH_TO_PRIVATE_KEY']).command
     assert parser.parse_args(['election', 'show', 'ELECTION_ID']).command
@@ -304,7 +306,7 @@ def test_election_new_upsert_validator_with_tendermint(b, priv_validator_path, u
     from bigchaindb.commands.bigchaindb import run_election_new_upsert_validator
 
     new_args = Namespace(action='new',
-                         election_type='upsert_validator',
+                         election_type='upsert-validator',
                          public_key='HHG0IQRybpT6nJMIWWFWhMczCLHt6xcm7eP52GnGuPY=',
                          power=1,
                          node_id='unique_node_id_for_test_upsert_validator_new_with_tendermint',
@@ -328,7 +330,7 @@ def test_election_new_upsert_validator_without_tendermint(caplog, b, priv_valida
     b.write_transaction = mock_write
 
     args = Namespace(action='new',
-                     election_type='upsert_validator',
+                     election_type='upsert-validator',
                      public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',
                      power=1,
                      node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
@@ -341,12 +343,48 @@ def test_election_new_upsert_validator_without_tendermint(caplog, b, priv_valida
         assert b.get_transaction(election_id)
 
 
+@pytest.mark.abci
+def test_election_new_chain_migration_with_tendermint(b, priv_validator_path, user_sk, validators):
+    from bigchaindb.commands.bigchaindb import run_election_new_chain_migration
+
+    new_args = Namespace(action='new',
+                         election_type='migration',
+                         sk=priv_validator_path,
+                         config={})
+
+    election_id = run_election_new_chain_migration(new_args, b)
+
+    assert b.get_transaction(election_id)
+
+
+@pytest.mark.bdb
+def test_election_new_chain_migration_without_tendermint(caplog, b, priv_validator_path, user_sk):
+    from bigchaindb.commands.bigchaindb import run_election_new_chain_migration
+
+    def mock_write(tx, mode):
+        b.store_bulk_transactions([tx])
+        return (202, '')
+
+    b.get_validators = mock_get_validators
+    b.write_transaction = mock_write
+
+    args = Namespace(action='new',
+                     election_type='migration',
+                     sk=priv_validator_path,
+                     config={})
+
+    with caplog.at_level(logging.INFO):
+        election_id = run_election_new_chain_migration(args, b)
+        assert caplog.records[0].msg == '[SUCCESS] Submitted proposal with id: ' + election_id
+        assert b.get_transaction(election_id)
+
+
 @pytest.mark.bdb
 def test_election_new_upsert_validator_invalid_election(caplog, b, priv_validator_path, user_sk):
     from bigchaindb.commands.bigchaindb import run_election_new_upsert_validator
 
     args = Namespace(action='new',
-                     election_type='upsert_validator',
+                     election_type='upsert-validator',
                      public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',
                      power=10,
                      node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
@@ -370,7 +408,7 @@ def test_election_new_upsert_validator_invalid_power(caplog, b, priv_validator_p
     b.write_transaction = mock_write
     b.get_validators = mock_get_validators
     args = Namespace(action='new',
-                     election_type='upsert_validator',
+                     election_type='upsert-validator',
                      public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',
                      power=10,
                      node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
@@ -389,7 +427,7 @@ def test_election_approve_with_tendermint(b, priv_validator_path, user_sk, valid
 
     public_key = 'CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg='
     new_args = Namespace(action='new',
-                         election_type='upsert_validator',
+                         election_type='upsert-validator',
                          public_key=public_key,
                          power=1,
                          node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
@@ -415,7 +453,7 @@ def test_election_approve_without_tendermint(caplog, b, priv_validator_path, new
 
     b, election_id = call_election(b, new_validator, node_key)
 
-    # call run_upsert_validator_approve with args that point to the election
+    # call run_election_approve with args that point to the election
     args = Namespace(action='approve',
                      election_id=election_id,
                      sk=priv_validator_path,

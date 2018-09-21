@@ -61,7 +61,7 @@ def test_basic():
     bike_id = fulfilled_creation_tx['id']
 
     # Now she is ready to send it to the BigchainDB Network.
-    sent_transfer_tx = bdb.transactions.send(fulfilled_creation_tx)
+    sent_transfer_tx = bdb.transactions.send_commit(fulfilled_creation_tx)
 
     # And just to be 100% sure, she also checks if she can retrieve
     # it from the BigchainDB node.
@@ -107,7 +107,7 @@ def test_basic():
             private_keys=alice.private_key)
 
     # She finally sends the transaction to a BigchainDB node.
-    sent_transfer_tx = bdb.transactions.send(fulfilled_transfer_tx)
+    sent_transfer_tx = bdb.transactions.send_commit(fulfilled_transfer_tx)
 
     # And just to be 100% sure, she also checks if she can retrieve
     # it from the BigchainDB node.
