@@ -5,7 +5,6 @@
 from bigchaindb.utils import condition_details_has_owner
 from bigchaindb.backend import query
 from bigchaindb.common.transaction import TransactionLink
-from itertools import chain
 
 
 class FastQuery():
@@ -29,7 +28,7 @@ class FastQuery():
         Args:
             outputs: list of TransactionLink
         """
-        links = list(chain.from_iterable([o.to_query() for o in outputs]))
+        links = [o.to_dict() for o in outputs]
         txs = list(query.get_spending_transactions(self.connection, links))
         spends = {TransactionLink.from_dict(input_['fulfills'])
                   for tx in txs
@@ -42,7 +41,7 @@ class FastQuery():
         Args:
             outputs: list of TransactionLink
         """
-        links = list(chain.from_iterable([o.to_query() for o in outputs]))
+        links = [o.to_dict() for o in outputs]
         txs = list(query.get_spending_transactions(self.connection, links))
         spends = {TransactionLink.from_dict(input_['fulfills'])
                   for tx in txs

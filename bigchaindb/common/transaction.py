@@ -274,12 +274,6 @@ class TransactionLink(object):
                 'output_index': self.output,
             }
 
-    def to_query(self):
-        return [{'transaction_id': self.txid,
-                 'output_index': self.output},
-                {'output_index': self.output,
-                 'transaction_id': self.txid}]
-
     def to_uri(self, path=''):
         if self.txid is None and self.output is None:
             return None
