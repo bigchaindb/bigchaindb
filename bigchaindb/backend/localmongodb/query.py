@@ -91,8 +91,12 @@ def get_assets(conn, asset_ids):
 
 @register_query(LocalMongoDBConnection)
 def get_spent(conn, transaction_id, output):
-    query = {'inputs.fulfills': {'transaction_id': transaction_id,
-                                 'output_index': output}}
+    query_array = [{'transaction_id': transaction_id,
+                   'output_index': output},
+                   {'output_index': output,
+                    'transaction_id': transaction_id}]
+    query = {'inputs.fulfills': {'$in': query_array}}
+
     return conn.run(
         conn.collection('transactions')
             .find(query, {'_id': 0}))
