@@ -64,6 +64,7 @@ def test_bigchain_class_initialization_with_parameters():
     assert bigchain.validation == BaseValidationRules
 
 
+@pytest.mark.bdb
 def test_get_spent_issue_1271(b, alice, bob, carol):
     from bigchaindb.models import Transaction
 
