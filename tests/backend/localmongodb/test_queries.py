@@ -265,14 +265,16 @@ def test_get_spending_transactions_multiple_inputs():
     conn.db.transactions.insert_many(txns)
 
     links = [
-        ({'transaction_id': tx2.id, 'output_index': 0}, 1),
-        ({'transaction_id': tx2.id, 'output_index': 1}, 1),
-        ({'transaction_id': tx3.id, 'output_index': 0}, 1),
-        ({'transaction_id': tx3.id, 'output_index': 1}, 0),
+        ({'transaction_id': tx2.id, 'output_index': 0}, 1, [tx3.id]),
+        ({'transaction_id': tx2.id, 'output_index': 1}, 1, [tx4.id]),
+        ({'transaction_id': tx3.id, 'output_index': 0}, 1, [tx4.id]),
+        ({'transaction_id': tx3.id, 'output_index': 1}, 0, None),
     ]
-    for l, num in links:
+    for l, num, match in links:
         txns = list(query.get_spending_transactions(conn, [l]))
         assert len(txns) == num
+        if len(txns):
+            assert [tx['id'] for tx in txns] == match
 
 
 def test_store_block():
