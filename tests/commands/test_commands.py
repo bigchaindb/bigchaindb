@@ -11,6 +11,12 @@ from argparse import Namespace
 import pytest
 
 from bigchaindb import ValidatorElection
+from bigchaindb.commands.bigchaindb import run_election_show
+from bigchaindb.elections.election import Election
+from bigchaindb.lib import Block
+from bigchaindb.migrations.chain_migration_election import ChainMigrationElection
+
+from tests.utils import generate_election, generate_validators
 
 
 def test_make_sure_we_dont_remove_any_command():
@@ -507,6 +513,82 @@ def test_election_approve_called_with_bad_key(caplog, b, bad_validator_path, new
         assert not run_election_approve(args, b)
         assert caplog.records[0].msg == 'The key you provided does not match any of '\
             'the eligible voters in this election.'
+
+
+@pytest.mark.bdb
+def test_chain_migration_election_show_shows_inconclusive(b):
+    validators = generate_validators([1] * 4)
+    b.store_validator_set(1, [v['storage'] for v in validators])
+
+    public_key = validators[0]['public_key']
+    private_key = validators[0]['private_key']
+
+    election, votes = generate_election(b,
+                                        ChainMigrationElection,
+                                        public_key, private_key,
+                                        {})
+
+    assert not run_election_show(Namespace(election_id=election.id), b)
+
+    Election.process_block(b, 1, [election])
+    b.store_bulk_transactions([election])
+
+    assert run_election_show(Namespace(election_id=election.id), b) == \
+        'status=ongoing'
+
+    b.store_block(Block(height=1, transactions=[], app_hash='')._asdict())
+    b.store_validator_set(2, [v['storage'] for v in validators])
+
+    assert run_election_show(Namespace(election_id=election.id), b) == \
+        'status=ongoing'
+
+    b.store_block(Block(height=2, transactions=[], app_hash='')._asdict())
+    # TODO insert yet another block here when upgrading to Tendermint 0.22.4.
+
+    assert run_election_show(Namespace(election_id=election.id), b) == \
+        'status=inconclusive'
+
+
+@pytest.mark.bdb
+def test_chain_migration_election_show_shows_concluded(b):
+    validators = generate_validators([1] * 4)
+    b.store_validator_set(1, [v['storage'] for v in validators])
+
+    public_key = validators[0]['public_key']
+    private_key = validators[0]['private_key']
+
+    election, votes = generate_election(b,
+                                        ChainMigrationElection,
+                                        public_key, private_key,
+                                        {})
+
+    assert not run_election_show(Namespace(election_id=election.id), b)
+
+    b.store_bulk_transactions([election])
+    Election.process_block(b, 1, [election])
+
+    assert run_election_show(Namespace(election_id=election.id), b) == \
+        'status=ongoing'
+
+    b.store_abci_chain(1, 'chain-X')
+    b.store_block(Block(height=1,
+                        transactions=[v.id for v in votes],
+                        app_hash='last_app_hash')._asdict())
+    Election.process_block(b, 2, votes)
+
+    assert run_election_show(Namespace(election_id=election.id), b) == \
+        f'''status=concluded
+chain_id=chain-X-migrated-at-height-1
+app_hash=last_app_hash
+validators=[{''.join([f"""
+    {{
+        "pub_key": {{
+            "type": "tendermint/PubKeyEd25519",
+            "value": "{v['public_key']}"
+        }},
+        "power": {v['storage']['voting_power']}
+    }}{',' if i + 1 != len(validators) else ''}""" for i, v in enumerate(validators)])}
+]'''
 
 
 def test_bigchain_tendermint_version(capsys):
