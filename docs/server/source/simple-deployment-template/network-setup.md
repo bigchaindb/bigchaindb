@@ -352,9 +352,9 @@ $ pgrep bigchaindb | xargs kill -9
 
 If you started BigchainDB in the foreground, a `Ctrl + C` or `Ctrl + Z` would shut down BigchainDB.
 
-## Member: Dynamically Add a New Member to the Network
+## Member: Dynamically Add or Remove Validators
 
-TBD.
+One member can make a proposal to call an election to add a validator, remove a validator, or change the voting power of a validator. They then share the election/proposal ID with all the other members. Once more than 2/3 of the voting power votes yes, the proposed change comes into effect. The commands to create a new election/proposal, to approve an election/proposal, and to get the current status of an election/proposal can be found in the documentation about the [bigchaindb election](../server-reference/bigchaindb-cli.html#bigchaindb-election) subcommands.
 
 ## Log rotation
 
