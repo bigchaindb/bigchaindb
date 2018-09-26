@@ -234,6 +234,49 @@ def test_get_spending_transactions(user_pk, user_sk):
     assert txns == [tx2.to_dict(), tx4.to_dict()]
 
 
+def test_get_spending_transactions_multiple_inputs():
+    from bigchaindb.backend import connect, query
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.crypto import generate_key_pair
+    conn = connect()
+    (alice_sk, alice_pk) = generate_key_pair()
+    (bob_sk, bob_pk) = generate_key_pair()
+    (carol_sk, carol_pk) = generate_key_pair()
+
+    out = [([alice_pk], 9)]
+    tx1 = Transaction.create([alice_pk], out).sign([alice_sk])
+
+    inputs1 = tx1.to_inputs()
+    tx2 = Transaction.transfer([inputs1[0]],
+                               [([alice_pk], 6), ([bob_pk], 3)],
+                               tx1.id).sign([alice_sk])
+
+    inputs2 = tx2.to_inputs()
+    tx3 = Transaction.transfer([inputs2[0]],
+                               [([bob_pk], 3), ([carol_pk], 3)],
+                               tx1.id).sign([alice_sk])
+
+    inputs3 = tx3.to_inputs()
+    tx4 = Transaction.transfer([inputs2[1], inputs3[0]],
+                               [([carol_pk], 6)],
+                               tx1.id).sign([bob_sk])
+
+    txns = [deepcopy(tx.to_dict()) for tx in [tx1, tx2, tx3, tx4]]
+    conn.db.transactions.insert_many(txns)
+
+    links = [
+        ({'transaction_id': tx2.id, 'output_index': 0}, 1, [tx3.id]),
+        ({'transaction_id': tx2.id, 'output_index': 1}, 1, [tx4.id]),
+        ({'transaction_id': tx3.id, 'output_index': 0}, 1, [tx4.id]),
+        ({'transaction_id': tx3.id, 'output_index': 1}, 0, None),
+    ]
+    for l, num, match in links:
+        txns = list(query.get_spending_transactions(conn, [l]))
+        assert len(txns) == num
+        if len(txns):
+            assert [tx['id'] for tx in txns] == match
+
+
 def test_store_block():
     from bigchaindb.backend import connect, query
     from bigchaindb.lib import Block

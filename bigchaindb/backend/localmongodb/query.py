@@ -91,8 +91,11 @@ def get_assets(conn, asset_ids):
 
 @register_query(LocalMongoDBConnection)
 def get_spent(conn, transaction_id, output):
-    query = {'inputs.fulfills': {'transaction_id': transaction_id,
-                                 'output_index': output}}
+    query = {'inputs':
+             {'$elemMatch':
+              {'$and': [{'fulfills.transaction_id': transaction_id},
+                        {'fulfills.output_index': output}]}}}
+
     return conn.run(
         conn.collection('transactions')
             .find(query, {'_id': 0}))
@@ -180,15 +183,18 @@ def get_owned_ids(conn, owner):
 
 @register_query(LocalMongoDBConnection)
 def get_spending_transactions(conn, inputs):
+    transaction_ids = [i['transaction_id'] for i in inputs]
+    output_indexes = [i['output_index'] for i in inputs]
+    query = {'inputs':
+             {'$elemMatch':
+              {'$and':
+               [
+                   {'fulfills.transaction_id': {'$in': transaction_ids}},
+                   {'fulfills.output_index': {'$in': output_indexes}}
+               ]}}}
+
     cursor = conn.run(
-        conn.collection('transactions').aggregate([
-            {'$match': {
-                'inputs.fulfills': {
-                    '$in': inputs,
-                },
-            }},
-            {'$project': {'_id': False}}
-        ]))
+        conn.collection('transactions').find(query, {'_id': False}))
     return cursor
 
 
