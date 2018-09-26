@@ -232,7 +232,9 @@ def store_unspent_outputs(conn, *unspent_outputs):
                 )
             )
         except DuplicateKeyError:
-            # TODO log warning at least
+            raise DuplicateKeyError(
+                f'Duplicate keys in transactions [{unspent_outputs}].'
+            )
             pass
 
 
