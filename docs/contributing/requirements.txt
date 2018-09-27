@@ -2,3 +2,4 @@ Sphinx~=1.0
 recommonmark>=0.4.0
 sphinx-rtd-theme>=0.1.9
 wget
+packaging~=17.0
