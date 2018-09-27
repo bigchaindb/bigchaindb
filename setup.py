@@ -88,7 +88,7 @@ install_requires = [
     'aiohttp~=3.0',
     'bigchaindb-abci==0.5.1',
     'setproctitle~=1.1.0',
-    'packaging~=17.0',
+    'packaging~=18.0',
 ]
 
 setup(
