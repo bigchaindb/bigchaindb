@@ -110,7 +110,18 @@ If (no environment variables were set and there's no local config file), or you 
 `server.bind`, `server.loglevel` and `server.workers`
 are settings for the [Gunicorn HTTP server](http://gunicorn.org/), which is used to serve the [HTTP client-server API](../http-client-server-api.html).
 
-`server.bind` is where to bind the Gunicorn HTTP server socket. It's a string. It can be any valid value for [Gunicorn's bind setting](http://docs.gunicorn.org/en/stable/settings.html#bind). If you want to allow IPv4 connections from anyone, on port 9984, use `0.0.0.0:9984`. In a production setting, we recommend you use Gunicorn behind a reverse proxy server. If Gunicorn and the reverse proxy are running on the same machine, then use `localhost:PORT` where PORT is _not_ 9984 (because the reverse proxy needs to listen on port 9984). Maybe use PORT=9983 in that case because we know 9983 isn't used. If Gunicorn and the reverse proxy are running on different machines, then use `A.B.C.D:9984` where A.B.C.D is the IP address of the reverse proxy. There's [more information about deploying behind a reverse proxy in the Gunicorn documentation](http://docs.gunicorn.org/en/stable/deploy.html). (They call it a proxy.)
+`server.bind` is where to bind the Gunicorn HTTP server socket. It's a string. It can be any valid value for [Gunicorn's bind setting](http://docs.gunicorn.org/en/stable/settings.html#bind). For example:
+
+* If you want to allow IPv4 connections from anyone, on port 9984, use `0.0.0.0:9984`
+* If you want to allow IPv6 connections from anyone, on port 9984, use `[::]:9984`
+
+In a production setting, we recommend you use Gunicorn behind a reverse proxy server such as NGINX. If Gunicorn and the reverse proxy are running on the same machine, then you can use `localhost:9984` (the default value), meaning Gunicorn will talk to the reverse proxy on port 9984. The reverse proxy could then be bound to port 80 (for HTTP) or port 443 (for HTTPS), so that external clients would connect using that port. For example:
+
+[External clients]---(port 443)---[NGINX]---(port 9984)---[Gunicorn / BigchainDB Server]
+
+If Gunicorn and the reverse proxy are running on different machines, then `server.bind` should be `hostname:9984`, where hostname is the IP address or [FQDN](https://en.wikipedia.org/wiki/Fully_qualified_domain_name) of the reverse proxy.
+
+There's [more information about deploying behind a reverse proxy in the Gunicorn documentation](http://docs.gunicorn.org/en/stable/deploy.html). (They call it a proxy.)
 
 `server.loglevel` sets the log level of Gunicorn's Error log outputs. See
 [Gunicorn's documentation](http://docs.gunicorn.org/en/latest/settings.html#loglevel)
