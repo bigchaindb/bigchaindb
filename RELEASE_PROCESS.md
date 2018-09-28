@@ -60,7 +60,10 @@ The following steps are what we do to release a new version of _BigchainDB Serve
 1. Click "Publish release" to publish the release on GitHub.
 1. On your local computer, make sure you're on the `master` branch and that it's up-to-date with the `master` branch in the bigchaindb/bigchaindb repository (e.g. `git pull upstream master`). We're going to use that to push a new `bigchaindb` package to PyPI.
 1. Make sure you have a `~/.pypirc` file containing credentials for PyPI.
-1. Do `make release` to build and publish the new `bigchaindb` package on PyPI.
+1. Do `make release` to build and publish the new `bigchaindb` package on PyPI. For this step you need to have `twine` installed. If you get an error like `Makefile:135: recipe for target 'clean-pyc' failed` then try doing
+   ```text
+   sudo chown -R $(whoami):$(whoami) .
+   ```
 1. [Log in to readthedocs.org](https://readthedocs.org/accounts/login/) and go to the **BigchainDB Server** project, then:
    - Go to Admin --> Advanced Settings
      and make sure that "Default branch:" (i.e. what "latest" points to)
