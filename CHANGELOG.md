@@ -24,6 +24,31 @@ For reference, the possible headings are:
 * **Known Issues**
 * **Notes**
 
+## [2.0 Beta 7] - 2018-09-28
+
+Tag name: v2.0.0b7
+
+### Added
+
+Completed the implementation of chain-migration elections (BEP-42). Pull requests [#2553](https://github.com/bigchaindb/bigchaindb/pull/2553), [#2556](https://github.com/bigchaindb/bigchaindb/pull/2556), [#2558](https://github.com/bigchaindb/bigchaindb/pull/2558), [#2563](https://github.com/bigchaindb/bigchaindb/pull/2563) and [#2566](https://github.com/bigchaindb/bigchaindb/pull/2566)
+
+### Changed
+
+* Code that used the Python driver's (deprecated) transactions.send() method now uses its transactions.send_commit() method instead. [Pull request #2547](https://github.com/bigchaindb/bigchaindb/pull/2547)
+* Code that implied pluggable "consensus" now implies pluggable transaction "validation" (a more accurate word). [Pull request #2561](https://github.com/bigchaindb/bigchaindb/pull/2561)
+
+### Removed
+
+Benchmark logs. [Pull request #2565](https://github.com/bigchaindb/bigchaindb/pull/2565)
+
+### Fixed
+
+A bug caused by an incorrect MongoDB query. [Pull request #2567](https://github.com/bigchaindb/bigchaindb/pull/2567)
+
+### Notes
+
+There's now better documentation about logs, log rotation, and the `server.bind` config setting. Pull requests [#2546](https://github.com/bigchaindb/bigchaindb/pull/2546) and [#2575](https://github.com/bigchaindb/bigchaindb/pull/2575)
+
 ## [2.0 Beta 6] - 2018-09-17
 
 Tag name: v2.0.0b6
