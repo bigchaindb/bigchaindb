@@ -143,6 +143,9 @@ class BigchainDB(object):
             backend.query.store_assets(self.connection, assets)
         return backend.query.store_transactions(self.connection, txns)
 
+    def delete_transactions(self, txs):
+        return backend.query.delete_transactions(self.connection, txs)
+
     def update_utxoset(self, transaction):
         """Update the UTXO set given ``transaction``. That is, remove
         the outputs that the given ``transaction`` spends, and add the
@@ -250,6 +253,9 @@ class BigchainDB(object):
             transaction = Transaction.from_dict(transaction)
 
         return transaction
+
+    def get_transactions(self, txn_ids):
+        return backend.query.get_transactions(self.connection, txn_ids)
 
     def get_transactions_filtered(self, asset_id, operation=None):
         """Get a list of transactions filtered on some criteria
@@ -438,6 +444,9 @@ class BigchainDB(object):
     def get_election(self, election_id):
         return backend.query.get_election(self.connection, election_id)
 
+    def get_pre_commit_state(self):
+        return backend.query.get_pre_commit_state(self.connection)
+
     def store_pre_commit_state(self, state):
         return backend.query.store_pre_commit_state(self.connection, state)
 
@@ -449,9 +458,15 @@ class BigchainDB(object):
         return backend.query.store_validator_set(self.connection, {'height': height,
                                                                    'validators': validators})
 
+    def delete_validator_set(self, height):
+        return backend.query.delete_validator_set(self.connection, height)
+
     def store_abci_chain(self, height, chain_id, is_synced=True):
         return backend.query.store_abci_chain(self.connection, height,
                                               chain_id, is_synced)
+
+    def delete_abci_chain(self, height):
+        return backend.query.delete_abci_chain(self.connection, height)
 
     def get_latest_abci_chain(self):
         return backend.query.get_latest_abci_chain(self.connection)
@@ -487,7 +502,8 @@ class BigchainDB(object):
     def store_elections(self, elections):
         return backend.query.store_elections(self.connection, elections)
 
+    def delete_elections(self, height):
+        return backend.query.delete_elections(self.connection, height)
+
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))
-
-PreCommitState = namedtuple('PreCommitState', ('commit_id', 'height', 'transactions'))

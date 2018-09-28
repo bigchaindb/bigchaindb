@@ -96,7 +96,7 @@ def generate_validators(powers):
     return validators
 
 
-def generate_election(b, cls, public_key, private_key, asset_data):
+def generate_election(b, cls, public_key, private_key, asset_data, voter_keys):
     voters = cls.recipients(b)
     election = cls.generate([public_key],
                             voters,
@@ -106,5 +106,7 @@ def generate_election(b, cls, public_key, private_key, asset_data):
     votes = [Vote.generate([election.to_inputs()[i]],
                            [([Election.to_public_key(election.id)], power)],
                            election.id) for i, (_, power) in enumerate(voters)]
+    for key, v in zip(voter_keys, votes):
+        v.sign([key])
 
     return election, votes

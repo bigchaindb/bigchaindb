@@ -395,13 +395,10 @@ def test_get_unspent_outputs(db_context, utxoset):
 
 def test_store_pre_commit_state(db_context):
     from bigchaindb.backend import query
-    from bigchaindb.lib import PreCommitState
 
-    state = PreCommitState(commit_id='test',
-                           height=3,
-                           transactions=[])
+    state = dict(height=3, transactions=[])
 
-    query.store_pre_commit_state(db_context.conn, state._asdict())
+    query.store_pre_commit_state(db_context.conn, state)
     cursor = db_context.conn.db.pre_commit.find({'commit_id': 'test'},
                                                 projection={'_id': False})
     assert cursor.collection.count_documents({}) == 1
@@ -409,15 +406,11 @@ def test_store_pre_commit_state(db_context):
 
 def test_get_pre_commit_state(db_context):
     from bigchaindb.backend import query
-    from bigchaindb.lib import PreCommitState
 
-    state = PreCommitState(commit_id='test2',
-                           height=3,
-                           transactions=[])
-
-    db_context.conn.db.pre_commit.insert_one(state._asdict())
-    resp = query.get_pre_commit_state(db_context.conn, 'test2')
-    assert resp == state._asdict()
+    state = dict(height=3, transactions=[])
+    db_context.conn.db.pre_commit.insert_one(state)
+    resp = query.get_pre_commit_state(db_context.conn)
+    assert resp == state
 
 
 def test_validator_update():

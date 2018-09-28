@@ -147,27 +147,6 @@ def test_post_transaction_invalid_mode(b):
         b.write_transaction(tx, 'nope')
 
 
-@pytest.mark.skip
-@pytest.mark.bdb
-def test_validator_updates(b, validator_pub_key):
-    from bigchaindb.backend import query
-    from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
-
-    # create a validator update object
-    validator = {'pub_key': {'type': 'ed25519',
-                             'data': validator_pub_key},
-                 'power': 10}
-    validator_update = {'validator': validator,
-                        'update_id': VALIDATOR_UPDATE_ID}
-    query.store_validator_update(b.connection, validator_update)
-
-    updates = b.approved_updates()
-    assert updates == validator_update['validator']
-
-    b.delete_validator_update()
-    assert not b.approved_updates()
-
-
 @pytest.mark.bdb
 def test_update_utxoset(b, signed_create_tx, signed_transfer_tx, db_context):
     mongo_client = MongoClient(host=db_context.host, port=db_context.port)

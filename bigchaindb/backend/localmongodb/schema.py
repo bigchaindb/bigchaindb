@@ -42,7 +42,7 @@ INDEXES = {
           ('output_index', ASCENDING)], dict(name='utxo', unique=True)),
     ],
     'pre_commit': [
-        ('commit_id', dict(name='pre_commit_id', unique=True)),
+        ('height', dict(name='height', unique=True)),
     ],
     'elections': [
         ([('height', DESCENDING), ('election_id', ASCENDING)],

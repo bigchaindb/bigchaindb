@@ -43,3 +43,6 @@ class ChainMigrationElection(Election):
         ]
         output += f'\nvalidators={json.dumps(validators, indent=4)}'
         return output
+
+    def on_rollback(self, bigchain, new_height):
+        bigchain.delete_abci_chain(new_height)

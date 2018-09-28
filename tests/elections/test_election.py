@@ -17,11 +17,13 @@ def test_process_block_concludes_all_elections(b):
 
     public_key = validators[0]['public_key']
     private_key = validators[0]['private_key']
+    voter_keys = [v['private_key'] for v in validators]
 
     election, votes = generate_election(b,
                                         ChainMigrationElection,
                                         public_key, private_key,
-                                        {})
+                                        {},
+                                        voter_keys)
 
     txs = [election]
     total_votes = votes
@@ -29,7 +31,8 @@ def test_process_block_concludes_all_elections(b):
     election, votes = generate_election(b,
                                         ValidatorElection,
                                         public_key, private_key,
-                                        new_validator['election'])
+                                        new_validator['election'],
+                                        voter_keys)
     txs += [election]
     total_votes += votes
 
@@ -67,10 +70,13 @@ def test_process_block_approves_only_one_validator_update(b):
 
     public_key = validators[0]['public_key']
     private_key = validators[0]['private_key']
+    voter_keys = [v['private_key'] for v in validators]
+
     election, votes = generate_election(b,
                                         ValidatorElection,
                                         public_key, private_key,
-                                        new_validator['election'])
+                                        new_validator['election'],
+                                        voter_keys)
     txs = [election]
     total_votes = votes
 
@@ -79,7 +85,8 @@ def test_process_block_approves_only_one_validator_update(b):
     election, votes = generate_election(b,
                                         ValidatorElection,
                                         public_key, private_key,
-                                        another_validator['election'])
+                                        another_validator['election'],
+                                        voter_keys)
     txs += [election]
     total_votes += votes
 
@@ -109,10 +116,13 @@ def test_process_block_approves_after_pending_validator_update(b):
 
     public_key = validators[0]['public_key']
     private_key = validators[0]['private_key']
+    voter_keys = [v['private_key'] for v in validators]
+
     election, votes = generate_election(b,
                                         ValidatorElection,
                                         public_key, private_key,
-                                        new_validator['election'])
+                                        new_validator['election'],
+                                        voter_keys)
     txs = [election]
     total_votes = votes
 
@@ -121,14 +131,16 @@ def test_process_block_approves_after_pending_validator_update(b):
     election, votes = generate_election(b,
                                         ValidatorElection,
                                         public_key, private_key,
-                                        another_validator['election'])
+                                        another_validator['election'],
+                                        voter_keys)
     txs += [election]
     total_votes += votes
 
     election, votes = generate_election(b,
                                         ChainMigrationElection,
                                         public_key, private_key,
-                                        {})
+                                        {},
+                                        voter_keys)
 
     txs += [election]
     total_votes += votes
@@ -165,10 +177,13 @@ def test_process_block_does_not_approve_after_validator_update(b):
 
     public_key = validators[0]['public_key']
     private_key = validators[0]['private_key']
+    voter_keys = [v['private_key'] for v in validators]
+
     election, votes = generate_election(b,
                                         ValidatorElection,
                                         public_key, private_key,
-                                        new_validator['election'])
+                                        new_validator['election'],
+                                        voter_keys)
     txs = [election]
     total_votes = votes
 
@@ -181,7 +196,8 @@ def test_process_block_does_not_approve_after_validator_update(b):
     second_election, second_votes = generate_election(b,
                                                       ChainMigrationElection,
                                                       public_key, private_key,
-                                                      {})
+                                                      {},
+                                                      voter_keys)
 
     Election.process_block(b, 2, total_votes + [second_election])
 
@@ -205,17 +221,21 @@ def test_process_block_applies_only_one_migration(b):
 
     public_key = validators[0]['public_key']
     private_key = validators[0]['private_key']
+    voter_keys = [v['private_key'] for v in validators]
+
     election, votes = generate_election(b,
                                         ChainMigrationElection,
                                         public_key, private_key,
-                                        {})
+                                        {},
+                                        voter_keys)
     txs = [election]
     total_votes = votes
 
     election, votes = generate_election(b,
                                         ChainMigrationElection,
                                         public_key, private_key,
-                                        {})
+                                        {},
+                                        voter_keys)
 
     txs += [election]
     total_votes += votes

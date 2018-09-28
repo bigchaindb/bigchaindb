@@ -261,18 +261,15 @@ def get_unspent_outputs(conn, *, query=None):
 
 @register_query(LocalMongoDBConnection)
 def store_pre_commit_state(conn, state):
-    commit_id = state['commit_id']
     return conn.run(
         conn.collection('pre_commit')
-        .replace_one({'commit_id': commit_id}, state, upsert=True)
+        .replace_one({}, state, upsert=True)
     )
 
 
 @register_query(LocalMongoDBConnection)
-def get_pre_commit_state(conn, commit_id):
-    return conn.run(conn.collection('pre_commit')
-                    .find_one({'commit_id': commit_id},
-                              projection={'_id': False}))
+def get_pre_commit_state(conn):
+    return conn.run(conn.collection('pre_commit').find_one())
 
 
 @register_query(LocalMongoDBConnection)
@@ -284,6 +281,13 @@ def store_validator_set(conn, validators_update):
             validators_update,
             upsert=True
         )
+    )
+
+
+@register_query(LocalMongoDBConnection)
+def delete_validator_set(conn, height):
+    return conn.run(
+        conn.collection('validators').delete_many({'height': height})
     )
 
 
@@ -305,6 +309,13 @@ def store_election(conn, election_id, height, is_concluded):
 def store_elections(conn, elections):
     return conn.run(
         conn.collection('elections').insert_many(elections)
+    )
+
+
+@register_query(LocalMongoDBConnection)
+def delete_elections(conn, height):
+    return conn.run(
+        conn.collection('elections').delete_many({'height': height})
     )
 
 
@@ -357,6 +368,13 @@ def store_abci_chain(conn, height, chain_id, is_synced=True):
              'is_synced': is_synced},
             upsert=True,
         )
+    )
+
+
+@register_query(LocalMongoDBConnection)
+def delete_abci_chain(conn, height):
+    return conn.run(
+        conn.collection('abci_chains').delete_many({'height': height})
     )
 
 

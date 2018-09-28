@@ -22,11 +22,17 @@ from bigchaindb.backend.localmongodb import query
 from bigchaindb.common.crypto import generate_key_pair
 from bigchaindb.core import (CodeTypeOk,
                              CodeTypeError,
+                             rollback
                              )
+from bigchaindb.elections.election import Election
 from bigchaindb.lib import Block
+from bigchaindb.migrations.chain_migration_election import ChainMigrationElection
+from bigchaindb.upsert_validator.validator_election import ValidatorElection
 from bigchaindb.upsert_validator.validator_utils import new_validator_set
 from bigchaindb.tendermint_utils import public_key_to_base64
 from bigchaindb.version import __tm_supported_versions__
+
+from tests.utils import generate_election, generate_validators
 
 
 pytestmark = pytest.mark.bdb
@@ -347,39 +353,45 @@ def test_deliver_transfer_tx__double_spend_fails(b, init_chain_request):
     assert result.code == CodeTypeError
 
 
-# The test below has to re-written one election conclusion logic has been implemented
-@pytest.mark.skip
 def test_end_block_return_validator_updates(b, init_chain_request):
-    from bigchaindb import App
-    from bigchaindb.backend import query
-    from bigchaindb.core import encode_validator
-    from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
-
     app = App(b)
     app.init_chain(init_chain_request)
 
     begin_block = RequestBeginBlock()
     app.begin_block(begin_block)
 
-    validator = {'pub_key': {'type': 'ed25519',
-                             'data': 'B0E42D2589A455EAD339A035D6CE1C8C3E25863F268120AA0162AD7D003A4014'},
-                 'power': 10}
-    validator_update = {'validator': validator,
-                        'update_id': VALIDATOR_UPDATE_ID}
-    query.store_validator_update(b.connection, validator_update)
+    # generate a block containing a concluded validator election
+    validators = generate_validators([1] * 4)
+    b.store_validator_set(1, [v['storage'] for v in validators])
 
-    resp = app.end_block(RequestEndBlock(height=99))
-    assert resp.validator_updates[0] == encode_validator(validator)
+    new_validator = generate_validators([1])[0]
 
-    updates = b.approved_update()
-    assert not updates
+    public_key = validators[0]['public_key']
+    private_key = validators[0]['private_key']
+    voter_keys = [v['private_key'] for v in validators]
+
+    election, votes = generate_election(b,
+                                        ValidatorElection,
+                                        public_key, private_key,
+                                        new_validator['election'],
+                                        voter_keys)
+    b.store_block(Block(height=1, transactions=[election.id],
+                        app_hash='')._asdict())
+    b.store_bulk_transactions([election])
+    Election.process_block(b, 1, [election])
+
+    app.block_transactions = votes
+
+    resp = app.end_block(RequestEndBlock(height=2))
+    assert resp.validator_updates[0].power == new_validator['election']['power']
+    expected = bytes.fromhex(new_validator['election']['public_key']['value'])
+    assert expected == resp.validator_updates[0].pub_key.data
 
 
 def test_store_pre_commit_state_in_end_block(b, alice, init_chain_request):
     from bigchaindb import App
     from bigchaindb.backend import query
     from bigchaindb.models import Transaction
-    from bigchaindb.backend.query import PRE_COMMIT_ID
 
     tx = Transaction.create([alice.public_key],
                             [([alice.public_key], 1)],
@@ -394,16 +406,14 @@ def test_store_pre_commit_state_in_end_block(b, alice, init_chain_request):
     app.deliver_tx(encode_tx_to_bytes(tx))
     app.end_block(RequestEndBlock(height=99))
 
-    resp = query.get_pre_commit_state(b.connection, PRE_COMMIT_ID)
-    assert resp['commit_id'] == PRE_COMMIT_ID
+    resp = query.get_pre_commit_state(b.connection)
     assert resp['height'] == 99
     assert resp['transactions'] == [tx.id]
 
     app.begin_block(begin_block)
     app.deliver_tx(encode_tx_to_bytes(tx))
     app.end_block(RequestEndBlock(height=100))
-    resp = query.get_pre_commit_state(b.connection, PRE_COMMIT_ID)
-    assert resp['commit_id'] == PRE_COMMIT_ID
+    resp = query.get_pre_commit_state(b.connection)
     assert resp['height'] == 100
     assert resp['transactions'] == [tx.id]
 
@@ -413,10 +423,68 @@ def test_store_pre_commit_state_in_end_block(b, alice, init_chain_request):
     app.begin_block(begin_block)
     app.deliver_tx(encode_tx_to_bytes(tx))
     app.end_block(RequestEndBlock(height=1))
-    resp = query.get_pre_commit_state(b.connection, PRE_COMMIT_ID)
-    assert resp['commit_id'] == PRE_COMMIT_ID
+    resp = query.get_pre_commit_state(b.connection)
     assert resp['height'] == 101
     assert resp['transactions'] == [tx.id]
+
+
+def test_rollback_pre_commit_state_after_crash(b):
+    validators = generate_validators([1] * 4)
+    b.store_validator_set(1, [v['storage'] for v in validators])
+    b.store_block(Block(height=1, transactions=[], app_hash='')._asdict())
+
+    public_key = validators[0]['public_key']
+    private_key = validators[0]['private_key']
+    voter_keys = [v['private_key'] for v in validators]
+
+    migration_election, votes = generate_election(b,
+                                                  ChainMigrationElection,
+                                                  public_key, private_key,
+                                                  {},
+                                                  voter_keys)
+
+    total_votes = votes
+    txs = [migration_election, *votes]
+
+    new_validator = generate_validators([1])[0]
+    validator_election, votes = generate_election(b,
+                                                  ValidatorElection,
+                                                  public_key, private_key,
+                                                  new_validator['election'],
+                                                  voter_keys)
+
+    total_votes += votes
+    txs += [validator_election, *votes]
+
+    b.store_bulk_transactions(txs)
+    b.store_abci_chain(2, 'new_chain')
+    b.store_validator_set(2, [v['storage'] for v in validators])
+    # TODO change to `4` when upgrading to Tendermint 0.22.4.
+    b.store_validator_set(3, [new_validator['storage']])
+    b.store_election(migration_election.id, 2, is_concluded=False)
+    b.store_election(validator_election.id, 2, is_concluded=True)
+
+    # no pre-commit state
+    rollback(b)
+
+    for tx in txs:
+        assert b.get_transaction(tx.id)
+    assert b.get_latest_abci_chain()
+    assert len(b.get_validator_change()['validators']) == 1
+    assert b.get_election(migration_election.id)
+    assert b.get_election(validator_election.id)
+
+    b.store_pre_commit_state({'height': 2, 'transactions': [tx.id for tx in txs]})
+
+    rollback(b)
+
+    for tx in txs:
+        assert not b.get_transaction(tx.id)
+    assert not b.get_latest_abci_chain()
+    assert len(b.get_validator_change()['validators']) == 4
+    assert len(b.get_validator_change(2)['validators']) == 4
+    assert not b.get_election(migration_election.id)
+    assert not b.get_election(validator_election.id)
 
 
 def test_new_validator_set(b):
