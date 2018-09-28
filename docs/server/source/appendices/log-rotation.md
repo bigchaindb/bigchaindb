@@ -4,44 +4,46 @@ SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 Code is Apache-2.0 and docs are CC-BY-4.0
 --->
 
-# Log rotation for a BigchainDB node
+# Logging and Log Rotation
 
-Each BigchainDB node comprises of 3 main services:
-  - BigchainDB server
-  - Tendermint
-  - MongoDB
+Each BigchainDB node runs:
 
-To run a BigchainDB test network/dev node, that is expected to run for relatively longer periods
-of time, we need to consider the log rotation of these services i.e. we do not want the logs taking
-up large amounts of storage and making the node unresponsive or get into bad state.
+- MongoDB
+- BigchainDB Server
+- Tendermint
 
-## Log rotation for MongoDB
+When running a BigchainDB node for long periods
+of time, we need to consider doing log rotation, i.e. we do not want the logs taking
+up large amounts of storage and making the node unresponsive or getting it into a bad state.
 
-Currently, we leave the log rotation of MongoDB to the BigchainDB administrator. For more notes on MongoDB log rotation
-please refer to [MongoDB docs](https://docs.mongodb.com/v3.6/tutorial/rotate-log-files/).
+## MongoDB Logging and Log Rotation
 
-## Log rotation for BigchainDB
+See the MongoDB docs about
+[logging](https://docs.mongodb.com/v3.6/administration/monitoring/#monitoring-standard-loggging)
+and [log rotation](https://docs.mongodb.com/v3.6/tutorial/rotate-log-files/).
 
-Log rotation is baked into BigchainDB server using the `logging` module. BigchainDB server logs information into the following files:
- - `bigchaindb.log`
- - `bigchaindb-errors.log`
+## BigchainDB Server Logging and Log Rotation
 
-These log files are created by default in the directory from where you run `bigchaindb start`, if you are using `monit`, from 
-[How to Set Up a BigchainDB Network](../simple-deployment-template/network-setup.md) guide, the default directory is: `$HOME/.bigchaindb-monit/logs`
+BigchainDB Server writes its logs to two files: normal logs and error logs. The names of those files, and their locations, are set as part of the BigchainDB configuration settings. The default names and locations are:
 
-The logs for BigchainDB server are rotated when any of the above mentioned file exceeds `209715200 bytes (i.e. approximately 209 MB).`.
+- `~/bigchaindb.log`
+- `~/bigchaindb-errors.log`
 
+Log rotation is baked into BigchainDB Server using Python's `logging` module. The logs for BigchainDB Server are rotated when any of the above mentioned files exceeds 209715200 bytes (i.e. approximately 209 MB).
 
-## Log rotation for Tendermint
+For more information, see the docs about [the BigchainDB Server configuration settings related to logging](../server-reference/configuration.html#log).
 
-In order to set up log rotation of Tendermint, you will need to use the [Monit]( https://www.mmonit.com/monit) scripts provided by us. Covered in the [How to Set Up a BigchainDB Network](../simple-deployment-template/network-setup.md) guide.
+## Tendermint Logging and Log Rotation
 
-```bash
-$ monit -d 1
-```
+Tendermint writes its logs to the files:
 
-Monit monitors both Tendermint and BigchainDB processes as well as the Tendermint log files, `tendermint.out.log` and `tendermint.err.log`. Default location for these log files is:
-`$HOME/.bigchaindb-monit/logs`.
+- `tendermint.out.log`
+- `tendermint.err.log`
 
-Tendermint logs are rotated if any of the above mentioned log files exceeds `200 MB` in size.
+If you started BigchainDB Server and Tendermint using Monit, as suggested by our guide on
+[How to Set Up a BigchainDB Network](../simple-deployment-template/network-setup.html),
+then the logs will be written to `$HOME/.bigchaindb-monit/logs/`.
 
+Moreover, if you started BigchainDB Server and Tendermint using Monit,
+then Monit monitors the Tendermint log files.
+Tendermint logs are rotated if any of the above mentioned log files exceeds 200 MB.

@@ -356,10 +356,9 @@ If you started BigchainDB in the foreground, a `Ctrl + C` or `Ctrl + Z` would sh
 
 One member can make a proposal to call an election to add a validator, remove a validator, or change the voting power of a validator. They then share the election/proposal ID with all the other members. Once more than 2/3 of the voting power votes yes, the proposed change comes into effect. The commands to create a new election/proposal, to approve an election/proposal, and to get the current status of an election/proposal can be found in the documentation about the [bigchaindb election](../server-reference/bigchaindb-cli.html#bigchaindb-election) subcommands.
 
-## Log rotation
+## Logging and Log Rotation
 
-Please go over the [document describing log rotation of a BigchainDB node](../appendices/log-rotation.md).
-
+See the page in the Appendices about [logging and log rotation](../appendices/log-rotation.html).
 
 [bdb:software]: https://github.com/bigchaindb/bigchaindb/
 [bdb:pypi]: https://pypi.org/project/BigchainDB/#history

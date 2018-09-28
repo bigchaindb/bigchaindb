@@ -269,11 +269,11 @@ The full path to the file where logs should be written.
 The user running `bigchaindb` must have write access to the
 specified path.
 
-**Log rotation:** Log files have a size limit of 200 MB
+**Log rotation:** Log files have a size limit of about 200 MB
 and will be rotated up to five times.
-For example, if we `log.file` is set to `"~/bigchain.log"`, then
+For example, if `log.file` is set to `"~/bigchain.log"`, then
 logs would always be written to `bigchain.log`. Each time the file
-`bigchain.log` reaches 200 MB it would be closed and renamed
+`bigchain.log` reaches 200 MB it will be closed and renamed
 `bigchain.log.1`. If `bigchain.log.1` and `bigchain.log.2` already exist they
 would be renamed `bigchain.log.2` and `bigchain.log.3`. This pattern would be
 applied up to `bigchain.log.5` after which `bigchain.log.5` would be
