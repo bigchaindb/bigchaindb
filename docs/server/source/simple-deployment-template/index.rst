@@ -20,15 +20,11 @@ If you want your network to be able to handle the failure or misbehavior
 of one node, then your network must have at least four nodes.
 Nodes can be added or removed from a network after is it up and running.
 
-**Note 2:** You might not need to set up your own network yet.
-You should start by creating a proof-of-concept app that writes to
-[the BigchainDB Testnet](https://testnet.bigchaindb.com/),
-and if that goes well, then you can look into setting up your own network.
-
-**Note 3:** If you want to set up a node or network
+**Note 2:** If you want to set up a node or network
 so that you can contribute to developing and testing the BigchainDB code,
 then see
-[the docs about contributing to BigchainDB](https://docs.bigchaindb.com/projects/contributing/en/latest/index.html).
+`the docs about contributing to BigchainDB <https://docs.bigchaindb.com/projects/contributing/en/latest/index.html>`_
+.
 
 .. toctree::
    :maxdepth: 1
