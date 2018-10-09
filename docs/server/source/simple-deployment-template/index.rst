@@ -8,14 +8,34 @@
 Simple Deployment Template
 ==========================
 
-This section describes *one* way to deploy a BigchainDB network.
-You can modify it as you see fit.
+This section describes *one* way to deploy a BigchainDB network
+(i.e. a set of connected BigchainDB nodes).
+You can modify this simple deployment template as you see fit.
 It's "simple" in the sense that each BigchainDB node is installed
 and run on a single virtual machine (or real machine).
 We also have a :ref:`kubernetes-deployment-template` (not simple).
 
+**Note 1:** These instructions will also work for a "network" with only one node.
+If you want your network to be able to handle the failure or misbehavior
+of one node, then your network must have at least four nodes.
+Nodes can be added or removed from a network after is it up and running.
+
+**Note 2:** You might not need to set up your own network yet.
+You should start by creating a proof-of-concept app that writes to
+[the BigchainDB Testnet](https://testnet.bigchaindb.com/),
+and if that goes well, then you can look into setting up your own network.
+
+**Note 3:** If you want to set up a node or network
+so that you can contribute to developing and testing the BigchainDB code,
+then see
+[the docs about contributing to BigchainDB](https://docs.bigchaindb.com/projects/contributing/en/latest/index.html).
+
 .. toctree::
    :maxdepth: 1
 
+   deploy-a-machine
+   set-up-nginx
+   set-up-node-software
    network-setup
+   tips
    troubleshooting
