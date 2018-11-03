@@ -415,7 +415,7 @@ def abci_http(_setup_database, _configure_bigchaindb, abci_server,
             requests.get(uri)
             return True
 
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             pass
         time.sleep(1)
 
