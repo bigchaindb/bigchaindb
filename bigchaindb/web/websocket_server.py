@@ -134,7 +134,7 @@ def websocket_handler(request):
         except RuntimeError as e:
             logger.debug('Websocket exception: %s', str(e))
             break
-        except CancelledError as e:
+        except CancelledError:
             logger.debug('Websocket closed')
             break
         if msg.type == aiohttp.WSMsgType.CLOSED:

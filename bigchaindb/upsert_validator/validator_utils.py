@@ -57,7 +57,7 @@ def validate_asset_public_key(pk):
         if len(pk_decoded) != 32:
             raise InvalidPublicKey('Public key should be of size 32 bytes')
 
-    except binascii.Error as e:
+    except binascii.Error:
         raise InvalidPublicKey('Invalid `type` specified for public key `value`')
 
 
