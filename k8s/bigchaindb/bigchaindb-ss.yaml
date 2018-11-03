@@ -158,7 +158,7 @@ spec:
           timeoutSeconds: 15
       # BigchainDB container
       - name: bigchaindb
-        image: bigchaindb/bigchaindb:2.0.0-beta7
+        image: bigchaindb/bigchaindb:2.0.0-beta8
         imagePullPolicy: Always
         args:
         - start
