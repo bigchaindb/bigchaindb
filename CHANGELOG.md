@@ -24,6 +24,21 @@ For reference, the possible headings are:
 * **Known Issues**
 * **Notes**
 
+## [2.0 Beta 8] - 2018-11-03
+
+### Changed
+
+* Revised the [Simple Deployment Template](http://docs.bigchaindb.com/projects/server/en/latest/simple-deployment-template/index.html) in the docs. Added NGINX to the mix. Pull Requests [#2578](https://github.com/bigchaindb/bigchaindb/pull/2578) and [#2579](https://github.com/bigchaindb/bigchaindb/pull/2579)
+* Revised `nginx/nginx.conf` to enable CORS. [Pull Request #2580](https://github.com/bigchaindb/bigchaindb/pull/2580)
+
+### Fixed
+
+* Fixed a typo in the Kubernetes ConfigMap template. [Pull Request #2583](https://github.com/bigchaindb/bigchaindb/pull/2583)
+
+### External Contributors
+
+[@gamjapark](https://github.com/gamjapark) translated the main `README.md` file into Korean. [Pull Request #2592](https://github.com/bigchaindb/bigchaindb/pull/2592)
+
 ## [2.0 Beta 7] - 2018-09-28
 
 Tag name: v2.0.0b7
