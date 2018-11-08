@@ -197,7 +197,7 @@ If you want to start and manage the BigchainDB and Tendermint processes yourself
 
 ## How Others Can Access Your Node
 
-If you followed the above instructions, then your node should be publicly-accessible with BigchainDB Root URL `https://hostname` or `http://hostname:9984`. That is, anyone can interact with your node using the [BigchainDB HTTP API](http-client-server-api.html) exposed at that address. The most common way to do that is to use one of the [BigchainDB Drivers](./drivers-clients/index.html).
+If you followed the above instructions, then your node should be publicly-accessible with BigchainDB Root URL `https://hostname` or `http://hostname:9984`. That is, anyone can interact with your node using the [BigchainDB HTTP API](../../http-client-server-api.html) exposed at that address. The most common way to do that is to use one of the [BigchainDB Drivers](../../drivers-clients/index.html).
 
 [bdb:software]: https://github.com/bigchaindb/bigchaindb/
 [bdb:pypi]: https://pypi.org/project/BigchainDB/#history
