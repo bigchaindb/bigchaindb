@@ -65,15 +65,18 @@ The following steps are what we do to release a new version of _BigchainDB Serve
    sudo chown -R $(whoami):$(whoami) .
    ```
 1. [Log in to readthedocs.org](https://readthedocs.org/accounts/login/) and go to the **BigchainDB Server** project, then:
+   - Click on "Builds", select "latest" from the drop-down menu, then click the "Build Version:" button.
+   - Wait for the build of "latest" to finish. This can take a few minutes.
    - Go to Admin --> Advanced Settings
      and make sure that "Default branch:" (i.e. what "latest" points to)
      is set to the new release's tag, e.g. `v0.9.1`.
-     (Don't miss the `v` in front.)
+     (It won't be an option if you didn't wait for the build of "latest" to finish.)
+     Then scroll to the bottom and click "Save".
    - Go to Admin --> Versions
      and under **Choose Active Versions**, do these things:
      1. Make sure that the new version's tag is "Active" and "Public"
      1. Make sure the **stable** branch is _not_ active.
-     1. Scroll to the bottom of the page and click the "Submit" button.
+     1. Scroll to the bottom of the page and click "Save".
 1. Go to [Docker Hub](https://hub.docker.com/) and sign in, then:
    - Click on "Organizations"
    - Click on "bigchaindb"
