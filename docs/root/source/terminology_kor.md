@@ -23,5 +23,3 @@ BigchainDB 네트워크에 노드들을 실행하는 사람과 조직은 **Bigch
 **BigchainDB 네트워크와 컨소시엄의 차이는 무엇일까요?**
 
 BigchainDB 네트워크는 단지 연결된 노드들의 집합입니다. 컨소시엄은 하나의 BigchainDB 네트워크를 가지는 조직이며, 해당 네트워크에서 각각의 노드는 다른 운영자를 가집니다. 
-
-[이전](bigchaindb/docs/root/source/production-ready_kor.md)					[다음]()
