@@ -12,6 +12,7 @@ from bigchaindb.web.views import (
     transactions as tx,
     outputs,
     validators,
+    aggregate,
 )
 
 
@@ -40,8 +41,12 @@ ROUTES_API_V1 = [
     r('validators/', validators.ValidatorsApi),
 ]
 
+ROUTES_API_TATAU = [
+    r('aggregate/', aggregate.AggregateListApi),
+]
 
 API_SECTIONS = [
     (None, [r('/', info.RootIndex)]),
     ('/api/v1/', ROUTES_API_V1),
+    ('/api/tatau/', ROUTES_API_TATAU),
 ]
