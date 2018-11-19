@@ -18,5 +18,4 @@ BigchainDB는 모든 종류의 데이터를 저장할 수 있지만 자산 등�
 
  Note
 
-   우리는 "소유자"라는 단어를 다소 느슨하게 사용했습니다. 보다 정확한 단어는 이행자, 서명자, 조정자 또는 이전 가능 요소 일 수 있습니다. 관련 BigchainDB Transactions Spec의 Owners에 대한 참고 사항 절을 참조하십시오
-   `BigchainDB Transactions Spec <https://github.com/bigchaindb/BEPs/tree/master/tx-specs/>`_.
+   우리는 "소유자"라는 단어를 다소 느슨하게 사용했습니다. 보다 정확한 단어는 이행자, 서명자, 조정자 또는 이전 가능 요소 일 수 있습니다. 관련 [BigchainDB Transaction Spec](https://github.com/bigchaindb/BEPs/tree/master/tx-specs/)의 Owners에 대한 참고 사항 절을 참조하십시오.
