@@ -12,8 +12,7 @@ Code is Apache-2.0 and docs are CC-BY-4.0
 
 높은 수준에서, 사용자는 BigchainDB HTTP API를 사용하는 BigchainDB 네트워크(노드 집합) 또는 BigchainDB 파이썬 드라이버와 같은 API용 래퍼로 통신할 수 있습니다. 각 BigchainDB 노드는 BigchainDB Server 및 다양한 다른 소프트웨어를 실행합니다. 더 자세한 사항은 용어 페이지에서 이러한 용어 중 일부를 설명합니다.
 
-[
-HTTP API 문서](http://bigchaindb.com/http-api)
+[HTTP API 문서](http://bigchaindb.com/http-api)
 
 [BigchainDB에 기여하는 법](http://docs.bigchaindb.com/projects/contributing/en/latest/index.html)
 
