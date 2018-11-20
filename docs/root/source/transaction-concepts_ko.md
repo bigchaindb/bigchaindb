@@ -26,7 +26,7 @@ the section titled **Transaction Components: Conditions**
 in the relevant
 [BigchainDB Transactions Spec](https://github.com/bigchaindb/BEPs/tree/master/tx-specs/).
 
-![Example BigchainDB CREATE transaction](docs/root/source/_static/CREATE_example.png)
+![Example BigchainDB CREATE transaction](./_static/CREATE_example.png)
 
 위의 예제에서는 BigchainDB CREATE 트랜잭션 다이어그램을 보여줍니다. Pam은 자산 3 주를 소유 / 통제하고 다른 주식은 없습니다 (다른 산출물이 없으므로).
 
