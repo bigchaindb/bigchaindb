@@ -60,9 +60,9 @@ Docpile은 CREATE → TRANSFER → TRANSFER → 사용자+문서 쌍에 대한 e
 
 공용 키/ 개인 키 쌍과 함께 대칭 키를 사용하는 이유는 암호문을 한 번만 저장하면 되기 때문입니다.
 
-## 시스템 예시 2
+### 시스템 예시 2
 
-이 예시에서는  `프록시 재-암호화 <https://en.wikipedia.org/wiki/Proxy_re-encryption>`_ 를 사용합니다:
+이 예시에서는 [프록시 재-암호화](https://en.wikipedia.org/wiki/Proxy_re-encryption) 를 사용합니다:
 
 1. MegaCorp는 자체 공용 키를 사용하여 일부 데이터를 암호화 한 후 암호화 된 데이터(암호문1)을 BigchainDB 네트워크에 저장합니다.
 
@@ -82,7 +82,7 @@ Docpile은 CREATE → TRANSFER → TRANSFER → 사용자+문서 쌍에 대한 e
 
 ## 시스템 예시 3
 
-이 예시는 `삭제 코딩 <https://en.wikipedia.org/wiki/Erasure_code>`_ 을 사용합니다:
+이 예시는 [삭제 코딩](https://en.wikipedia.org/wiki/Erasure_code)을 사용합니다:
 
 1. 데이터를 n개의 조각으로 삭제하십시오.
 2. 서로 다른 암호화 키로 n개의 조각을 암호화 하십시오.
@@ -91,7 +91,7 @@ Docpile은 CREATE → TRANSFER → TRANSFER → 사용자+문서 쌍에 대한 e
 
 만약 k< N 인 키홀더가 k개의 조각들을 가져와서 해독한다면, 그것들은 원본 텍스트를 다시 만들 수 있습니다. k미만이면 충분하지 않습니다.
 
-## 시스템 예시 4
+### 시스템 예시 4
 
 이 설정은 특수 노드가 데이터의 일부를 볼 수 있어야 하지만, 다른 노드는 볼 수 없어야 하는 기업용 블록 체인 시나리오에서 사용할 수 있습니다.
 
