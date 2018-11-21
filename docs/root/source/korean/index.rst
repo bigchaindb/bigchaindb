@@ -1,16 +1,16 @@
-
+ï»¿
 .. Copyright BigchainDB GmbH and BigchainDB contributors
    SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
    Code is Apache-2.0 and docs are CC-BY-4.0
 
-BigchainDB ¹®¼­
+BigchainDB ë¬¸ì„œ
 ========================
 
-ºí·ÏÃ¼ÀÎ µ¥ÀÌÅÍº£ÀÌ½ºÀÎ BigchainDB¸¦ ¸¸³ªº¸¼¼¿ä.
+ë¸”ë¡ì²´ì¸ ë°ì´í„°ë² ì´ìŠ¤ì¸ BigchainDBë¥¼ ë§Œë‚˜ë³´ì„¸ìš”.
 
-`ºÐ»êÇü<decentralized.html>`_, `ºÒº¯¼º<immutable.html>`_ ¹× `ÀÚ»ê¿¡ ´ëÇÑ ³×ÀÌÆ¼ºê Áö¿ø<assets.html>`_À» Æ÷ÇÔÇÑ ÀÏºÎ µ¥ÀÌÅÍº£ÀÌ½º Æ¯¼ºµé°ú ºí·ÏÃ¼ÀÎ Æ¯¼ºÀ» °¡Áö°í ÀÖ½À´Ï´Ù.
+`ë¶„ì‚°í˜•<decentralized.html>`_, `ë¶ˆë³€ì„±<immutable.html>`_ ë° `ìžì‚°ì— ëŒ€í•œ ë„¤ì´í‹°ë¸Œ ì§€ì›<assets.html>`_ì„ í¬í•¨í•œ ì¼ë¶€ ë°ì´í„°ë² ì´ìŠ¤ íŠ¹ì„±ë“¤ê³¼ ë¸”ë¡ì²´ì¸ íŠ¹ì„±ì„ ê°€ì§€ê³  ìžˆìŠµë‹ˆë‹¤.
 
-³ôÀº ¼öÁØ¿¡¼­, »ç¿ëÀÚ´Â BigchainDB HTTP API¸¦ »ç¿ëÇÏ´Â BigchainDB ³×Æ®¿öÅ©(³ëµå ÁýÇÕ) ¶Ç´Â BigchainDB ÆÄÀÌ½ã µå¶óÀÌ¹ö¿Í °°Àº API¿ë ·¡ÆÛ·Î Åë½ÅÇÒ ¼ö ÀÖ½À´Ï´Ù. °¢ BigchainDB ³ëµå´Â BigchainDB Server ¹× ´Ù¾çÇÑ ´Ù¸¥ ¼ÒÇÁÆ®¿þ¾î¸¦ ½ÇÇàÇÕ´Ï´Ù. ´õ ÀÚ¼¼ÇÑ »çÇ×Àº ¿ë¾î ÆäÀÌÁö¿¡¼­ ÀÌ·¯ÇÑ ¿ë¾î Áß ÀÏºÎ¸¦ ¼³¸íÇÕ´Ï´Ù.
+ë†’ì€ ìˆ˜ì¤€ì—ì„œ, ì‚¬ìš©ìžëŠ” BigchainDB HTTP APIë¥¼ ì‚¬ìš©í•˜ëŠ” BigchainDB ë„¤íŠ¸ì›Œí¬(ë…¸ë“œ ì§‘í•©) ë˜ëŠ” BigchainDB íŒŒì´ì¬ ë“œë¼ì´ë²„ì™€ ê°™ì€ APIìš© ëž˜í¼ë¡œ í†µì‹ í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. ê° BigchainDB ë…¸ë“œëŠ” BigchainDB Server ë° ë‹¤ì–‘í•œ ë‹¤ë¥¸ ì†Œí”„íŠ¸ì›¨ì–´ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤. ë” ìžì„¸í•œ ì‚¬í•­ì€ ìš©ì–´ íŽ˜ì´ì§€ì—ì„œ ì´ëŸ¬í•œ ìš©ì–´ ì¤‘ ì¼ë¶€ë¥¼ ì„¤ëª…í•©ë‹ˆë‹¤.
 
 .. raw:: html
 
@@ -55,26 +55,26 @@ BigchainDB ¹®¼­
    </style>
 
    <div class="buttondiv">
-     <a class="button" href="http://bigchaindb.com/http-api">HTTP API ¹®¼­</a>
+     <a class="button" href="http://bigchaindb.com/http-api">HTTP API ë¬¸ì„œ</a>
    </div>
    <div class="buttondiv">
-     <a class="button" href="http://docs.bigchaindb.com/projects/contributing/en/latest/index.html">BigchainDB¿¡ ±â¿©ÇÏ´Â ¹ý</a>
+     <a class="button" href="http://docs.bigchaindb.com/projects/contributing/en/latest/index.html">BigchainDBì— ê¸°ì—¬í•˜ëŠ” ë²•</a>
    </div>
    <div class="buttondiv">
-     <a class="button" href="http://docs.bigchaindb.com/projects/py-driver/en/latest/index.html">ÆÄÀÌ½ã µå¶óÀÌ¹ö ¹®¼­</a>
+     <a class="button" href="http://docs.bigchaindb.com/projects/py-driver/en/latest/index.html">íŒŒì´ì¬ ë“œë¼ì´ë²„ ë¬¸ì„œ</a>
    </div>
    <div class="buttondiv">
-     <a class="button" href="https://docs.bigchaindb.com/projects/js-driver/en/latest/index.html">ÀÚ¹Ù½ºÅ©¸³Æ® µå¶óÀÌ¹ö ¹®¼­</a>
+     <a class="button" href="https://docs.bigchaindb.com/projects/js-driver/en/latest/index.html">ìžë°”ìŠ¤í¬ë¦½íŠ¸ ë“œë¼ì´ë²„ ë¬¸ì„œ</a>
    </div>
    <div class="buttondiv">
-     <a class="button" href="http://docs.bigchaindb.com/projects/server/en/latest/index.html">¼­¹ö ¹®¼­</a>
+     <a class="button" href="http://docs.bigchaindb.com/projects/server/en/latest/index.html">ì„œë²„ ë¬¸ì„œ</a>
    </div>
    <div class="buttondiv">
-     <a class="button" href="http://docs.bigchaindb.com/projects/server/en/latest/quickstart.html">¼­¹ö ºü¸¥ ½ÃÀÛ</a>
+     <a class="button" href="http://docs.bigchaindb.com/projects/server/en/latest/quickstart.html">ì„œë²„ ë¹ ë¥¸ ì‹œìž‘</a>
    </div>
 
 
-BigchainDB¿¡ ´ëÇÑ Ãß°¡ Á¤º¸
+BigchainDBì— ëŒ€í•œ ì¶”ê°€ ì •ë³´
 ---------------------
 
 .. toctree::
