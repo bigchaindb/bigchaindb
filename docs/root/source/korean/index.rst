@@ -8,7 +8,7 @@ BigchainDB 문서
 
 블록체인 데이터베이스인 BigchainDB를 만나보세요.
 
-`분산형<decentralized.html>`_, `불변성<immutable.html>`_ 및 `자산에 대한 네이티브 지원<assets.html>`_을 포함한 일부 데이터베이스 특성들과 블록체인 특성을 가지고 있습니다.
+`분산형 <decentralized.html>`_, `불변성 <immutable.html>`_ 및 `자산에 대한 네이티브 지원 <assets.html>`_ 을 포함한 일부 데이터베이스 특성들과 블록체인 특성을 가지고 있습니다.
 
 높은 수준에서, 사용자는 BigchainDB HTTP API를 사용하는 BigchainDB 네트워크(노드 집합) 또는 BigchainDB 파이썬 드라이버와 같은 API용 래퍼로 통신할 수 있습니다. 각 BigchainDB 노드는 BigchainDB Server 및 다양한 다른 소프트웨어를 실행합니다. 더 자세한 사항은 용어 페이지에서 이러한 용어 중 일부를 설명합니다.
 
