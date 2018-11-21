@@ -75,7 +75,7 @@ BigchainDB 문서
 
 
 BigchainDB에 대한 추가 정보
----------------------
+--------------------------
 
 .. toctree::
    :maxdepth: 1
