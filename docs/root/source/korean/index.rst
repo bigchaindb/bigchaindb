@@ -81,18 +81,17 @@ BigchainDB에 대한 추가 정보
    :maxdepth: 1
 
    BigchainDB Docs Home <self>
-   production-ready
-   terminology
-   decentralized
-   diversity
-   immutable
-   bft
-   query
-   assets
-   smart-contracts
-   transaction-concepts
-   store-files
-   permissions
-   private-data
+   production-ready_kor
+   terminology_kor
+   decentralized_kor
+   diversity-ko
+   immutable-ko
+   bft-ko
+   query-ko
+   assets_ko
+   smart-contracts_ko
+   transaction-concepts_ko
+   store-files_ko
+   permissions-ko
+   private-data-ko
    Data Models <https://docs.bigchaindb.com/projects/server/en/latest/data-models/index.html>
-   korean/index
