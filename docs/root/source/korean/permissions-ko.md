@@ -51,7 +51,7 @@ Note
 
 ## 읽기 권한
 
-다음 페이지를 참고하세요, [:doc:BigchainDB, Privacy and Private Data](https://github.com/bigchaindb/bigchaindb/blob/master/docs/root/source/private-data-ko.md).
+다음 페이지를 참고하세요, [:doc:BigchainDB, Privacy and Private Data](https://github.com/bigchaindb/bigchaindb/blob/master/docs/root/source/korean/private-data-ko.md).
 
 ## 역할 기반 액세스 제어(RBAC)
 
