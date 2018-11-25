@@ -49,6 +49,7 @@ class Transaction(Transaction):
         validate_txn_obj('asset', tx_body['asset'], 'data', validate_key)
         validate_txn_obj('metadata', tx_body, 'metadata', validate_key)
         validate_language_key(tx_body['asset'], 'data')
+        validate_language_key(tx_body, 'metadata')
 
 
 class FastTransaction:
