@@ -51,6 +51,7 @@ class Transaction(Transaction):
         validate_language_key(tx_body['asset'], 'data')
         validate_language_key(tx_body, 'metadata')
 
+
 class FastTransaction:
     """A minimal wrapper around a transaction dictionary. This is useful for
     when validation is not required but a routine expects something that looks
