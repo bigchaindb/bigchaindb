@@ -24,6 +24,20 @@ For reference, the possible headings are:
 * **Known Issues**
 * **Notes**
 
+## [2.0 Beta 9] - 2018-11-27
+
+### Changed
+
+Removed support for TLSv1 and TLSv1.1 in all NGINX config files. Kept support for TLSv1.2 and added support for TLSv1.3. [Pull Request #2601](https://github.com/bigchaindb/bigchaindb/pull/2601)
+
+### Fixed
+
+Fixed two issues with schema validation. Pull requests [#2606](https://github.com/bigchaindb/bigchaindb/pull/2606) & [#2607](https://github.com/bigchaindb/bigchaindb/pull/2607)
+
+### External Contributors
+
+[@gamjapark](https://github.com/gamjapark) and team translated all the [BigchainDB root docs](https://docs.bigchaindb.com/en/latest/korean/index.html) into Korean. [Pull Request #2603](https://github.com/bigchaindb/bigchaindb/pull/2603)
+
 ## [2.0 Beta 8] - 2018-11-03
 
 ### Changed
