@@ -24,11 +24,11 @@ sudo apt install -y python3-pip libssl-dev
 Now install the latest version of BigchainDB Server.
 You can find the latest version by going
 to the [BigchainDB project release history page on PyPI][bdb:pypi].
-For example, to install version 2.0.0b8, you would do:
+For example, to install version 2.0.0b9, you would do:
 
 ```
-# Change 2.0.0b7 to the latest version as explained above:
-sudo pip3 install bigchaindb==2.0.0b8
+# Change 2.0.0b9 to the latest version as explained above:
+sudo pip3 install bigchaindb==2.0.0b9
 ```
 
 Check that you installed the correct version of BigchainDB Server using `bigchaindb --version`.
