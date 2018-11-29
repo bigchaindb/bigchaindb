@@ -2,18 +2,12 @@
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
-import pytest
-
 from pytest import mark, raises
-
-
-pytestmark = pytest.mark.tendermint
 
 
 @mark.parametrize('schema_func_name,args_qty', (
     ('create_database', 1),
     ('create_tables', 1),
-    ('create_indexes', 1),
     ('drop_database', 1),
 ))
 def test_schema(schema_func_name, args_qty):

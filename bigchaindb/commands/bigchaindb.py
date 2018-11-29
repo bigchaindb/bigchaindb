@@ -13,21 +13,23 @@ import copy
 import json
 import sys
 
+from bigchaindb.core import rollback
+from bigchaindb.migrations.chain_migration_election import ChainMigrationElection
 from bigchaindb.utils import load_node_key
-from bigchaindb.common.exceptions import (DatabaseAlreadyExists,
-                                          DatabaseDoesNotExist,
+from bigchaindb.common.exceptions import (DatabaseDoesNotExist,
                                           ValidationError)
+from bigchaindb.elections.vote import Vote
 import bigchaindb
 from bigchaindb import (backend, ValidatorElection,
-                        BigchainDB, ValidatorElectionVote)
+                        BigchainDB)
 from bigchaindb.backend import schema
-from bigchaindb.backend import query
-from bigchaindb.backend.query import PRE_COMMIT_ID
 from bigchaindb.commands import utils
 from bigchaindb.commands.utils import (configure_bigchaindb,
                                        input_on_stderr)
 from bigchaindb.log import setup_logging
-from bigchaindb.tendermint_utils import public_key_from_base64, public_key_to_base64
+from bigchaindb.tendermint_utils import public_key_from_base64
+from bigchaindb.commands.election_types import elections
+from bigchaindb.version import __tm_supported_versions__
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -100,41 +102,27 @@ def run_configure(args):
 
 
 @configure_bigchaindb
-def run_upsert_validator(args):
-    """Initiate and manage elections to change the validator set"""
+def run_election(args):
+    """Initiate and manage elections"""
 
     b = BigchainDB()
 
     # Call the function specified by args.action, as defined above
-    globals()[f'run_upsert_validator_{args.action}'](args, b)
+    globals()[f'run_election_{args.action}'](args, b)
 
 
-def run_upsert_validator_new(args, bigchain):
-    """Initiates an election to add/update/remove a validator to an existing BigchainDB network
+def run_election_new(args, bigchain):
+    election_type = args.election_type.replace('-', '_')
+    globals()[f'run_election_new_{election_type}'](args, bigchain)
 
-    :param args: dict
-        args = {
-        'public_key': the public key of the proposed peer, (str)
-        'power': the proposed validator power for the new peer, (str)
-        'node_id': the node_id of the new peer (str)
-        'sk': the path to the private key of the node calling the election (str)
-        }
-    :param bigchain: an instance of BigchainDB
-    :return: election_id or `False` in case of failure
-    """
 
-    new_validator = {
-        'public_key': public_key_from_base64(args.public_key),
-        'power': args.power,
-        'node_id': args.node_id
-    }
-
+def create_new_election(sk, bigchain, election_class, data):
     try:
-        key = load_node_key(args.sk)
-        voters = ValidatorElection.recipients(bigchain)
-        election = ValidatorElection.generate([key.public_key],
-                                              voters,
-                                              new_validator, None).sign([key.private_key])
+        key = load_node_key(sk)
+        voters = election_class.recipients(bigchain)
+        election = election_class.generate([key.public_key],
+                                           voters,
+                                           data, None).sign([key.private_key])
         election.validate(bigchain)
     except ValidationError as e:
         logger.error(e)
@@ -152,8 +140,46 @@ def run_upsert_validator_new(args, bigchain):
         return False
 
 
-def run_upsert_validator_approve(args, bigchain):
-    """Approve an election to add/update/remove a validator to an existing BigchainDB network
+def run_election_new_upsert_validator(args, bigchain):
+    """Initiates an election to add/update/remove a validator to an existing BigchainDB network
+
+    :param args: dict
+        args = {
+        'public_key': the public key of the proposed peer, (str)
+        'power': the proposed validator power for the new peer, (str)
+        'node_id': the node_id of the new peer (str)
+        'sk': the path to the private key of the node calling the election (str)
+        }
+    :param bigchain: an instance of BigchainDB
+    :return: election_id or `False` in case of failure
+    """
+
+    new_validator = {
+        'public_key': {'value': public_key_from_base64(args.public_key),
+                       'type': 'ed25519-base16'},
+        'power': args.power,
+        'node_id': args.node_id
+    }
+
+    return create_new_election(args.sk, bigchain, ValidatorElection, new_validator)
+
+
+def run_election_new_chain_migration(args, bigchain):
+    """Initiates an election to halt block production
+
+    :param args: dict
+        args = {
+        'sk': the path to the private key of the node calling the election (str)
+        }
+    :param bigchain: an instance of BigchainDB
+    :return: election_id or `False` in case of failure
+    """
+
+    return create_new_election(args.sk, bigchain, ChainMigrationElection, {})
+
+
+def run_election_approve(args, bigchain):
+    """Approve an election
 
     :param args: dict
         args = {
@@ -175,9 +201,9 @@ def run_upsert_validator_approve(args, bigchain):
 
     inputs = [i for i in tx.to_inputs() if key.public_key in i.owners_before]
     election_pub_key = ValidatorElection.to_public_key(tx.id)
-    approval = ValidatorElectionVote.generate(inputs,
-                                              [([election_pub_key], voting_power)],
-                                              tx.id).sign([key.private_key])
+    approval = Vote.generate(inputs,
+                             [([election_pub_key], voting_power)],
+                             tx.id).sign([key.private_key])
     approval.validate(bigchain)
 
     resp = bigchain.write_transaction(approval, 'broadcast_tx_commit')
@@ -190,8 +216,8 @@ def run_upsert_validator_approve(args, bigchain):
         return False
 
 
-def run_upsert_validator_show(args, bigchain):
-    """Retrieves information about an upsert-validator election
+def run_election_show(args, bigchain):
+    """Retrieves information about an election
 
     :param args: dict
         args = {
@@ -205,14 +231,7 @@ def run_upsert_validator_show(args, bigchain):
         logger.error(f'No election found with election_id {args.election_id}')
         return
 
-    new_validator = election.asset['data']
-
-    public_key = public_key_to_base64(new_validator['public_key'])
-    power = new_validator['power']
-    node_id = new_validator['node_id']
-    status = election.get_status(bigchain)
-
-    response = f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'
+    response = election.show_election(bigchain)
 
     logger.info(response)
 
@@ -228,14 +247,7 @@ def _run_init():
 @configure_bigchaindb
 def run_init(args):
     """Initialize the database"""
-    # TODO Provide mechanism to:
-    # 1. prompt the user to inquire whether they wish to drop the db
-    # 2. force the init, (e.g., via -f flag)
-    try:
-        _run_init()
-    except DatabaseAlreadyExists:
-        print('The database already exists.', file=sys.stderr)
-        print('If you wish to re-initialize it, first drop it.', file=sys.stderr)
+    _run_init()
 
 
 @configure_bigchaindb
@@ -257,16 +269,7 @@ def run_drop(args):
 
 
 def run_recover(b):
-    pre_commit = query.get_pre_commit_state(b.connection, PRE_COMMIT_ID)
-
-    # Initially the pre-commit collection would be empty
-    if pre_commit:
-        latest_block = query.get_latest_block(b.connection)
-
-        # NOTE: the pre-commit state can only be ahead of the commited state
-        # by 1 block
-        if latest_block and (latest_block['height'] < pre_commit['height']):
-            query.delete_transactions(b.connection, pre_commit['transactions'])
+    rollback(b)
 
 
 @configure_bigchaindb
@@ -279,16 +282,22 @@ def run_start(args):
     logger.info('BigchainDB Version %s', bigchaindb.__version__)
     run_recover(bigchaindb.lib.BigchainDB())
 
-    try:
-        if not args.skip_initialize_database:
-            logger.info('Initializing database')
-            _run_init()
-    except DatabaseAlreadyExists:
-        pass
+    if not args.skip_initialize_database:
+        logger.info('Initializing database')
+        _run_init()
 
     logger.info('Starting BigchainDB main process.')
     from bigchaindb.start import start
-    start()
+    start(args)
+
+
+def run_tendermint_version(args):
+    """Show the supported Tendermint version(s)"""
+    supported_tm_ver = {
+        'description': 'BigchainDB supports the following Tendermint version(s)',
+        'tendermint': __tm_supported_versions__,
+    }
+    print(json.dumps(supported_tm_ver, indent=4, sort_keys=True))
 
 
 def create_parser():
@@ -315,41 +324,38 @@ def create_parser():
                                help='The backend to use. It can only be '
                                '"localmongodb", currently.')
 
-    # parser for managing validator elections
-    validator_parser = subparsers.add_parser('upsert-validator',
-                                             help='Add/update/delete a validator.')
+    # parser for managing elections
+    election_parser = subparsers.add_parser('election',
+                                            help='Manage elections.')
 
-    validator_subparser = validator_parser.add_subparsers(title='Action',
-                                                          dest='action')
+    election_subparser = election_parser.add_subparsers(title='Action',
+                                                        dest='action')
 
-    new_election_parser = validator_subparser.add_parser('new',
-                                                         help='Calls a new election.')
+    new_election_parser = election_subparser.add_parser('new',
+                                                        help='Calls a new election.')
 
-    new_election_parser.add_argument('public_key',
-                                     help='Public key of the validator to be added/updated/removed.')
+    new_election_subparser = new_election_parser.add_subparsers(title='Election_Type',
+                                                                dest='election_type')
 
-    new_election_parser.add_argument('power',
-                                     type=int,
-                                     help='The proposed power for the validator. '
-                                          'Setting to 0 will remove the validator.')
+    # Parser factory for each type of new election, so we get a bunch of commands that look like this:
+    # election new <some_election_type> <args>...
+    for name, data in elections.items():
+        args = data['args']
+        generic_parser = new_election_subparser.add_parser(name, help=data['help'])
+        for arg, kwargs in args.items():
+            generic_parser.add_argument(arg, **kwargs)
 
-    new_election_parser.add_argument('node_id',
-                                     help='The node_id of the validator.')
-
-    new_election_parser.add_argument('--private-key',
-                                     dest='sk',
-                                     help='Path to the private key of the election initiator.')
-
-    approve_election_parser = validator_subparser.add_parser('approve',
-                                                             help='Approve the election.')
+    approve_election_parser = election_subparser.add_parser('approve',
+                                                            help='Approve the election.')
     approve_election_parser.add_argument('election_id',
                                          help='The election_id of the election.')
     approve_election_parser.add_argument('--private-key',
                                          dest='sk',
+                                         required=True,
                                          help='Path to the private key of the election initiator.')
 
-    show_election_parser = validator_subparser.add_parser('show',
-                                                          help='Provides information about an election.')
+    show_election_parser = election_subparser.add_parser('show',
+                                                         help='Provides information about an election.')
 
     show_election_parser.add_argument('election_id',
                                       help='The transaction id of the election you wish to query.')
@@ -374,6 +380,15 @@ def create_parser():
                               default=False,
                               action='store_true',
                               help='Skip database initialization')
+
+    subparsers.add_parser('tendermint-version',
+                          help='Show the Tendermint supported versions')
+
+    start_parser.add_argument('--experimental-parallel-validation',
+                              dest='experimental_parallel_validation',
+                              default=False,
+                              action='store_true',
+                              help='💀 EXPERIMENTAL: parallelize validation for better throughput 💀')
 
     return parser
 

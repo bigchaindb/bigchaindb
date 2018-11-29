@@ -98,3 +98,4 @@ More About BigchainDB
    permissions
    private-data
    Data Models <https://docs.bigchaindb.com/projects/server/en/latest/data-models/index.html>
+   korean/index

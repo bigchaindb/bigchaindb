@@ -8,8 +8,8 @@ import setproctitle
 import bigchaindb
 from bigchaindb.lib import BigchainDB
 from bigchaindb.core import App
+from bigchaindb.parallel_validation import ParallelValidationApp
 from bigchaindb.web import server, websocket_server
-from bigchaindb import event_stream
 from bigchaindb.events import Exchange, EventTypes
 from bigchaindb.utils import Process
 
@@ -35,7 +35,7 @@ BANNER = """
 """
 
 
-def start():
+def start(args):
     # Exchange object for event stream api
     logger.info('Starting BigchainDB')
     exchange = Exchange()
@@ -47,7 +47,6 @@ def start():
     p_webapi = Process(name='bigchaindb_webapi', target=app_server.run, daemon=True)
     p_webapi.start()
 
-    # start message
     logger.info(BANNER.format(bigchaindb.config['server']['bind']))
 
     # start websocket server
@@ -56,13 +55,6 @@ def start():
                                  daemon=True,
                                  args=(exchange.get_subscriber_queue(EventTypes.BLOCK_VALID),))
     p_websocket_server.start()
-
-    # connect to tendermint event stream
-    p_websocket_client = Process(name='bigchaindb_ws_to_tendermint',
-                                 target=event_stream.start,
-                                 daemon=True,
-                                 args=(exchange.get_publisher_queue(),))
-    p_websocket_client.start()
 
     p_exchange = Process(name='bigchaindb_exchange', target=exchange.run, daemon=True)
     p_exchange.start()
@@ -75,7 +67,10 @@ def start():
     setproctitle.setproctitle('bigchaindb')
 
     # Start the ABCIServer
-    app = ABCIServer(app=App())
+    if args.experimental_parallel_validation:
+        app = ABCIServer(app=ParallelValidationApp(events_queue=exchange.get_publisher_queue()))
+    else:
+        app = ABCIServer(app=App(events_queue=exchange.get_publisher_queue()))
     app.run()
 
 

@@ -44,7 +44,7 @@ dev_require = [
 ]
 
 docs_require = [
-    'Sphinx>=1.4.8',
+    'Sphinx~=1.0',
     'recommonmark>=0.4.0',
     'sphinx-rtd-theme>=0.1.9',
     'sphinxcontrib-httpdomain>=1.5.0',
@@ -71,27 +71,24 @@ tests_require = [
     'tox',
 ] + docs_require
 
-benchmarks_require = [
-    'line-profiler==1.0',
-]
-
 install_requires = [
     # TODO Consider not installing the db drivers, or putting them in extras.
     'pymongo~=3.6',
     'pysha3~=1.0.2',
-    'cryptoconditions~=0.6.0.dev',
+    'cryptoconditions==0.8.0',
     'python-rapidjson~=0.6.0',
     'logstats~=0.2.1',
     'flask>=0.10.1',
     'flask-cors~=3.0.0',
     'flask-restful~=0.3.0',
-    'requests~=2.9',
+    'requests>=2.20.0',
     'gunicorn~=19.0',
     'jsonschema~=2.5.1',
     'pyyaml~=3.12',
     'aiohttp~=3.0',
     'bigchaindb-abci==0.5.1',
     'setproctitle~=1.1.0',
+    'packaging~=18.0',
 ]
 
 setup(
@@ -143,7 +140,7 @@ setup(
     tests_require=tests_require,
     extras_require={
         'test': tests_require,
-        'dev': dev_require + tests_require + docs_require + benchmarks_require,
+        'dev': dev_require + tests_require + docs_require,
         'docs': docs_require,
     },
     package_data={'bigchaindb.common.schema': ['*.yaml']},

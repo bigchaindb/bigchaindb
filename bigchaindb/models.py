@@ -27,7 +27,7 @@ class Transaction(Transaction):
 
         if self.operation == Transaction.CREATE:
             duplicates = any(txn for txn in current_transactions if txn.id == self.id)
-            if bigchain.get_transaction(self.to_dict()['id']) or duplicates:
+            if bigchain.is_committed(self.id) or duplicates:
                 raise DuplicateTransaction('transaction `{}` already exists'
                                            .format(self.id))
 
@@ -45,11 +45,11 @@ class Transaction(Transaction):
 
     @classmethod
     def validate_schema(cls, tx_body):
-        cls.validate_id(tx_body)
         validate_transaction_schema(tx_body)
         validate_txn_obj('asset', tx_body['asset'], 'data', validate_key)
         validate_txn_obj('metadata', tx_body, 'metadata', validate_key)
         validate_language_key(tx_body['asset'], 'data')
+        validate_language_key(tx_body, 'metadata')
 
 
 class FastTransaction:

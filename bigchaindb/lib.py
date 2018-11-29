@@ -9,6 +9,7 @@ MongoDB.
 import logging
 from collections import namedtuple
 from uuid import uuid4
+import rapidjson
 
 try:
     from hashlib import sha3_256
@@ -26,7 +27,7 @@ from bigchaindb.common.exceptions import (SchemaValidationError,
                                           DoubleSpend)
 from bigchaindb.tendermint_utils import encode_transaction, merkleroot
 from bigchaindb import exceptions as core_exceptions
-from bigchaindb.consensus import BaseConsensusRules
+from bigchaindb.validation import BaseValidationRules
 
 
 logger = logging.getLogger(__name__)
@@ -55,19 +56,20 @@ class BigchainDB(object):
                 A connection to the database.
         """
         config_utils.autoconfigure()
+        self.mode_commit = 'broadcast_tx_commit'
         self.mode_list = ('broadcast_tx_async',
                           'broadcast_tx_sync',
-                          'broadcast_tx_commit')
+                          self.mode_commit)
         self.tendermint_host = bigchaindb.config['tendermint']['host']
         self.tendermint_port = bigchaindb.config['tendermint']['port']
         self.endpoint = 'http://{}:{}/'.format(self.tendermint_host, self.tendermint_port)
 
-        consensusPlugin = bigchaindb.config.get('consensus_plugin')
+        validationPlugin = bigchaindb.config.get('validation_plugin')
 
-        if consensusPlugin:
-            self.consensus = config_utils.load_consensus_plugin(consensusPlugin)
+        if validationPlugin:
+            self.validation = config_utils.load_validation_plugin(validationPlugin)
         else:
-            self.consensus = BaseConsensusRules
+            self.validation = BaseValidationRules
 
         self.connection = connection if connection else backend.connect(**bigchaindb.config['database'])
 
@@ -77,10 +79,11 @@ class BigchainDB(object):
             raise ValidationError('Mode must be one of the following {}.'
                                   .format(', '.join(self.mode_list)))
 
+        tx_dict = transaction.tx_dict if transaction.tx_dict else transaction.to_dict()
         payload = {
             'method': mode,
             'jsonrpc': '2.0',
-            'params': [encode_transaction(transaction.to_dict())],
+            'params': [encode_transaction(tx_dict)],
             'id': str(uuid4())
         }
         # TODO: handle connection errors!
@@ -94,38 +97,38 @@ class BigchainDB(object):
 
     def _process_post_response(self, response, mode):
         logger.debug(response)
-        if response.get('error') is not None:
-            return (500, 'Internal error')
+
+        error = response.get('error')
+        if error:
+            status_code = 500
+            message = error.get('message', 'Internal Error')
+            data = error.get('data', '')
+
+            if 'Tx already exists in cache' in data:
+                status_code = 400
+
+            return (status_code, message + ' - ' + data)
+
+        result = response['result']
+        if mode == self.mode_commit:
+            check_tx_code = result.get('check_tx', {}).get('code', 0)
+            deliver_tx_code = result.get('deliver_tx', {}).get('code', 0)
+            error_code = check_tx_code or deliver_tx_code
+        else:
+            error_code = result.get('code', 0)
+
+        if error_code:
+            return (500, 'Transaction validation failed')
 
         return (202, '')
-        # result = response['result']
-        # if mode == self.mode_list[2]:
-        #     return self._process_commit_mode_response(result)
-        # else:
-        #     status_code = result['code']
-        #     return self._process_status_code(status_code,
-        #                                      'Error while processing transaction')
-
-    # def _process_commit_mode_response(self, result):
-    #     check_tx_status_code = result['check_tx']['code']
-    #     if check_tx_status_code == 0:
-    #         deliver_tx_status_code = result['deliver_tx']['code']
-    #         return self._process_status_code(deliver_tx_status_code,
-    #                                          'Error while commiting the transaction')
-    #     else:
-    #         return (500, 'Error while validating the transaction')
-
-    def process_status_code(self, status_code, failure_msg):
-        return (202, '') if status_code == 0 else (500, failure_msg)
 
     def store_bulk_transactions(self, transactions):
         txns = []
         assets = []
         txn_metadatas = []
-        for transaction_obj in transactions:
-            # self.update_utxoset(transaction)
-            transaction = transaction_obj.to_dict()
-            if transaction['operation'] == transaction_obj.CREATE:
+        for t in transactions:
+            transaction = t.tx_dict if t.tx_dict else rapidjson.loads(rapidjson.dumps(t.to_dict()))
+            if transaction['operation'] == t.CREATE:
                 asset = transaction.pop('asset')
                 asset['id'] = transaction['id']
                 assets.append(asset)
@@ -139,6 +142,9 @@ class BigchainDB(object):
         if assets:
             backend.query.store_assets(self.connection, assets)
         return backend.query.store_transactions(self.connection, txns)
+
+    def delete_transactions(self, txs):
+        return backend.query.delete_transactions(self.connection, txs)
 
     def update_utxoset(self, transaction):
         """Update the UTXO set given ``transaction``. That is, remove
@@ -224,6 +230,10 @@ class BigchainDB(object):
             return backend.query.delete_unspent_outputs(
                                         self.connection, *unspent_outputs)
 
+    def is_committed(self, transaction_id):
+        transaction = backend.query.get_transaction(self.connection, transaction_id)
+        return bool(transaction)
+
     def get_transaction(self, transaction_id):
         transaction = backend.query.get_transaction(self.connection, transaction_id)
 
@@ -243,6 +253,9 @@ class BigchainDB(object):
             transaction = Transaction.from_dict(transaction)
 
         return transaction
+
+    def get_transactions(self, txn_ids):
+        return backend.query.get_transactions(self.connection, txn_ids)
 
     def get_transactions_filtered(self, asset_id, operation=None):
         """Get a list of transactions filtered on some criteria
@@ -426,29 +439,71 @@ class BigchainDB(object):
 
     def get_validators(self, height=None):
         result = self.get_validator_change(height)
-        validators = result['validators']
-        return validators
+        return [] if result is None else result['validators']
 
-    def get_validators_by_election_id(self, election_id):
-        result = backend.query.get_validator_set_by_election_id(self.connection, election_id)
-        return result
+    def get_election(self, election_id):
+        return backend.query.get_election(self.connection, election_id)
 
-    def delete_validator_update(self):
-        return backend.query.delete_validator_update(self.connection)
+    def get_pre_commit_state(self):
+        return backend.query.get_pre_commit_state(self.connection)
 
     def store_pre_commit_state(self, state):
         return backend.query.store_pre_commit_state(self.connection, state)
 
-    def store_validator_set(self, height, validators, election_id):
+    def store_validator_set(self, height, validators):
         """Store validator set at a given `height`.
            NOTE: If the validator set already exists at that `height` then an
            exception will be raised.
         """
         return backend.query.store_validator_set(self.connection, {'height': height,
-                                                                   'validators': validators,
-                                                                   'election_id': election_id})
+                                                                   'validators': validators})
+
+    def delete_validator_set(self, height):
+        return backend.query.delete_validator_set(self.connection, height)
+
+    def store_abci_chain(self, height, chain_id, is_synced=True):
+        return backend.query.store_abci_chain(self.connection, height,
+                                              chain_id, is_synced)
+
+    def delete_abci_chain(self, height):
+        return backend.query.delete_abci_chain(self.connection, height)
+
+    def get_latest_abci_chain(self):
+        return backend.query.get_latest_abci_chain(self.connection)
+
+    def migrate_abci_chain(self):
+        """Generate and record a new ABCI chain ID. New blocks are not
+        accepted until we receive an InitChain ABCI request with
+        the matching chain ID and validator set.
+
+        Chain ID is generated based on the current chain and height.
+        `chain-X` => `chain-X-migrated-at-height-5`.
+        `chain-X-migrated-at-height-5` => `chain-X-migrated-at-height-21`.
+
+        If there is no known chain (we are at genesis), the function returns.
+        """
+        latest_chain = self.get_latest_abci_chain()
+        if latest_chain is None:
+            return
+
+        block = self.get_latest_block()
+
+        suffix = '-migrated-at-height-'
+        chain_id = latest_chain['chain_id']
+        block_height_str = str(block['height'])
+        new_chain_id = chain_id.split(suffix)[0] + suffix + block_height_str
+
+        self.store_abci_chain(block['height'] + 1, new_chain_id, False)
+
+    def store_election(self, election_id, height, is_concluded):
+        return backend.query.store_election(self.connection, election_id,
+                                            height, is_concluded)
+
+    def store_elections(self, elections):
+        return backend.query.store_elections(self.connection, elections)
+
+    def delete_elections(self, height):
+        return backend.query.delete_elections(self.connection, height)
 
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))
-
-PreCommitState = namedtuple('PreCommitState', ('commit_id', 'height', 'transactions'))

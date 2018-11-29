@@ -11,10 +11,14 @@ from argparse import Namespace
 import pytest
 
 from bigchaindb import ValidatorElection
-from tests.conftest import node_keys
+from bigchaindb.commands.bigchaindb import run_election_show
+from bigchaindb.elections.election import Election
+from bigchaindb.lib import Block
+from bigchaindb.migrations.chain_migration_election import ChainMigrationElection
+
+from tests.utils import generate_election, generate_validators
 
 
-@pytest.mark.tendermint
 def test_make_sure_we_dont_remove_any_command():
     # thanks to: http://stackoverflow.com/a/18161115/597097
     from bigchaindb.commands.bigchaindb import create_parser
@@ -26,13 +30,16 @@ def test_make_sure_we_dont_remove_any_command():
     assert parser.parse_args(['init']).command
     assert parser.parse_args(['drop']).command
     assert parser.parse_args(['start']).command
-    assert parser.parse_args(['upsert-validator', 'new', 'TEMP_PUB_KEYPAIR', '10', 'TEMP_NODE_ID',
+    assert parser.parse_args(['election', 'new', 'upsert-validator', 'TEMP_PUB_KEYPAIR', '10', 'TEMP_NODE_ID',
                               '--private-key', 'TEMP_PATH_TO_PRIVATE_KEY']).command
-    assert parser.parse_args(['upsert-validator', 'approve', 'ELECTION_ID', '--private-key',
+    assert parser.parse_args(['election', 'new', 'chain-migration',
+                              '--private-key', 'TEMP_PATH_TO_PRIVATE_KEY']).command
+    assert parser.parse_args(['election', 'approve', 'ELECTION_ID', '--private-key',
                               'TEMP_PATH_TO_PRIVATE_KEY']).command
+    assert parser.parse_args(['election', 'show', 'ELECTION_ID']).command
+    assert parser.parse_args(['tendermint-version']).command
 
 
-@pytest.mark.tendermint
 @patch('bigchaindb.commands.utils.start')
 def test_main_entrypoint(mock_start):
     from bigchaindb.commands.bigchaindb import main
@@ -41,22 +48,21 @@ def test_main_entrypoint(mock_start):
     assert mock_start.called
 
 
-def test_bigchain_run_start(mock_run_configure,
-                            mock_processes_start,
-                            mock_db_init_with_existing_db,
-                            mocked_setup_logging):
-    from bigchaindb import config
+@patch('bigchaindb.log.setup_logging')
+@patch('bigchaindb.commands.bigchaindb._run_init')
+@patch('bigchaindb.config_utils.autoconfigure')
+def test_bigchain_run_start(mock_setup_logging, mock_run_init,
+                            mock_autoconfigure, mock_processes_start):
     from bigchaindb.commands.bigchaindb import run_start
     args = Namespace(config=None, yes=True,
                      skip_initialize_database=False)
     run_start(args)
-    mocked_setup_logging.assert_called_once_with(user_log_config=config['log'])
+    assert mock_setup_logging.called
 
 
 # TODO Please beware, that if debugging, the "-s" switch for pytest will
 # interfere with capsys.
 # See related issue: https://github.com/pytest-dev/pytest/issues/128
-@pytest.mark.tendermint
 @pytest.mark.usefixtures('ignore_local_config_file')
 def test_bigchain_show_config(capsys):
     from bigchaindb.commands.bigchaindb import run_show_config
@@ -77,27 +83,6 @@ def test_bigchain_show_config(capsys):
     assert output_config == config
 
 
-@pytest.mark.tendermint
-def test_bigchain_run_init_when_db_exists(mocker, capsys):
-    from bigchaindb.commands.bigchaindb import run_init
-    from bigchaindb.common.exceptions import DatabaseAlreadyExists
-    init_db_mock = mocker.patch(
-        'bigchaindb.commands.bigchaindb.schema.init_database',
-        autospec=True,
-        spec_set=True,
-    )
-    init_db_mock.side_effect = DatabaseAlreadyExists
-    args = Namespace(config=None)
-    run_init(args)
-    output_message = capsys.readouterr()[1]
-    print(output_message)
-    assert output_message == (
-        'The database already exists.\n'
-        'If you wish to re-initialize it, first drop it.\n'
-    )
-
-
-@pytest.mark.tendermint
 def test__run_init(mocker):
     from bigchaindb.commands.bigchaindb import _run_init
     bigchain_mock = mocker.patch(
@@ -113,7 +98,6 @@ def test__run_init(mocker):
         connection=bigchain_mock.return_value.connection)
 
 
-@pytest.mark.tendermint
 @patch('bigchaindb.backend.schema.drop_database')
 def test_drop_db_when_assumed_yes(mock_db_drop):
     from bigchaindb.commands.bigchaindb import run_drop
@@ -123,7 +107,6 @@ def test_drop_db_when_assumed_yes(mock_db_drop):
     assert mock_db_drop.called
 
 
-@pytest.mark.tendermint
 @patch('bigchaindb.backend.schema.drop_database')
 def test_drop_db_when_interactive_yes(mock_db_drop, monkeypatch):
     from bigchaindb.commands.bigchaindb import run_drop
@@ -135,7 +118,6 @@ def test_drop_db_when_interactive_yes(mock_db_drop, monkeypatch):
     assert mock_db_drop.called
 
 
-@pytest.mark.tendermint
 @patch('bigchaindb.backend.schema.drop_database')
 def test_drop_db_when_db_does_not_exist(mock_db_drop, capsys):
     from bigchaindb import config
@@ -150,7 +132,6 @@ def test_drop_db_when_db_does_not_exist(mock_db_drop, capsys):
         name=config['database']['name'])
 
 
-@pytest.mark.tendermint
 @patch('bigchaindb.backend.schema.drop_database')
 def test_drop_db_does_not_drop_when_interactive_no(mock_db_drop, monkeypatch):
     from bigchaindb.commands.bigchaindb import run_drop
@@ -165,7 +146,6 @@ def test_drop_db_does_not_drop_when_interactive_no(mock_db_drop, monkeypatch):
 # TODO Beware if you are putting breakpoints in there, and using the '-s'
 # switch with pytest. It will just hang. Seems related to the monkeypatching of
 # input_on_stderr.
-@pytest.mark.tendermint
 def test_run_configure_when_config_does_not_exist(monkeypatch,
                                                   mock_write_config,
                                                   mock_generate_key_pair,
@@ -178,7 +158,6 @@ def test_run_configure_when_config_does_not_exist(monkeypatch,
     assert return_value is None
 
 
-@pytest.mark.tendermint
 def test_run_configure_when_config_does_exist(monkeypatch,
                                               mock_write_config,
                                               mock_generate_key_pair,
@@ -200,7 +179,6 @@ def test_run_configure_when_config_does_exist(monkeypatch,
 
 
 @pytest.mark.skip
-@pytest.mark.tendermint
 @pytest.mark.parametrize('backend', (
     'localmongodb',
 ))
@@ -230,26 +208,6 @@ def test_run_configure_with_backend(backend, monkeypatch, mock_write_config):
     assert value['return'] == expected_config
 
 
-def test_run_start_when_db_already_exists(mocker,
-                                          monkeypatch,
-                                          run_start_args,
-                                          mocked_setup_logging):
-    from bigchaindb import config
-    from bigchaindb.commands.bigchaindb import run_start
-    from bigchaindb.common.exceptions import DatabaseAlreadyExists
-    mocked_start = mocker.patch('bigchaindb.processes.start')
-
-    def mock_run_init():
-        raise DatabaseAlreadyExists()
-    monkeypatch.setattr('builtins.input', lambda: '\x03')
-    monkeypatch.setattr(
-        'bigchaindb.commands.bigchaindb._run_init', mock_run_init)
-    run_start(run_start_args)
-    mocked_setup_logging.assert_called_once_with(user_log_config=config['log'])
-    assert mocked_start.called
-
-
-@pytest.mark.tendermint
 @patch('bigchaindb.commands.utils.start')
 def test_calling_main(start_mock, monkeypatch):
     from bigchaindb.commands.bigchaindb import main
@@ -276,6 +234,9 @@ def test_calling_main(start_mock, monkeypatch):
     subparsers.add_parser.assert_any_call('drop', help='Drop the database')
 
     subparsers.add_parser.assert_any_call('start', help='Start BigchainDB')
+    subparsers.add_parser.assert_any_call('tendermint-version',
+                                          help='Show the Tendermint supported '
+                                          'versions')
 
     assert start_mock.called is True
 
@@ -294,13 +255,11 @@ def test_recover_db_on_start(mock_run_recover,
     assert mock_start.called
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
 def test_run_recover(b, alice, bob):
     from bigchaindb.commands.bigchaindb import run_recover
     from bigchaindb.models import Transaction
-    from bigchaindb.lib import Block, PreCommitState
-    from bigchaindb.backend.query import PRE_COMMIT_ID
+    from bigchaindb.lib import Block
     from bigchaindb.backend import query
 
     tx1 = Transaction.create([alice.public_key],
@@ -328,8 +287,7 @@ def test_run_recover(b, alice, bob):
     b.store_block(block9)
 
     # create a pre_commit state which is ahead of the commit state
-    pre_commit_state = PreCommitState(commit_id=PRE_COMMIT_ID, height=10,
-                                      transactions=[tx2.id])._asdict()
+    pre_commit_state = dict(height=10, transactions=[tx2.id])
     b.store_pre_commit_state(pre_commit_state)
 
     run_recover(b)
@@ -348,25 +306,25 @@ class MockResponse():
 
 
 @pytest.mark.abci
-def test_upsert_validator_new_with_tendermint(b, priv_validator_path, user_sk, validators):
-    from bigchaindb.commands.bigchaindb import run_upsert_validator_new
+def test_election_new_upsert_validator_with_tendermint(b, priv_validator_path, user_sk, validators):
+    from bigchaindb.commands.bigchaindb import run_election_new_upsert_validator
 
     new_args = Namespace(action='new',
-                         public_key='8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie',
+                         election_type='upsert-validator',
+                         public_key='HHG0IQRybpT6nJMIWWFWhMczCLHt6xcm7eP52GnGuPY=',
                          power=1,
                          node_id='unique_node_id_for_test_upsert_validator_new_with_tendermint',
                          sk=priv_validator_path,
                          config={})
 
-    election_id = run_upsert_validator_new(new_args, b)
+    election_id = run_election_new_upsert_validator(new_args, b)
 
     assert b.get_transaction(election_id)
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
-def test_upsert_validator_new_without_tendermint(caplog, b, priv_validator_path, user_sk):
-    from bigchaindb.commands.bigchaindb import run_upsert_validator_new
+def test_election_new_upsert_validator_without_tendermint(caplog, b, priv_validator_path, user_sk):
+    from bigchaindb.commands.bigchaindb import run_election_new_upsert_validator
 
     def mock_write(tx, mode):
         b.store_bulk_transactions([tx])
@@ -376,6 +334,7 @@ def test_upsert_validator_new_without_tendermint(caplog, b, priv_validator_path,
     b.write_transaction = mock_write
 
     args = Namespace(action='new',
+                     election_type='upsert-validator',
                      public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',
                      power=1,
                      node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
@@ -383,17 +342,53 @@ def test_upsert_validator_new_without_tendermint(caplog, b, priv_validator_path,
                      config={})
 
     with caplog.at_level(logging.INFO):
-        election_id = run_upsert_validator_new(args, b)
+        election_id = run_election_new_upsert_validator(args, b)
         assert caplog.records[0].msg == '[SUCCESS] Submitted proposal with id: ' + election_id
         assert b.get_transaction(election_id)
 
 
-@pytest.mark.tendermint
+@pytest.mark.abci
+def test_election_new_chain_migration_with_tendermint(b, priv_validator_path, user_sk, validators):
+    from bigchaindb.commands.bigchaindb import run_election_new_chain_migration
+
+    new_args = Namespace(action='new',
+                         election_type='migration',
+                         sk=priv_validator_path,
+                         config={})
+
+    election_id = run_election_new_chain_migration(new_args, b)
+
+    assert b.get_transaction(election_id)
+
+
 @pytest.mark.bdb
-def test_upsert_validator_new_invalid_election(caplog, b, priv_validator_path, user_sk):
-    from bigchaindb.commands.bigchaindb import run_upsert_validator_new
+def test_election_new_chain_migration_without_tendermint(caplog, b, priv_validator_path, user_sk):
+    from bigchaindb.commands.bigchaindb import run_election_new_chain_migration
+
+    def mock_write(tx, mode):
+        b.store_bulk_transactions([tx])
+        return (202, '')
+
+    b.get_validators = mock_get_validators
+    b.write_transaction = mock_write
 
     args = Namespace(action='new',
+                     election_type='migration',
+                     sk=priv_validator_path,
+                     config={})
+
+    with caplog.at_level(logging.INFO):
+        election_id = run_election_new_chain_migration(args, b)
+        assert caplog.records[0].msg == '[SUCCESS] Submitted proposal with id: ' + election_id
+        assert b.get_transaction(election_id)
+
+
+@pytest.mark.bdb
+def test_election_new_upsert_validator_invalid_election(caplog, b, priv_validator_path, user_sk):
+    from bigchaindb.commands.bigchaindb import run_election_new_upsert_validator
+
+    args = Namespace(action='new',
+                     election_type='upsert-validator',
                      public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',
                      power=10,
                      node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
@@ -401,14 +396,13 @@ def test_upsert_validator_new_invalid_election(caplog, b, priv_validator_path, u
                      config={})
 
     with caplog.at_level(logging.ERROR):
-        assert not run_upsert_validator_new(args, b)
+        assert not run_election_new_upsert_validator(args, b)
         assert caplog.records[0].msg.__class__ == FileNotFoundError
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
-def test_upsert_validator_new_election_invalid_power(caplog, b, priv_validator_path, user_sk):
-    from bigchaindb.commands.bigchaindb import run_upsert_validator_new
+def test_election_new_upsert_validator_invalid_power(caplog, b, priv_validator_path, user_sk):
+    from bigchaindb.commands.bigchaindb import run_election_new_upsert_validator
     from bigchaindb.common.exceptions import InvalidPowerChange
 
     def mock_write(tx, mode):
@@ -418,6 +412,7 @@ def test_upsert_validator_new_election_invalid_power(caplog, b, priv_validator_p
     b.write_transaction = mock_write
     b.get_validators = mock_get_validators
     args = Namespace(action='new',
+                     election_type='upsert-validator',
                      public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',
                      power=10,
                      node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
@@ -425,43 +420,44 @@ def test_upsert_validator_new_election_invalid_power(caplog, b, priv_validator_p
                      config={})
 
     with caplog.at_level(logging.ERROR):
-        assert not run_upsert_validator_new(args, b)
+        assert not run_election_new_upsert_validator(args, b)
         assert caplog.records[0].msg.__class__ == InvalidPowerChange
 
 
 @pytest.mark.abci
-def test_upsert_validator_approve_with_tendermint(b, priv_validator_path, user_sk, validators):
-    from bigchaindb.commands.bigchaindb import (run_upsert_validator_new,
-                                                run_upsert_validator_approve)
+def test_election_approve_with_tendermint(b, priv_validator_path, user_sk, validators):
+    from bigchaindb.commands.bigchaindb import (run_election_new_upsert_validator,
+                                                run_election_approve)
 
     public_key = 'CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg='
     new_args = Namespace(action='new',
+                         election_type='upsert-validator',
                          public_key=public_key,
                          power=1,
                          node_id='fb7140f03a4ffad899fabbbf655b97e0321add66',
                          sk=priv_validator_path,
                          config={})
 
-    election_id = run_upsert_validator_new(new_args, b)
+    election_id = run_election_new_upsert_validator(new_args, b)
+    assert election_id
 
     args = Namespace(action='approve',
                      election_id=election_id,
                      sk=priv_validator_path,
                      config={})
-    approve = run_upsert_validator_approve(args, b)
+    approve = run_election_approve(args, b)
 
     assert b.get_transaction(approve)
 
 
 @pytest.mark.bdb
-@pytest.mark.tendermint
-def test_upsert_validator_approve_without_tendermint(caplog, b, priv_validator_path, new_validator, node_key):
-    from bigchaindb.commands.bigchaindb import run_upsert_validator_approve
+def test_election_approve_without_tendermint(caplog, b, priv_validator_path, new_validator, node_key):
+    from bigchaindb.commands.bigchaindb import run_election_approve
     from argparse import Namespace
 
     b, election_id = call_election(b, new_validator, node_key)
 
-    # call run_upsert_validator_approve with args that point to the election
+    # call run_election_approve with args that point to the election
     args = Namespace(action='approve',
                      election_id=election_id,
                      sk=priv_validator_path,
@@ -469,15 +465,14 @@ def test_upsert_validator_approve_without_tendermint(caplog, b, priv_validator_p
 
     # assert returned id is in the db
     with caplog.at_level(logging.INFO):
-        approval_id = run_upsert_validator_approve(args, b)
+        approval_id = run_election_approve(args, b)
         assert caplog.records[0].msg == '[SUCCESS] Your vote has been submitted'
         assert b.get_transaction(approval_id)
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
-def test_upsert_validator_approve_failure(caplog, b, priv_validator_path, new_validator, node_key):
-    from bigchaindb.commands.bigchaindb import run_upsert_validator_approve
+def test_election_approve_failure(caplog, b, priv_validator_path, new_validator, node_key):
+    from bigchaindb.commands.bigchaindb import run_election_approve
     from argparse import Namespace
 
     b, election_id = call_election(b, new_validator, node_key)
@@ -495,14 +490,13 @@ def test_upsert_validator_approve_failure(caplog, b, priv_validator_path, new_va
                      config={})
 
     with caplog.at_level(logging.ERROR):
-        assert not run_upsert_validator_approve(args, b)
+        assert not run_election_approve(args, b)
         assert caplog.records[0].msg == 'Failed to commit vote'
 
 
-@pytest.mark.tendermint
 @pytest.mark.bdb
-def test_upsert_validator_approve_called_with_bad_key(caplog, b, bad_validator_path, new_validator, node_key):
-    from bigchaindb.commands.bigchaindb import run_upsert_validator_approve
+def test_election_approve_called_with_bad_key(caplog, b, bad_validator_path, new_validator, node_key):
+    from bigchaindb.commands.bigchaindb import run_election_approve
     from argparse import Namespace
 
     b, election_id = call_election(b, new_validator, node_key)
@@ -514,17 +508,107 @@ def test_upsert_validator_approve_called_with_bad_key(caplog, b, bad_validator_p
                      config={})
 
     with caplog.at_level(logging.ERROR):
-        assert not run_upsert_validator_approve(args, b)
+        assert not run_election_approve(args, b)
         assert caplog.records[0].msg == 'The key you provided does not match any of '\
             'the eligible voters in this election.'
 
 
+@pytest.mark.bdb
+def test_chain_migration_election_show_shows_inconclusive(b):
+    validators = generate_validators([1] * 4)
+    b.store_validator_set(1, [v['storage'] for v in validators])
+
+    public_key = validators[0]['public_key']
+    private_key = validators[0]['private_key']
+    voter_keys = [v['private_key'] for v in validators]
+
+    election, votes = generate_election(b,
+                                        ChainMigrationElection,
+                                        public_key, private_key,
+                                        {},
+                                        voter_keys)
+
+    assert not run_election_show(Namespace(election_id=election.id), b)
+
+    Election.process_block(b, 1, [election])
+    b.store_bulk_transactions([election])
+
+    assert run_election_show(Namespace(election_id=election.id), b) == \
+        'status=ongoing'
+
+    b.store_block(Block(height=1, transactions=[], app_hash='')._asdict())
+    b.store_validator_set(2, [v['storage'] for v in validators])
+
+    assert run_election_show(Namespace(election_id=election.id), b) == \
+        'status=ongoing'
+
+    b.store_block(Block(height=2, transactions=[], app_hash='')._asdict())
+    # TODO insert yet another block here when upgrading to Tendermint 0.22.4.
+
+    assert run_election_show(Namespace(election_id=election.id), b) == \
+        'status=inconclusive'
+
+
+@pytest.mark.bdb
+def test_chain_migration_election_show_shows_concluded(b):
+    validators = generate_validators([1] * 4)
+    b.store_validator_set(1, [v['storage'] for v in validators])
+
+    public_key = validators[0]['public_key']
+    private_key = validators[0]['private_key']
+    voter_keys = [v['private_key'] for v in validators]
+
+    election, votes = generate_election(b,
+                                        ChainMigrationElection,
+                                        public_key, private_key,
+                                        {},
+                                        voter_keys)
+
+    assert not run_election_show(Namespace(election_id=election.id), b)
+
+    b.store_bulk_transactions([election])
+    Election.process_block(b, 1, [election])
+
+    assert run_election_show(Namespace(election_id=election.id), b) == \
+        'status=ongoing'
+
+    b.store_abci_chain(1, 'chain-X')
+    b.store_block(Block(height=1,
+                        transactions=[v.id for v in votes],
+                        app_hash='last_app_hash')._asdict())
+    Election.process_block(b, 2, votes)
+
+    assert run_election_show(Namespace(election_id=election.id), b) == \
+        f'''status=concluded
+chain_id=chain-X-migrated-at-height-1
+app_hash=last_app_hash
+validators=[{''.join([f"""
+    {{
+        "pub_key": {{
+            "type": "tendermint/PubKeyEd25519",
+            "value": "{v['public_key']}"
+        }},
+        "power": {v['storage']['voting_power']}
+    }}{',' if i + 1 != len(validators) else ''}""" for i, v in enumerate(validators)])}
+]'''
+
+
+def test_bigchain_tendermint_version(capsys):
+    from bigchaindb.commands.bigchaindb import run_tendermint_version
+
+    args = Namespace(config=None)
+    _, _ = capsys.readouterr()
+    run_tendermint_version(args)
+    output_config = json.loads(capsys.readouterr()[0])
+    from bigchaindb.version import __tm_supported_versions__
+    assert len(output_config["tendermint"]) == len(__tm_supported_versions__)
+    assert sorted(output_config["tendermint"]) == sorted(__tm_supported_versions__)
+
+
 def mock_get_validators(height):
-    keys = node_keys()
-    pub_key = list(keys.keys())[0]
     return [
-        {'pub_key': {'data': pub_key,
-                     'type': 'tendermint/PubKeyEd25519'},
+        {'public_key': {'value': "zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=",
+                        'type': 'ed25519-base64'},
          'voting_power': 10}
     ]
 

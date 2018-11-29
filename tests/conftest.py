@@ -20,13 +20,15 @@ from logging.config import dictConfig
 import pytest
 from pymongo import MongoClient
 
+from bigchaindb import ValidatorElection
 from bigchaindb.common import crypto
-from bigchaindb.log import setup_logging
 from bigchaindb.tendermint_utils import key_from_base64
+from bigchaindb.backend import schema, query
 from bigchaindb.common.crypto import (key_pair_from_ed25519_key,
                                       public_key_from_ed25519_key)
+from bigchaindb.common.exceptions import DatabaseDoesNotExist
 from bigchaindb.lib import Block
-
+from tests.utils import gen_vote
 
 TEST_DB_NAME = 'bigchain_test'
 
@@ -105,25 +107,16 @@ def _configure_bigchaindb(request):
     config = config_utils.env_config(config)
     config_utils.set_config(config)
 
-    # NOTE: since we use a custom log level
-    # for benchmark logging we need to setup logging
-    setup_logging()
-
 
 @pytest.fixture(scope='session')
 def _setup_database(_configure_bigchaindb):
     from bigchaindb import config
-    from bigchaindb.backend import connect, schema
-    from bigchaindb.common.exceptions import DatabaseDoesNotExist
+    from bigchaindb.backend import connect
     print('Initializing test db')
     dbname = config['database']['name']
     conn = connect()
 
-    try:
-        schema.drop_database(conn, dbname)
-    except DatabaseDoesNotExist:
-        pass
-
+    _drop_db(conn, dbname)
     schema.init_database(conn)
     print('Finishing init database')
 
@@ -131,10 +124,7 @@ def _setup_database(_configure_bigchaindb):
 
     print('Deleting `{}` database'.format(dbname))
     conn = connect()
-    try:
-        schema.drop_database(conn, dbname)
-    except DatabaseDoesNotExist:
-        pass
+    _drop_db(conn, dbname)
 
     print('Finished deleting `{}`'.format(dbname))
 
@@ -144,10 +134,16 @@ def _bdb(_setup_database, _configure_bigchaindb):
     from bigchaindb import config
     from bigchaindb.backend import connect
     from .utils import flush_db
+    from bigchaindb.common.memoize import to_dict, from_dict
+    from bigchaindb.models import Transaction
     conn = connect()
     yield
     dbname = config['database']['name']
     flush_db(conn, dbname)
+
+    to_dict.cache_clear()
+    from_dict.cache_clear()
+    Transaction._input_valid.cache_clear()
 
 
 # We need this function to avoid loading an existing
@@ -199,16 +195,6 @@ def alice():
 
 
 @pytest.fixture
-def alice_privkey(alice):
-    return alice.private_key
-
-
-@pytest.fixture
-def alice_pubkey(alice):
-    return alice.public_key
-
-
-@pytest.fixture
 def bob():
     from bigchaindb.common.crypto import generate_key_pair
     return generate_key_pair()
@@ -253,6 +239,26 @@ def b():
 
 
 @pytest.fixture
+def b_mock(b, network_validators):
+    b.get_validators = mock_get_validators(network_validators)
+
+    return b
+
+
+def mock_get_validators(network_validators):
+    def validator_set(height):
+        validators = []
+        for public_key, power in network_validators.items():
+            validators.append({
+                'public_key': {'type': 'ed25519-base64', 'value': public_key},
+                'voting_power': power
+            })
+        return validators
+
+    return validator_set
+
+
+@pytest.fixture
 def create_tx(alice, user_pk):
     from bigchaindb.models import Transaction
     name = f'I am created by the create_tx fixture. My random identifier is {random.random()}.'
@@ -264,7 +270,6 @@ def signed_create_tx(alice, create_tx):
     return create_tx.sign([alice.private_key])
 
 
-@pytest.mark.abci
 @pytest.fixture
 def posted_create_tx(b, signed_create_tx):
     res = b.post_transaction(signed_create_tx, 'broadcast_tx_commit')
@@ -301,10 +306,10 @@ def inputs(user_pk, b, alice):
     for height in range(1, 4):
         transactions = [
             Transaction.create(
-                [alice_pubkey(alice)],
+                [alice.public_key],
                 [([user_pk], 1)],
                 metadata={'msg': random.random()},
-            ).sign([alice_privkey(alice)])
+            ).sign([alice.private_key])
             for _ in range(10)
         ]
         tx_ids = [tx.id for tx in transactions]
@@ -315,20 +320,22 @@ def inputs(user_pk, b, alice):
 
 @pytest.fixture
 def dummy_db(request):
-    from bigchaindb.backend import connect, schema
-    from bigchaindb.common.exceptions import (DatabaseDoesNotExist,
-                                              DatabaseAlreadyExists)
+    from bigchaindb.backend import connect
+
     conn = connect()
     dbname = request.fixturename
     xdist_suffix = getattr(request.config, 'slaveinput', {}).get('slaveid')
     if xdist_suffix:
         dbname = '{}_{}'.format(dbname, xdist_suffix)
-    try:
-        schema.init_database(conn, dbname)
-    except DatabaseAlreadyExists:
-        schema.drop_database(conn, dbname)
-        schema.init_database(conn, dbname)
+
+    _drop_db(conn, dbname)  # make sure we start with a clean DB
+    schema.init_database(conn, dbname)
     yield dbname
+
+    _drop_db(conn, dbname)
+
+
+def _drop_db(conn, dbname):
     try:
         schema.drop_database(conn, dbname)
     except DatabaseDoesNotExist:
@@ -408,7 +415,7 @@ def abci_http(_setup_database, _configure_bigchaindb, abci_server,
             requests.get(uri)
             return True
 
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             pass
         time.sleep(1)
 
@@ -424,7 +431,6 @@ def event_loop():
     loop.close()
 
 
-@pytest.mark.bdb
 @pytest.fixture(scope='session')
 def abci_server():
     from abci import ABCIServer
@@ -643,9 +649,8 @@ def validators(b, node_keys):
     (public_key, private_key) = list(node_keys.items())[0]
 
     validator_set = [{'address': 'F5426F0980E36E03044F74DD414248D29ABCBDB2',
-                      'pub_key': {
-                          'data': public_key,
-                          'type': 'ed25519'},
+                      'public_key': {'value': public_key,
+                                     'type': 'ed25519-base64'},
                       'voting_power': 10}]
 
     validator_update = {'validators': validator_set,
@@ -681,6 +686,74 @@ def new_validator():
     power = 1
     node_id = 'fake_node_id'
 
-    return {'public_key': public_key,
+    return {'public_key': {'value': public_key,
+                           'type': 'ed25519-base16'},
             'power': power,
             'node_id': node_id}
+
+
+@pytest.fixture
+def valid_upsert_validator_election(b_mock, node_key, new_validator):
+    voters = ValidatorElection.recipients(b_mock)
+    return ValidatorElection.generate([node_key.public_key],
+                                      voters,
+                                      new_validator, None).sign([node_key.private_key])
+
+
+@pytest.fixture
+def valid_upsert_validator_election_2(b_mock, node_key, new_validator):
+    voters = ValidatorElection.recipients(b_mock)
+    return ValidatorElection.generate([node_key.public_key],
+                                      voters,
+                                      new_validator, None).sign([node_key.private_key])
+
+
+@pytest.fixture
+def ongoing_validator_election(b, valid_upsert_validator_election, ed25519_node_keys):
+    validators = b.get_validators(height=1)
+    genesis_validators = {'validators': validators,
+                          'height': 0}
+    query.store_validator_set(b.connection, genesis_validators)
+    b.store_bulk_transactions([valid_upsert_validator_election])
+    query.store_election(b.connection, valid_upsert_validator_election.id, 1,
+                         is_concluded=False)
+    block_1 = Block(app_hash='hash_1', height=1,
+                    transactions=[valid_upsert_validator_election.id])
+    b.store_block(block_1._asdict())
+    return valid_upsert_validator_election
+
+
+@pytest.fixture
+def ongoing_validator_election_2(b, valid_upsert_validator_election_2, ed25519_node_keys):
+    validators = b.get_validators(height=1)
+    genesis_validators = {'validators': validators,
+                          'height': 0,
+                          'election_id': None}
+    query.store_validator_set(b.connection, genesis_validators)
+
+    b.store_bulk_transactions([valid_upsert_validator_election_2])
+    block_1 = Block(app_hash='hash_2', height=1, transactions=[valid_upsert_validator_election_2.id])
+    b.store_block(block_1._asdict())
+    return valid_upsert_validator_election_2
+
+
+@pytest.fixture
+def validator_election_votes(b_mock, ongoing_validator_election, ed25519_node_keys):
+    voters = ValidatorElection.recipients(b_mock)
+    votes = generate_votes(ongoing_validator_election, voters, ed25519_node_keys)
+    return votes
+
+
+@pytest.fixture
+def validator_election_votes_2(b_mock, ongoing_validator_election_2, ed25519_node_keys):
+    voters = ValidatorElection.recipients(b_mock)
+    votes = generate_votes(ongoing_validator_election_2, voters, ed25519_node_keys)
+    return votes
+
+
+def generate_votes(election, voters, keys):
+    votes = []
+    for voter, _ in enumerate(voters):
+        v = gen_vote(election, voter, keys)
+        votes.append(v)
+    return votes

@@ -18,9 +18,9 @@ The `BigchainDB` class is defined here.  Most node-level operations and database
 
 `Block`, `Transaction`, and `Asset` classes are defined here.  The classes mirror the block and transaction structure from the [documentation](https://docs.bigchaindb.com/projects/server/en/latest/data-models/index.html), but also include methods for validation and signing.
 
-### [`consensus.py`](./consensus.py)
+### [`validation.py`](./validation.py)
 
-Base class for consensus methods (verification of votes, blocks, and transactions).  The actual logic is mostly found in `transaction` and `block` models, defined in [`models.py`](./models.py).
+Base class for validation methods (verification of votes, blocks, and transactions).  The actual logic is mostly found in `transaction` and `block` models, defined in [`models.py`](./models.py).
 
 ### [`processes.py`](./processes.py)
 

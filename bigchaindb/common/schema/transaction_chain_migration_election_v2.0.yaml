@@ -5,14 +5,25 @@
 ---
 "$schema": "http://json-schema.org/draft-04/schema#"
 type: object
-title: Validator Election Vote Schema - Vote on a validator set change
+title: Chain Migration Election Schema - Propose a halt in block production to allow for a version change
 required:
 - operation
+- asset
 - outputs
 properties:
   operation:
     type: string
-    value: "VALIDATOR_ELECTION_VOTE"
+    value: "CHAIN_MIGRATION_ELECTION"
+  asset:
+    additionalProperties: false
+    properties:
+      data:
+        additionalProperties: false
+        properties:
+          seed:
+            type: string
+    required:
+    - data
   outputs:
     type: array
     items:

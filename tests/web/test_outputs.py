@@ -5,12 +5,12 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
-pytestmark = [pytest.mark.bdb, pytest.mark.usefixtures('inputs')]
 
 OUTPUTS_ENDPOINT = '/api/v1/outputs/'
 
 
-@pytest.mark.tendermint
+@pytest.mark.bdb
+@pytest.mark.userfixtures('inputs')
 def test_get_outputs_endpoint(client, user_pk):
     m = MagicMock()
     m.txid = 'a'
@@ -26,7 +26,6 @@ def test_get_outputs_endpoint(client, user_pk):
     gof.assert_called_once_with(user_pk, None)
 
 
-@pytest.mark.tendermint
 def test_get_outputs_endpoint_unspent(client, user_pk):
     m = MagicMock()
     m.txid = 'a'
@@ -40,7 +39,8 @@ def test_get_outputs_endpoint_unspent(client, user_pk):
     gof.assert_called_once_with(user_pk, False)
 
 
-@pytest.mark.tendermint
+@pytest.mark.bdb
+@pytest.mark.userfixtures('inputs')
 def test_get_outputs_endpoint_spent(client, user_pk):
     m = MagicMock()
     m.txid = 'a'
@@ -54,13 +54,15 @@ def test_get_outputs_endpoint_spent(client, user_pk):
     gof.assert_called_once_with(user_pk, True)
 
 
-@pytest.mark.tendermint
+@pytest.mark.bdb
+@pytest.mark.userfixtures('inputs')
 def test_get_outputs_endpoint_without_public_key(client):
     res = client.get(OUTPUTS_ENDPOINT)
     assert res.status_code == 400
 
 
-@pytest.mark.tendermint
+@pytest.mark.bdb
+@pytest.mark.userfixtures('inputs')
 def test_get_outputs_endpoint_with_invalid_public_key(client):
     expected = {'message': {'public_key': 'Invalid base58 ed25519 key'}}
     res = client.get(OUTPUTS_ENDPOINT + '?public_key=abc')
@@ -68,7 +70,8 @@ def test_get_outputs_endpoint_with_invalid_public_key(client):
     assert res.status_code == 400
 
 
-@pytest.mark.tendermint
+@pytest.mark.bdb
+@pytest.mark.userfixtures('inputs')
 def test_get_outputs_endpoint_with_invalid_spent(client, user_pk):
     expected = {'message': {'spent': 'Boolean value must be "true" or "false" (lowercase)'}}
     params = '?spent=tru&public_key={}'.format(user_pk)
@@ -77,8 +80,7 @@ def test_get_outputs_endpoint_with_invalid_spent(client, user_pk):
     assert res.status_code == 400
 
 
-@pytest.mark.bdb
-@pytest.mark.usefixtures('inputs')
+@pytest.mark.abci
 def test_get_divisble_transactions_returns_500(b, client):
     from bigchaindb.models import Transaction
     from bigchaindb.common import crypto
@@ -87,8 +89,7 @@ def test_get_divisble_transactions_returns_500(b, client):
     TX_ENDPOINT = '/api/v1/transactions'
 
     def mine(tx_list):
-        block = b.create_block(tx_list)
-        b.write_block(block)
+        b.store_bulk_transactions(tx_list)
 
     alice_priv, alice_pub = crypto.generate_key_pair()
     bob_priv, bob_pub = crypto.generate_key_pair()

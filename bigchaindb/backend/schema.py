@@ -10,13 +10,13 @@ import logging
 import bigchaindb
 from bigchaindb.backend.connection import connect
 from bigchaindb.common.exceptions import ValidationError
-from bigchaindb.common.utils import validate_all_values_for_key
+from bigchaindb.common.utils import validate_all_values_for_key_in_obj, validate_all_values_for_key_in_list
 
 logger = logging.getLogger(__name__)
 
 # Tables/collections that every backend database must create
 TABLES = ('transactions', 'blocks', 'assets', 'metadata',
-          'validators', 'pre_commit', 'utxos')
+          'validators', 'elections', 'pre_commit', 'utxos', 'abci_chains')
 
 VALID_LANGUAGES = ('danish', 'dutch', 'english', 'finnish', 'french', 'german',
                    'hungarian', 'italian', 'norwegian', 'portuguese', 'romanian',
@@ -31,10 +31,6 @@ def create_database(connection, dbname):
 
     Args:
         dbname (str): the name of the database to create.
-
-    Raises:
-        :exc:`~DatabaseAlreadyExists`: If the given :attr:`dbname` already
-            exists as a database.
     """
 
     raise NotImplementedError
@@ -46,17 +42,6 @@ def create_tables(connection, dbname):
 
     Args:
         dbname (str): the name of the database to create tables for.
-    """
-
-    raise NotImplementedError
-
-
-@singledispatch
-def create_indexes(connection, dbname):
-    """Create the indexes to be used by BigchainDB.
-
-    Args:
-        dbname (str): the name of the database to create indexes for.
     """
 
     raise NotImplementedError
@@ -90,10 +75,6 @@ def init_database(connection=None, dbname=None):
         dbname (str): the name of the database to create.
             Defaults to the database name given in the BigchainDB
             configuration.
-
-    Raises:
-        :exc:`~DatabaseAlreadyExists`: If the given :attr:`dbname` already
-            exists as a database.
     """
 
     connection = connection or connect()
@@ -101,7 +82,6 @@ def init_database(connection=None, dbname=None):
 
     create_database(connection, dbname)
     create_tables(connection, dbname)
-    create_indexes(connection, dbname)
 
 
 def validate_language_key(obj, key):
@@ -121,7 +101,9 @@ def validate_language_key(obj, key):
     if backend == 'localmongodb':
         data = obj.get(key, {})
         if isinstance(data, dict):
-            validate_all_values_for_key(data, 'language', validate_language)
+            validate_all_values_for_key_in_obj(data, 'language', validate_language)
+        elif isinstance(data, list):
+            validate_all_values_for_key_in_list(data, 'language', validate_language)
 
 
 def validate_language(value):

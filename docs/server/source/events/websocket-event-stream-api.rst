@@ -90,7 +90,7 @@ Valid Transactions
 
 Streams an event for any newly valid transactions committed to a block. Message
 bodies contain the transaction's ID, associated asset ID, and containing
-block's ID.
+block's height.
 
 Example message:
 
@@ -99,7 +99,7 @@ Example message:
     {
         "transaction_id": "<sha3-256 hash>",
         "asset_id": "<sha3-256 hash>",
-        "block_id": "<int>"
+        "height": <int>
     }
 
 

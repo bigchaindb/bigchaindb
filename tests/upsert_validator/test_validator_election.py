@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
 from argparse import Namespace
+from unittest.mock import patch
 
 import pytest
 
@@ -13,7 +14,7 @@ from bigchaindb.common.exceptions import (DuplicateTransaction,
                                           MultipleInputsError,
                                           InvalidPowerChange)
 
-pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
+pytestmark = pytest.mark.bdb
 
 
 def test_upsert_validator_valid_election(b_mock, new_validator, node_key):
@@ -22,6 +23,19 @@ def test_upsert_validator_valid_election(b_mock, new_validator, node_key):
                                           voters,
                                           new_validator, None).sign([node_key.private_key])
     assert election.validate(b_mock)
+
+
+def test_upsert_validator_invalid_election_public_key(b_mock, new_validator, node_key):
+    from bigchaindb.common.exceptions import InvalidPublicKey
+
+    for iv in ['ed25519-base32', 'ed25519-base64']:
+        new_validator['public_key']['type'] = iv
+        voters = ValidatorElection.recipients(b_mock)
+
+        with pytest.raises(InvalidPublicKey):
+            ValidatorElection.generate([node_key.public_key],
+                                       voters,
+                                       new_validator, None).sign([node_key.private_key])
 
 
 def test_upsert_validator_invalid_power_election(b_mock, new_validator, node_key):
@@ -59,16 +73,17 @@ def test_upsert_validator_invalid_inputs_election(b_mock, new_validator, node_ke
         election.validate(b_mock)
 
 
-def test_upsert_validator_invalid_election(b_mock, new_validator, node_key, valid_election):
+@patch('bigchaindb.elections.election.uuid4', lambda: 'mock_uuid4')
+def test_upsert_validator_invalid_election(b_mock, new_validator, node_key, fixed_seed_election):
     voters = ValidatorElection.recipients(b_mock)
     duplicate_election = ValidatorElection.generate([node_key.public_key],
                                                     voters,
                                                     new_validator, None).sign([node_key.private_key])
 
     with pytest.raises(DuplicateTransaction):
-        valid_election.validate(b_mock, [duplicate_election])
+        fixed_seed_election.validate(b_mock, [duplicate_election])
 
-    b_mock.store_bulk_transactions([valid_election])
+    b_mock.store_bulk_transactions([fixed_seed_election])
 
     with pytest.raises(DuplicateTransaction):
         duplicate_election.validate(b_mock)
@@ -96,9 +111,9 @@ def test_upsert_validator_invalid_election(b_mock, new_validator, node_key, vali
         tx_election.validate(b_mock)
 
 
-def test_get_status_ongoing(b, ongoing_election, new_validator):
+def test_get_status_ongoing(b, ongoing_validator_election, new_validator):
     status = ValidatorElection.ONGOING
-    resp = ongoing_election.get_status(b)
+    resp = ongoing_validator_election.get_status(b)
     assert resp == status
 
 
@@ -109,6 +124,9 @@ def test_get_status_concluded(b, concluded_election, new_validator):
 
 
 def test_get_status_inconclusive(b, inconclusive_election, new_validator):
+    def set_block_height_to_3():
+        return {'height': 3}
+
     def custom_mock_get_validators(height):
         if height >= 3:
             return [{'pub_key': {'data': 'zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=',
@@ -138,23 +156,24 @@ def test_get_status_inconclusive(b, inconclusive_election, new_validator):
                      'voting_power': 8}]
 
     b.get_validators = custom_mock_get_validators
+    b.get_latest_block = set_block_height_to_3
     status = ValidatorElection.INCONCLUSIVE
     resp = inconclusive_election.get_status(b)
     assert resp == status
 
 
-def test_upsert_validator_show(caplog, ongoing_election, b):
-    from bigchaindb.commands.bigchaindb import run_upsert_validator_show
+def test_upsert_validator_show(caplog, ongoing_validator_election, b):
+    from bigchaindb.commands.bigchaindb import run_election_show
 
-    election_id = ongoing_election.id
-    public_key = public_key_to_base64(ongoing_election.asset['data']['public_key'])
-    power = ongoing_election.asset['data']['power']
-    node_id = ongoing_election.asset['data']['node_id']
+    election_id = ongoing_validator_election.id
+    public_key = public_key_to_base64(ongoing_validator_election.asset['data']['public_key']['value'])
+    power = ongoing_validator_election.asset['data']['power']
+    node_id = ongoing_validator_election.asset['data']['node_id']
     status = ValidatorElection.ONGOING
 
     show_args = Namespace(action='show',
                           election_id=election_id)
 
-    msg = run_upsert_validator_show(show_args, b)
+    msg = run_election_show(show_args, b)
 
     assert msg == f'public_key={public_key}\npower={power}\nnode_id={node_id}\nstatus={status}'

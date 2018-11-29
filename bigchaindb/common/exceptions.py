@@ -11,10 +11,6 @@ class ConfigurationError(BigchainDBError):
     """Raised when there is a problem with server configuration"""
 
 
-class DatabaseAlreadyExists(BigchainDBError):
-    """Raised when trying to create the database but the db is already there"""
-
-
 class DatabaseDoesNotExist(BigchainDBError):
     """Raised when trying to delete the database but the db is not there"""
 
@@ -112,3 +108,7 @@ class UnequalValidatorSet(ValidationError):
 
 class InvalidPowerChange(ValidationError):
     """Raised if proposed power change in validator set is >=1/3 total power"""
+
+
+class InvalidPublicKey(ValidationError):
+    """Raised if public key doesn't match the encoding type"""
