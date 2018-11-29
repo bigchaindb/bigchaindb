@@ -34,9 +34,10 @@
   tags: [tendermint]
 
 - name: Creating files for key exchange
-  template: src=start_tendermint.j2 dest=/home/vagrant/test.sh
-  mode: 0755
-  tags: [tendermint]
+  file:
+    template: src=start_tendermint.j2 dest=/home/vagrant/test.sh
+    mode: 0755
+    tags: [tendermint]
 
 - name: Start nginx to host public_key
   systemd: name=nginx state=restarted

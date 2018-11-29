@@ -16,10 +16,11 @@
   tags: [py36]
 
 - name: Creating files for python 3.6 installation
-  template: src=install_py36.j2 dest=/home/vagrant/install_py36.bash
-  mode: 0755
-  when: chk_py36.rc == 0 and (py36_ver.stdout | float < 3.6)
-  tags: [py36]
+  file:
+    template: src=install_py36.j2 dest=/home/vagrant/install_py36.bash
+    mode: 0755
+    when: chk_py36.rc == 0 and (py36_ver.stdout | float < 3.6)
+    tags: [py36]
 
 - name: Install py36
   shell: "bash /home/vagrant/install_py36.bash > install_py36.txt"

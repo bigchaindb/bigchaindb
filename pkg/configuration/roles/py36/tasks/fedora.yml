@@ -24,14 +24,16 @@
   shell: dnf -y update
   register: update_fed
   failed_when: "'FAILED' in update_fed.stderr or update_fed.rc != 0"
-  warn: no
+  args:
+    warn: no
   tags: [py36]
 
 - name: Creating files for python 3.6 installation
-  template: src=install_pip36.j2 dest=/home/vagrant/install_pip36.bash
-  mode: 0755
-  when: py36_ver.stdout | float < 3.6
-  tags: [py36]
+  file:
+    template: src=install_pip36.j2 dest=/home/vagrant/install_pip36.bash
+    mode: 0755
+    when: py36_ver.stdout | float < 3.6
+    tags: [py36]
 
 - name: Install pip36
   shell: "bash /home/vagrant/install_pip36.bash > install_pip36.txt"
