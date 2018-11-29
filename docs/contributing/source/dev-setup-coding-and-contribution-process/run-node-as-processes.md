@@ -25,7 +25,7 @@ After the installation of MongoDB is complete, run MongoDB using `sudo mongod`
 
 ### Installing a Tendermint Executable
 
-Find [the version number of the latest Tendermint release](https://github.com/tendermint/tendermint/releases) and install it using the following, where 0.22.8 should be replaced by the latest released version number:
+The version of BigchainDB Server described in these docs only works well with Tendermint 0.22.8 (not a higher version number). Install that:
 
 ```bash
 $ sudo apt install -y unzip

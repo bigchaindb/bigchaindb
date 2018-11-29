@@ -7,7 +7,10 @@ from copy import deepcopy
 import pytest
 import pymongo
 
-pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
+from bigchaindb.backend import connect, query
+
+
+pytestmark = pytest.mark.bdb
 
 
 def test_get_txids_filtered(signed_create_tx, signed_transfer_tx):
@@ -55,7 +58,7 @@ def test_write_assets():
     cursor = conn.db.assets.find({}, projection={'_id': False})\
                            .sort('id', pymongo.ASCENDING)
 
-    assert cursor.count() == 3
+    assert cursor.collection.count_documents({}) == 3
     assert list(cursor) == assets[:-1]
 
 
@@ -177,7 +180,7 @@ def test_write_metadata():
     cursor = conn.db.metadata.find({}, projection={'_id': False})\
                              .sort('id', pymongo.ASCENDING)
 
-    assert cursor.count() == 3
+    assert cursor.collection.count_documents({}) == 3
     assert list(cursor) == metadata
 
 
@@ -202,7 +205,7 @@ def test_get_owned_ids(signed_create_tx, user_pk):
     conn = connect()
 
     # insert a transaction
-    conn.db.transactions.insert_one(signed_create_tx.to_dict())
+    conn.db.transactions.insert_one(deepcopy(signed_create_tx.to_dict()))
 
     txns = list(query.get_owned_ids(conn, user_pk))
 
@@ -221,7 +224,7 @@ def test_get_spending_transactions(user_pk, user_sk):
     tx2 = Transaction.transfer([inputs[0]], out, tx1.id).sign([user_sk])
     tx3 = Transaction.transfer([inputs[1]], out, tx1.id).sign([user_sk])
     tx4 = Transaction.transfer([inputs[2]], out, tx1.id).sign([user_sk])
-    txns = [tx.to_dict() for tx in [tx1, tx2, tx3, tx4]]
+    txns = [deepcopy(tx.to_dict()) for tx in [tx1, tx2, tx3, tx4]]
     conn.db.transactions.insert_many(txns)
 
     links = [inputs[0].fulfills.to_dict(), inputs[2].fulfills.to_dict()]
@@ -229,6 +232,49 @@ def test_get_spending_transactions(user_pk, user_sk):
 
     # tx3 not a member because input 1 not asked for
     assert txns == [tx2.to_dict(), tx4.to_dict()]
+
+
+def test_get_spending_transactions_multiple_inputs():
+    from bigchaindb.backend import connect, query
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.crypto import generate_key_pair
+    conn = connect()
+    (alice_sk, alice_pk) = generate_key_pair()
+    (bob_sk, bob_pk) = generate_key_pair()
+    (carol_sk, carol_pk) = generate_key_pair()
+
+    out = [([alice_pk], 9)]
+    tx1 = Transaction.create([alice_pk], out).sign([alice_sk])
+
+    inputs1 = tx1.to_inputs()
+    tx2 = Transaction.transfer([inputs1[0]],
+                               [([alice_pk], 6), ([bob_pk], 3)],
+                               tx1.id).sign([alice_sk])
+
+    inputs2 = tx2.to_inputs()
+    tx3 = Transaction.transfer([inputs2[0]],
+                               [([bob_pk], 3), ([carol_pk], 3)],
+                               tx1.id).sign([alice_sk])
+
+    inputs3 = tx3.to_inputs()
+    tx4 = Transaction.transfer([inputs2[1], inputs3[0]],
+                               [([carol_pk], 6)],
+                               tx1.id).sign([bob_sk])
+
+    txns = [deepcopy(tx.to_dict()) for tx in [tx1, tx2, tx3, tx4]]
+    conn.db.transactions.insert_many(txns)
+
+    links = [
+        ({'transaction_id': tx2.id, 'output_index': 0}, 1, [tx3.id]),
+        ({'transaction_id': tx2.id, 'output_index': 1}, 1, [tx4.id]),
+        ({'transaction_id': tx3.id, 'output_index': 0}, 1, [tx4.id]),
+        ({'transaction_id': tx3.id, 'output_index': 1}, 0, None),
+    ]
+    for l, num, match in links:
+        txns = list(query.get_spending_transactions(conn, [l]))
+        assert len(txns) == num
+        if len(txns):
+            assert [tx['id'] for tx in txns] == match
 
 
 def test_store_block():
@@ -241,7 +287,7 @@ def test_store_block():
                   transactions=[])
     query.store_block(conn, block._asdict())
     cursor = conn.db.blocks.find({}, projection={'_id': False})
-    assert cursor.count() == 1
+    assert cursor.collection.count_documents({}) == 1
 
 
 def test_get_block():
@@ -264,14 +310,14 @@ def test_delete_zero_unspent_outputs(db_context, utxoset):
     unspent_outputs, utxo_collection = utxoset
     delete_res = query.delete_unspent_outputs(db_context.conn)
     assert delete_res is None
-    assert utxo_collection.count() == 3
-    assert utxo_collection.find(
+    assert utxo_collection.count_documents({}) == 3
+    assert utxo_collection.count_documents(
         {'$or': [
             {'transaction_id': 'a', 'output_index': 0},
             {'transaction_id': 'b', 'output_index': 0},
             {'transaction_id': 'a', 'output_index': 1},
         ]}
-    ).count() == 3
+    ) == 3
 
 
 def test_delete_one_unspent_outputs(db_context, utxoset):
@@ -279,15 +325,15 @@ def test_delete_one_unspent_outputs(db_context, utxoset):
     unspent_outputs, utxo_collection = utxoset
     delete_res = query.delete_unspent_outputs(db_context.conn,
                                               unspent_outputs[0])
-    assert delete_res['n'] == 1
-    assert utxo_collection.find(
+    assert delete_res.raw_result['n'] == 1
+    assert utxo_collection.count_documents(
         {'$or': [
             {'transaction_id': 'a', 'output_index': 1},
             {'transaction_id': 'b', 'output_index': 0},
         ]}
-    ).count() == 2
-    assert utxo_collection.find(
-            {'transaction_id': 'a', 'output_index': 0}).count() == 0
+    ) == 2
+    assert utxo_collection.count_documents(
+            {'transaction_id': 'a', 'output_index': 0}) == 0
 
 
 def test_delete_many_unspent_outputs(db_context, utxoset):
@@ -295,22 +341,22 @@ def test_delete_many_unspent_outputs(db_context, utxoset):
     unspent_outputs, utxo_collection = utxoset
     delete_res = query.delete_unspent_outputs(db_context.conn,
                                               *unspent_outputs[::2])
-    assert delete_res['n'] == 2
-    assert utxo_collection.find(
+    assert delete_res.raw_result['n'] == 2
+    assert utxo_collection.count_documents(
         {'$or': [
             {'transaction_id': 'a', 'output_index': 0},
             {'transaction_id': 'b', 'output_index': 0},
         ]}
-    ).count() == 0
-    assert utxo_collection.find(
-            {'transaction_id': 'a', 'output_index': 1}).count() == 1
+    ) == 0
+    assert utxo_collection.count_documents(
+            {'transaction_id': 'a', 'output_index': 1}) == 1
 
 
 def test_store_zero_unspent_output(db_context, utxo_collection):
     from bigchaindb.backend import query
     res = query.store_unspent_outputs(db_context.conn)
     assert res is None
-    assert utxo_collection.count() == 0
+    assert utxo_collection.count_documents({}) == 0
 
 
 def test_store_one_unspent_output(db_context,
@@ -319,10 +365,10 @@ def test_store_one_unspent_output(db_context,
     res = query.store_unspent_outputs(db_context.conn, unspent_output_1)
     assert res.acknowledged
     assert len(res.inserted_ids) == 1
-    assert utxo_collection.find(
+    assert utxo_collection.count_documents(
         {'transaction_id': unspent_output_1['transaction_id'],
          'output_index': unspent_output_1['output_index']}
-    ).count() == 1
+    ) == 1
 
 
 def test_store_many_unspent_outputs(db_context,
@@ -331,15 +377,15 @@ def test_store_many_unspent_outputs(db_context,
     res = query.store_unspent_outputs(db_context.conn, *unspent_outputs)
     assert res.acknowledged
     assert len(res.inserted_ids) == 3
-    assert utxo_collection.find(
+    assert utxo_collection.count_documents(
         {'transaction_id': unspent_outputs[0]['transaction_id']}
-    ).count() == 3
+    ) == 3
 
 
 def test_get_unspent_outputs(db_context, utxoset):
     from bigchaindb.backend import query
     cursor = query.get_unspent_outputs(db_context.conn)
-    assert cursor.count() == 3
+    assert cursor.collection.count_documents({}) == 3
     retrieved_utxoset = list(cursor)
     unspent_outputs, utxo_collection = utxoset
     assert retrieved_utxoset == list(
@@ -349,29 +395,22 @@ def test_get_unspent_outputs(db_context, utxoset):
 
 def test_store_pre_commit_state(db_context):
     from bigchaindb.backend import query
-    from bigchaindb.lib import PreCommitState
 
-    state = PreCommitState(commit_id='test',
-                           height=3,
-                           transactions=[])
+    state = dict(height=3, transactions=[])
 
-    query.store_pre_commit_state(db_context.conn, state._asdict())
+    query.store_pre_commit_state(db_context.conn, state)
     cursor = db_context.conn.db.pre_commit.find({'commit_id': 'test'},
                                                 projection={'_id': False})
-    assert cursor.count() == 1
+    assert cursor.collection.count_documents({}) == 1
 
 
 def test_get_pre_commit_state(db_context):
     from bigchaindb.backend import query
-    from bigchaindb.lib import PreCommitState
 
-    state = PreCommitState(commit_id='test2',
-                           height=3,
-                           transactions=[])
-
-    db_context.conn.db.pre_commit.insert(state._asdict())
-    resp = query.get_pre_commit_state(db_context.conn, 'test2')
-    assert resp == state._asdict()
+    state = dict(height=3, transactions=[])
+    db_context.conn.db.pre_commit.insert_one(state)
+    resp = query.get_pre_commit_state(db_context.conn)
+    assert resp == state
 
 
 def test_validator_update():
@@ -394,3 +433,51 @@ def test_validator_update():
 
     v91 = query.get_validator_set(conn)
     assert v91['height'] == 91
+
+
+@pytest.mark.parametrize('description,stores,expected', [
+    (
+        'Query empty database.',
+        [],
+        None,
+    ),
+    (
+        'Store one chain with the default value for `is_synced`.',
+        [
+            {'height': 0, 'chain_id': 'some-id'},
+        ],
+        {'height': 0, 'chain_id': 'some-id', 'is_synced': True},
+    ),
+    (
+        'Store one chain with a custom value for `is_synced`.',
+        [
+            {'height': 0, 'chain_id': 'some-id', 'is_synced': False},
+        ],
+        {'height': 0, 'chain_id': 'some-id', 'is_synced': False},
+    ),
+    (
+        'Store one chain, then update it.',
+        [
+            {'height': 0, 'chain_id': 'some-id', 'is_synced': True},
+            {'height': 0, 'chain_id': 'new-id', 'is_synced': False},
+        ],
+        {'height': 0, 'chain_id': 'new-id', 'is_synced': False},
+    ),
+    (
+        'Store a chain, update it, store another chain.',
+        [
+            {'height': 0, 'chain_id': 'some-id', 'is_synced': True},
+            {'height': 0, 'chain_id': 'some-id', 'is_synced': False},
+            {'height': 10, 'chain_id': 'another-id', 'is_synced': True},
+        ],
+        {'height': 10, 'chain_id': 'another-id', 'is_synced': True},
+    ),
+])
+def test_store_abci_chain(description, stores, expected):
+    conn = connect()
+
+    for store in stores:
+        query.store_abci_chain(conn, **store)
+
+    actual = query.get_latest_abci_chain(conn)
+    assert expected == actual, description

@@ -51,26 +51,21 @@ Code is Apache-2.0 and docs are CC-BY-4.0
 Create a BigchainDB transaction and post it to a BigchainDB network in 20 seconds or less:
 
 <div class="buttondiv">
-    <a class="button" href="https://www.bigchaindb.com/getstarted/">Try BigchainDB Now</a>
+    <a class="button" href="https://www.bigchaindb.com/developers/getstarted/">Try BigchainDB Now</a>
 </div>
 
 ## Develop an App
 
-To develop an app that talks to a BigchainDB network, you'll want a test network to test it against. The BigchainDB Testnet is a free-to-use, publicly-available BigchainDB network that you can test against.
+To develop an app that talks to a BigchainDB network, you'll want a test network to test it against. You have a few options:
 
-<div class="buttondiv">
-    <a class="button" href="https://testnet.bigchaindb.com/">Get started with the BigchainDB Testnet</a>
-</div>
+1. The BigchainDB Test Network (or "Testnet") is a free-to-use, publicly-available BigchainDB network that you can test against. You can find out more about the BigchainDB Testnet on [the BigchainDB "Get Started" page](https://www.bigchaindb.com/developers/getstarted/#server).
+1. You could also run a BigchainDB node on you local machine. One way is to use the [Simple Deployment Template](./simple-deployment-template/index.html), with a one-node "network." Another way is to use one of the deployment methods listed in the [the docs about contributing to BigchainDB](https://docs.bigchaindb.com/projects/contributing/en/latest/index.html).
 
 Regardless of which BigchainDB network you use, you'll probably use one of the [BigchainDB drivers or tools](https://www.bigchaindb.com/getstarted/#drivers).
 
 ## Help Develop BigchainDB Server
 
 To help develop BigchainDB Server (the core software in each BigchainDB node), see [the docs about contributing to BigchainDB](https://docs.bigchaindb.com/projects/contributing/en/latest/index.html).
-
-## Old Quickstart
-
-If you want something like the old Quickstart page, i.e. some command-line instructions to set up and run a BigchainDB node, then see [the notes on running a local dev node in the docs about contributing to BigchainDB](https://docs.bigchaindb.com/projects/contributing/en/latest/dev-setup-coding-and-contribution-process/index.html).
 
 <hr>
 

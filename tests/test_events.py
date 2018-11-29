@@ -3,7 +3,6 @@
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
 import pytest
-pytestmark = pytest.mark.tendermint
 
 
 def test_event_handler():

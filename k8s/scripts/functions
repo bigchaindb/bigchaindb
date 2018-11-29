@@ -250,7 +250,7 @@ data:
 
   # node-frontend-port is the port number on which this node's services
   # are available to external clients.
-  node-frontend-port: "{node_frontend_port}"
+  node-frontend-port: "${node_frontend_port}"
 
   # node-health-check-port is the port number on which an external load
   # balancer can check the status/liveness of the external/public server.

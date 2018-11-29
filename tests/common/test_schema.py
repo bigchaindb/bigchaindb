@@ -8,8 +8,6 @@ properties related to validation.
 
 from unittest.mock import patch
 
-import pytest
-
 from hypothesis import given
 from hypothesis_regex import regex
 from pytest import raises
@@ -23,9 +21,6 @@ from bigchaindb.common.schema import (
 SUPPORTED_CRYPTOCONDITION_TYPES = ('threshold-sha-256', 'ed25519-sha-256')
 UNSUPPORTED_CRYPTOCONDITION_TYPES = (
     'preimage-sha-256', 'prefix-sha-256', 'rsa-sha-256')
-
-
-pytestmark = pytest.mark.tendermint
 
 
 ################################################################################

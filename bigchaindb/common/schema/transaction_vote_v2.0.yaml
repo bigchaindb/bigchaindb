@@ -1,0 +1,33 @@
+# Copyright BigchainDB GmbH and BigchainDB contributors
+# SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+# Code is Apache-2.0 and docs are CC-BY-4.0
+
+---
+"$schema": "http://json-schema.org/draft-04/schema#"
+type: object
+title: Vote Schema - Vote on an election
+required:
+- operation
+- outputs
+properties:
+  operation:
+    type: string
+    value: "VOTE"
+  outputs:
+    type: array
+    items:
+      "$ref": "#/definitions/output"
+definitions:
+  output:
+    type: object
+    properties:
+      condition:
+        type: object
+        required:
+          - uri
+        properties:
+          uri:
+            type: string
+            pattern: "^ni:///sha-256;([a-zA-Z0-9_-]{0,86})[?]\
+              (fpt=ed25519-sha-256(&)?|cost=[0-9]+(&)?|\
+              subtypes=ed25519-sha-256(&)?){2,3}$"

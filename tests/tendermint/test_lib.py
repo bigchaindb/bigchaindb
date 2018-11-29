@@ -15,9 +15,7 @@ import pytest
 from pymongo import MongoClient
 
 from bigchaindb import backend
-
-
-pytestmark = pytest.mark.tendermint
+from bigchaindb.lib import Block
 
 
 @pytest.mark.bdb
@@ -149,38 +147,17 @@ def test_post_transaction_invalid_mode(b):
         b.write_transaction(tx, 'nope')
 
 
-@pytest.mark.skip
-@pytest.mark.bdb
-def test_validator_updates(b, validator_pub_key):
-    from bigchaindb.backend import query
-    from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
-
-    # create a validator update object
-    validator = {'pub_key': {'type': 'ed25519',
-                             'data': validator_pub_key},
-                 'power': 10}
-    validator_update = {'validator': validator,
-                        'update_id': VALIDATOR_UPDATE_ID}
-    query.store_validator_update(b.connection, validator_update)
-
-    updates = b.get_validator_update()
-    assert updates == [validator_update['validator']]
-
-    b.delete_validator_update()
-    assert b.get_validator_update() == []
-
-
 @pytest.mark.bdb
 def test_update_utxoset(b, signed_create_tx, signed_transfer_tx, db_context):
     mongo_client = MongoClient(host=db_context.host, port=db_context.port)
     b.update_utxoset(signed_create_tx)
     utxoset = mongo_client[db_context.name]['utxos']
-    assert utxoset.count() == 1
+    assert utxoset.count_documents({}) == 1
     utxo = utxoset.find_one()
     assert utxo['transaction_id'] == signed_create_tx.id
     assert utxo['output_index'] == 0
     b.update_utxoset(signed_transfer_tx)
-    assert utxoset.count() == 1
+    assert utxoset.count_documents({}) == 1
     utxo = utxoset.find_one()
     assert utxo['transaction_id'] == signed_transfer_tx.id
     assert utxo['output_index'] == 0
@@ -197,7 +174,7 @@ def test_store_transaction(mocker, b, signed_create_tx,
     b.store_bulk_transactions([signed_create_tx])
     # mongo_client = MongoClient(host=db_context.host, port=db_context.port)
     # utxoset = mongo_client[db_context.name]['utxos']
-    # assert utxoset.count() == 1
+    # assert utxoset.count_documents({}) == 1
     # utxo = utxoset.find_one()
     # assert utxo['transaction_id'] == signed_create_tx.id
     # assert utxo['output_index'] == 0
@@ -219,7 +196,7 @@ def test_store_transaction(mocker, b, signed_create_tx,
     mocked_store_metadata.reset_mock()
     mocked_store_transaction.reset_mock()
     b.store_bulk_transactions([signed_transfer_tx])
-    # assert utxoset.count() == 1
+    # assert utxoset.count_documents({}) == 1
     # utxo = utxoset.find_one()
     # assert utxo['transaction_id'] == signed_transfer_tx.id
     # assert utxo['output_index'] == 0
@@ -247,7 +224,7 @@ def test_store_bulk_transaction(mocker, b, signed_create_tx,
     b.store_bulk_transactions((signed_create_tx,))
     # mongo_client = MongoClient(host=db_context.host, port=db_context.port)
     # utxoset = mongo_client[db_context.name]['utxos']
-    # assert utxoset.count() == 1
+    # assert utxoset.count_documents({}) == 1
     # utxo = utxoset.find_one()
     # assert utxo['transaction_id'] == signed_create_tx.id
     # assert utxo['output_index'] == 0
@@ -268,7 +245,7 @@ def test_store_bulk_transaction(mocker, b, signed_create_tx,
     mocked_store_metadata.reset_mock()
     mocked_store_transactions.reset_mock()
     b.store_bulk_transactions((signed_transfer_tx,))
-    # assert utxoset.count() == 1
+    # assert utxoset.count_documents({}) == 1
     # utxo = utxoset.find_one()
     # assert utxo['transaction_id'] == signed_transfer_tx.id
     # assert utxo['output_index'] == 0
@@ -290,51 +267,51 @@ def test_delete_zero_unspent_outputs(b, utxoset):
     unspent_outputs, utxo_collection = utxoset
     delete_res = b.delete_unspent_outputs()
     assert delete_res is None
-    assert utxo_collection.count() == 3
-    assert utxo_collection.find(
+    assert utxo_collection.count_documents({}) == 3
+    assert utxo_collection.count_documents(
         {'$or': [
             {'transaction_id': 'a', 'output_index': 0},
             {'transaction_id': 'b', 'output_index': 0},
             {'transaction_id': 'a', 'output_index': 1},
         ]}
-    ).count() == 3
+    ) == 3
 
 
 @pytest.mark.bdb
 def test_delete_one_unspent_outputs(b, utxoset):
     unspent_outputs, utxo_collection = utxoset
     delete_res = b.delete_unspent_outputs(unspent_outputs[0])
-    assert delete_res['n'] == 1
-    assert utxo_collection.find(
+    assert delete_res.raw_result['n'] == 1
+    assert utxo_collection.count_documents(
         {'$or': [
             {'transaction_id': 'a', 'output_index': 1},
             {'transaction_id': 'b', 'output_index': 0},
         ]}
-    ).count() == 2
-    assert utxo_collection.find(
-            {'transaction_id': 'a', 'output_index': 0}).count() == 0
+    ) == 2
+    assert utxo_collection.count_documents(
+            {'transaction_id': 'a', 'output_index': 0}) == 0
 
 
 @pytest.mark.bdb
 def test_delete_many_unspent_outputs(b, utxoset):
     unspent_outputs, utxo_collection = utxoset
     delete_res = b.delete_unspent_outputs(*unspent_outputs[::2])
-    assert delete_res['n'] == 2
-    assert utxo_collection.find(
+    assert delete_res.raw_result['n'] == 2
+    assert utxo_collection.count_documents(
         {'$or': [
             {'transaction_id': 'a', 'output_index': 0},
             {'transaction_id': 'b', 'output_index': 0},
         ]}
-    ).count() == 0
-    assert utxo_collection.find(
-            {'transaction_id': 'a', 'output_index': 1}).count() == 1
+    ) == 0
+    assert utxo_collection.count_documents(
+            {'transaction_id': 'a', 'output_index': 1}) == 1
 
 
 @pytest.mark.bdb
 def test_store_zero_unspent_output(b, utxo_collection):
     res = b.store_unspent_outputs()
     assert res is None
-    assert utxo_collection.count() == 0
+    assert utxo_collection.count_documents({}) == 0
 
 
 @pytest.mark.bdb
@@ -342,10 +319,10 @@ def test_store_one_unspent_output(b, unspent_output_1, utxo_collection):
     res = b.store_unspent_outputs(unspent_output_1)
     assert res.acknowledged
     assert len(res.inserted_ids) == 1
-    assert utxo_collection.find(
+    assert utxo_collection.count_documents(
         {'transaction_id': unspent_output_1['transaction_id'],
          'output_index': unspent_output_1['output_index']}
-    ).count() == 1
+    ) == 1
 
 
 @pytest.mark.bdb
@@ -353,9 +330,9 @@ def test_store_many_unspent_outputs(b, unspent_outputs, utxo_collection):
     res = b.store_unspent_outputs(*unspent_outputs)
     assert res.acknowledged
     assert len(res.inserted_ids) == 3
-    assert utxo_collection.find(
+    assert utxo_collection.count_documents(
         {'transaction_id': unspent_outputs[0]['transaction_id']}
-    ).count() == 3
+    ) == 3
 
 
 def test_get_utxoset_merkle_root_when_no_utxo(b):
@@ -441,3 +418,68 @@ def test_validation_with_transaction_buffer(b):
     assert not b.is_valid_transaction(create_tx, [create_tx])
     assert not b.is_valid_transaction(transfer_tx, [create_tx, transfer_tx])
     assert not b.is_valid_transaction(double_spend, [create_tx, transfer_tx])
+
+
+@pytest.mark.bdb
+def test_migrate_abci_chain_yields_on_genesis(b):
+    b.migrate_abci_chain()
+    latest_chain = b.get_latest_abci_chain()
+    assert latest_chain is None
+
+
+@pytest.mark.bdb
+@pytest.mark.parametrize('chain,block_height,expected', [
+    (
+        (1, 'chain-XYZ', True),
+        4,
+        {'height': 5, 'chain_id': 'chain-XYZ-migrated-at-height-4',
+         'is_synced': False},
+    ),
+    (
+        (5, 'chain-XYZ-migrated-at-height-4', True),
+        13,
+        {'height': 14, 'chain_id': 'chain-XYZ-migrated-at-height-13',
+         'is_synced': False},
+    ),
+])
+def test_migrate_abci_chain_generates_new_chains(b, chain, block_height,
+                                                 expected):
+    b.store_abci_chain(*chain)
+    b.store_block(Block(app_hash='', height=block_height,
+                        transactions=[])._asdict())
+    b.migrate_abci_chain()
+    latest_chain = b.get_latest_abci_chain()
+    assert latest_chain == expected
+
+
+@pytest.mark.bdb
+def test_get_spent_key_order(b, user_pk, user_sk, user2_pk, user2_sk):
+    from bigchaindb import backend
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.crypto import generate_key_pair
+    from bigchaindb.common.exceptions import DoubleSpend
+
+    alice = generate_key_pair()
+    bob = generate_key_pair()
+
+    tx1 = Transaction.create([user_pk],
+                             [([alice.public_key], 3), ([user_pk], 2)],
+                             asset=None)\
+                     .sign([user_sk])
+    b.store_bulk_transactions([tx1])
+
+    inputs = tx1.to_inputs()
+    tx2 = Transaction.transfer([inputs[1]], [([user2_pk], 2)], tx1.id).sign([user_sk])
+    assert tx2.validate(b)
+
+    tx2_dict = tx2.to_dict()
+    fulfills = tx2_dict['inputs'][0]['fulfills']
+    tx2_dict['inputs'][0]['fulfills'] = {'output_index': fulfills['output_index'],
+                                         'transaction_id': fulfills['transaction_id']}
+
+    backend.query.store_transactions(b.connection, [tx2_dict])
+
+    tx3 = Transaction.transfer([inputs[1]], [([bob.public_key], 2)], tx1.id).sign([user_sk])
+
+    with pytest.raises(DoubleSpend):
+        tx3.validate(b)
