@@ -1,5 +1,10 @@
 # Tips
 
+## Tendermint Tips
+
+* [Configure Tendermint to create no empty blocks](https://tendermint.com/docs/tendermint-core/using-tendermint.html#no-empty-blocks).
+* Store the Tendermint data on a fast drive. You can do that by changing [the location of TMHOME](https://tendermint.com/docs/tendermint-core/using-tendermint.html#directory-root) to be on the fast drive.
+
 ## Refreshing Your Node
 
 If you want to refresh your node back to a fresh empty state, then your best bet is to terminate it and deploy a new machine, but if that's not an option, then you can:

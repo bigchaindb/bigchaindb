@@ -81,7 +81,7 @@ from all the Members, and should combine them in the file
    "validators":[
       {
          "pub_key":{
-            "type":"AC26791624DE60",
+            "type":"tendermint/PubKeyEd25519",
             "value":"<Member 1 public key>"
          },
          "power":10,
@@ -89,7 +89,7 @@ from all the Members, and should combine them in the file
       },
       {
          "pub_key":{
-            "type":"AC26791624DE60",
+            "type":"tendermint/PubKeyEd25519",
             "value":"<Member 2 public key>"
          },
          "power":10,
@@ -103,7 +103,7 @@ from all the Members, and should combine them in the file
       },
       {
          "pub_key":{
-            "type":"AC26791624DE60",
+            "type":"tendermint/PubKeyEd25519",
             "value":"<Member N public key>"
          },
          "power":10,
