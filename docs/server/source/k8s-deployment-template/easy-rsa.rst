@@ -74,7 +74,7 @@ The comments in the file explain what each of the variables mean.
    echo 'set_var EASYRSA_REQ_CITY "Berlin"' >> vars
    echo 'set_var EASYRSA_REQ_ORG "BigchainDB GmbH"' >> vars
    echo 'set_var EASYRSA_REQ_OU "IT"' >> vars
-   echo 'set_var EASYRSA_REQ_EMAIL "dev@bigchaindb.com"' >> vars
+   echo 'set_var EASYRSA_REQ_EMAIL "devs@bigchaindb.com"' >> vars
 
 Note: Later, when building a CA or generating a certificate signing request, you will be prompted to enter a value for the OU (or to accept the default). You should change the default OU from ``IT`` to one of the following, as appropriate:
 ``ROOT-CA``,

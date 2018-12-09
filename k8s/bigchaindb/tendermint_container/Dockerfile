@@ -1,5 +1,5 @@
 FROM tendermint/tendermint:0.22.8
-LABEL maintainer "dev@bigchaindb.com"
+LABEL maintainer "devs@bigchaindb.com"
 WORKDIR /
 USER root
 RUN apk --update add bash

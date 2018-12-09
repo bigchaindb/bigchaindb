@@ -13,7 +13,7 @@ function configure_root_ca(){
     echo 'set_var EASYRSA_REQ_CITY "Berlin"' >> $1/vars
     echo 'set_var EASYRSA_REQ_ORG "BigchainDB GmbH"' >> $1/vars
     echo 'set_var EASYRSA_REQ_OU "ROOT-CA"' >> $1/vars
-    echo 'set_var EASYRSA_REQ_EMAIL "dev@bigchaindb.com"' >> $1//vars
+    echo 'set_var EASYRSA_REQ_EMAIL "devs@bigchaindb.com"' >> $1//vars
 
     sed -i.bk '/^extendedKeyUsage/ s/$/,clientAuth/' $1/x509-types/server
     echo "set_var EASYRSA_SSL_CONF \"$1/openssl-1.0.cnf\"" >> $1/vars
@@ -36,7 +36,7 @@ function configure_member_cert_gen(){
     echo 'set_var EASYRSA_REQ_CITY "Berlin"' >> $1/vars
     echo 'set_var EASYRSA_REQ_ORG "BigchainDB GmbH"' >> $1/vars
     echo 'set_var EASYRSA_REQ_OU "MONGO-MEMBER"' >> $1/vars
-    echo 'set_var EASYRSA_REQ_EMAIL "dev@bigchaindb.com"' >> $1/vars
+    echo 'set_var EASYRSA_REQ_EMAIL "devs@bigchaindb.com"' >> $1/vars
     echo "set_var EASYRSA_SSL_CONF \"$1/openssl-1.0.cnf\"" >> $1/vars
     echo "set_var EASYRSA_PKI \"$1/pki\"" >> $1/vars
     $1/easyrsa init-pki
@@ -55,7 +55,7 @@ function configure_client_cert_gen(){
     echo 'set_var EASYRSA_REQ_CITY "Berlin"' >> $1/vars
     echo 'set_var EASYRSA_REQ_ORG "BigchainDB GmbH"' >> $1/vars
     echo 'set_var EASYRSA_REQ_OU "MONGO-CLIENT"' >> $1/vars
-    echo 'set_var EASYRSA_REQ_EMAIL "dev@bigchaindb.com"' >> $1/vars
+    echo 'set_var EASYRSA_REQ_EMAIL "devs@bigchaindb.com"' >> $1/vars
     echo "set_var EASYRSA_SSL_CONF \"$1/openssl-1.0.cnf\"" >> $1/vars
     echo "set_var EASYRSA_PKI \"$1/pki\"" >> $1/vars
     $1/easyrsa init-pki

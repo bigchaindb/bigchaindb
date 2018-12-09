@@ -4,7 +4,7 @@
 # kubectl run -it toolbox --image bigchaindb/toolbox --restart=Never --rm
 
 FROM alpine:3.5
-LABEL maintainer "dev@bigchaindb.com"
+LABEL maintainer "devs@bigchaindb.com"
 WORKDIR /
 RUN apk add --no-cache --update curl bind-tools python3-dev g++ \
         libffi-dev make vim git nodejs openssl-dev \

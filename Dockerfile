@@ -1,5 +1,5 @@
 FROM python:3.6
-LABEL maintainer "dev@bigchaindb.com"
+LABEL maintainer "devs@bigchaindb.com"
 RUN mkdir -p /usr/src/app
 COPY . /usr/src/app/
 WORKDIR /usr/src/app
