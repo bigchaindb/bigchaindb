@@ -41,7 +41,7 @@ This Code of Conduct applies both within project spaces and in public spaces
 when an individual is representing the project or its community.
 
 Instances of abusive, harassing, or otherwise unacceptable behavior directed at yourself or another community member may be
-reported by contacting a project maintainer at [conduct@bigchaindb.com](mailto:conduct@bigchaindb.com). All
+reported by contacting a project maintainer at [contact@bigchaindb.com](mailto:contact@bigchaindb.com). All
 complaints will be reviewed and investigated and will result in a response that
 is appropriate to the circumstances. Maintainers are
 obligated to maintain confidentiality with regard to the reporter of an
