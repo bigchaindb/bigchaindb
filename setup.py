@@ -84,7 +84,7 @@ install_requires = [
     'requests>=2.20.0',
     'gunicorn~=19.0',
     'jsonschema~=2.5.1',
-    'pyyaml~=3.12',
+    'pyyaml>=4.2b1',
     'aiohttp~=3.0',
     'bigchaindb-abci==0.5.1',
     'setproctitle~=1.1.0',
