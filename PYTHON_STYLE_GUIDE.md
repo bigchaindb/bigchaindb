@@ -91,6 +91,6 @@ flake8 --max-line-length 119 bigchaindb/
 
 ## Writing and Running (Python) Tests
 
-The content of this section was moved to [`bigchaindb/tests/README.md`](./tests/README.md).
+The content of this section was moved to [`bigchaindb/tests/README.md`](https://github.com/bigchaindb/bigchaindb/blob/master/tests/README.md).
 
 Note: We automatically run all tests on all pull requests (using Travis CI), so you should definitely run all tests locally before you submit a pull request. See the above-linked README file for instructions.
