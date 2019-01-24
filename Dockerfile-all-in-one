@@ -13,7 +13,7 @@ RUN apk --update add sudo bash \
         libffi-dev openssl-dev build-base jq \
     && apk add --no-cache libstdc++ dpkg gnupg \
     && pip3 install --upgrade pip cffi \
-    && pip install --no-cache-dir --process-dependency-links -e . \
+    && pip install --no-cache-dir -e . \
     && apk del build-dependencies \
     && rm -f /var/cache/apk/*
 
