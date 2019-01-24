@@ -24,7 +24,7 @@ We now describe how *we* set up the external (public-facing) DNS records for a B
 There were several goals:
 
 * Allow external users/clients to connect directly to any BigchainDB node in the network (over the internet), if they want.
-* Each BigchainDB node operator should get an SSL certificate for their BigchainDB node, so that their BigchainDB node can serve the [BigchainDB HTTP API](http-client-server-api.html) via HTTPS. (The same certificate might also be used to serve the [WebSocket API](websocket-event-stream-api.html).)
+* Each BigchainDB node operator should get an SSL certificate for their BigchainDB node, so that their BigchainDB node can serve the [BigchainDB HTTP API](http-client-server-api) via HTTPS. (The same certificate might also be used to serve the [WebSocket API](events/websocket-event-stream-api).)
 * There should be no sharing of SSL certificates among BigchainDB node operators.
 * Optional: Allow clients to connect to a "random" BigchainDB node in the network at one particular domain (or subdomain).
 

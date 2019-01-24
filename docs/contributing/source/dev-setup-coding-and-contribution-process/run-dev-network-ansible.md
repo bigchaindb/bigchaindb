@@ -120,7 +120,7 @@ OR
 bdb_root_url = http://<HOST-IP>:<DOCKER-PUBLISHED-PORT>
 ```
 
-**Note**: BigchainDB has [other drivers as well](../drivers-clients/index.html).
+**Note**: BigchainDB has [other drivers as well](http://docs.bigchaindb.com/projects/server/en/latest/drivers-clients/index.html).
 
 ### Experimental: Running Ansible a Remote Dev/Host
 #### Remote Setup

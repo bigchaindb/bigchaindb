@@ -48,14 +48,13 @@ Port 443 is the default HTTPS port (TCP). Package managers might also get some p
 
 Port 9984 is the default port for the BigchainDB client-server HTTP API (TCP), which is served by Gunicorn HTTP Server. It's _possible_ allow port 9984 to accept inbound traffic from anyone, but we recommend against doing that. Instead, set up a reverse proxy server (e.g. using Nginx) and only allow traffic from there. Information about how to do that can be found [in the Gunicorn documentation](http://docs.gunicorn.org/en/stable/deploy.html). (They call it a proxy.)
 
-If Gunicorn and the reverse proxy are running on the same server, then you'll have to tell Gunicorn to listen on some port other than 9984 (so that the reverse proxy can listen on port 9984). You can do that by setting `server.bind` to 'localhost:PORT' in the [BigchainDB Configuration Settings](../server-reference/configuration.html), where PORT is whatever port you chose (e.g. 9983).
+If Gunicorn and the reverse proxy are running on the same server, then you'll have to tell Gunicorn to listen on some port other than 9984 (so that the reverse proxy can listen on port 9984). You can do that by setting `server.bind` to 'localhost:PORT' in the [BigchainDB Configuration Settings](../server-reference/configuration), where PORT is whatever port you chose (e.g. 9983).
 
 You may want to have Gunicorn and the reverse proxy running on different servers, so that both can listen on port 9984. That would also help isolate the effects of a denial-of-service attack.
 
 ## Port 9985
 
-Port 9985 is the default port for the [BigchainDB WebSocket Event Stream API](../websocket-event-stream-api.html).
-
+Port 9985 is the default port for the BigchainDB WebSocket Event Stream API.
 
 ## Port 9986
 

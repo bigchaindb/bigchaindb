@@ -47,7 +47,7 @@ This writes two files: `~/.aws/credentials` and `~/.aws/config`. AWS tools and p
 
 Eventually, you'll have one or more instances (virtual machines) running on AWS and you'll want to SSH to them. To do that, you need a public/private key pair. The public key will be sent to AWS, and you can tell AWS to put it in any instances you provision there. You'll keep the private key on your local workstation.
 
-See the [page about how to generate a key pair for SSH](generate-key-pair-for-ssh.html).
+See the [page about how to generate a key pair for SSH](generate-key-pair-for-ssh).
 
 ## Send the Public Key to AWS
 

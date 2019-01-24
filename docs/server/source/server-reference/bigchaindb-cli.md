@@ -21,7 +21,7 @@ Show the version number. `bigchaindb -v` does the same thing.
 
 ## bigchaindb configure
 
-Generate a local configuration file (which can be used to set some or all [BigchainDB node configuration settings](configuration.html)). It will ask you for the values of some configuration settings.
+Generate a local configuration file (which can be used to set some or all [BigchainDB node configuration settings](configuration)). It will ask you for the values of some configuration settings.
 If you press Enter for a value, it will use the default value.
 
 At this point, only one database backend is supported: `localmongodb`.
@@ -41,7 +41,7 @@ bigchaindb -y configure localmongodb
 
 ## bigchaindb show-config
 
-Show the values of the [BigchainDB node configuration settings](configuration.html).
+Show the values of the [BigchainDB node configuration settings](configuration).
 
 
 ## bigchaindb init
@@ -78,7 +78,7 @@ section of Python's documentation.
 
 For a more fine-grained control over the logging configuration you can use the
 configuration file as documented under
-[Configuration Settings](configuration.html).
+[Configuration Settings](configuration).
 
 
 ## bigchaindb election

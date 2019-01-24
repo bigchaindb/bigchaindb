@@ -3,7 +3,7 @@
 ## General Tips
 
 - Check the BigchainDB, Tendermint and MongoDB logs.
-  For help with that, see the page about [Logging and Log Rotation](../appendices/log-rotation.html).
+  For help with that, see the page about [Logging and Log Rotation](../appendices/log-rotation).
 - Try Googling the error message.
 
 ## Resolving Tendermint Connectivity Problems

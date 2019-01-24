@@ -108,7 +108,7 @@ If (no environment variables were set and there's no local config file), or you 
 ## server.*
 
 `server.bind`, `server.loglevel` and `server.workers`
-are settings for the [Gunicorn HTTP server](http://gunicorn.org/), which is used to serve the [HTTP client-server API](../http-client-server-api.html).
+are settings for the [Gunicorn HTTP server](http://gunicorn.org/), which is used to serve the [HTTP client-server API](../http-client-server-api).
 
 `server.bind` is where to bind the Gunicorn HTTP server socket. It's a string. It can be any valid value for [Gunicorn's bind setting](http://docs.gunicorn.org/en/stable/settings.html#bind). For example:
 
@@ -165,7 +165,7 @@ export BIGCHAINDB_SERVER_WORKERS=5
 These settings are for the
 [aiohttp server](https://aiohttp.readthedocs.io/en/stable/index.html),
 which is used to serve the
-[WebSocket Event Stream API](../websocket-event-stream-api.html).
+[WebSocket Event Stream API](../events/websocket-event-stream-api).
 `wsserver.scheme` should be either `"ws"` or `"wss"`
 (but setting it to `"wss"` does *not* enable SSL/TLS).
 `wsserver.host` is where to bind the aiohttp server socket and

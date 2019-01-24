@@ -20,9 +20,9 @@ Note that there are a few kinds of nodes:
 
 ## Setup Instructions for Various Cases
 
-- [Quickstart](quickstart.html)
+- [Quickstart](quickstart)
 - [Set up a local BigchainDB node for development, experimenting and testing](https://docs.bigchaindb.com/projects/contributing/en/latest/dev-setup-coding-and-contribution-process/index.html)
-- [Set up and run a BigchainDB network](simple-deployment-template/index.html)
+- [Set up and run a BigchainDB network](simple-deployment-template/index)
 
 ## Can I Help?
 
