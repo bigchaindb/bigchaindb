@@ -70,7 +70,7 @@ Let's analyze that command:
 $ docker ps | grep bigchaindb
 ```
 
-Send your first transaction using [BigchainDB drivers](../drivers-clients/index.html).
+Send your first transaction using [BigchainDB drivers](../drivers-clients/index).
 
 
 ## Building Your Own Image

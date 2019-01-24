@@ -52,7 +52,6 @@ try:
     remove('cross-project-policies/shared-workspace.md')
     remove('cross-project-policies/release-process.md')
     remove('cross-project-policies/python-style-guide.md')
-    remove('cross-project-policies/js-style-guide.md')
 except:
     print('done')
 
@@ -71,9 +70,6 @@ get_old_new('https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/RELE
 
 get_old_new('https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/PYTHON_STYLE_GUIDE.md',
             'PYTHON_STYLE_GUIDE.md', 'cross-project-policies/python-style-guide.md')
-
-get_old_new('https://raw.githubusercontent.com/ascribe/javascript/master/README.md',
-            'README.md','cross-project-policies/js-style-guide.md')
 
 suppress_warnings = ['misc.highlighting_failure']
 

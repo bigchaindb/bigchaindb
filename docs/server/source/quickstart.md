@@ -59,7 +59,7 @@ Create a BigchainDB transaction and post it to a BigchainDB network in 20 second
 To develop an app that talks to a BigchainDB network, you'll want a test network to test it against. You have a few options:
 
 1. The BigchainDB Test Network (or "Testnet") is a free-to-use, publicly-available BigchainDB network that you can test against. You can find out more about the BigchainDB Testnet on [the BigchainDB "Get Started" page](https://www.bigchaindb.com/developers/getstarted/#server).
-1. You could also run a BigchainDB node on you local machine. One way is to use the [Simple Deployment Template](./simple-deployment-template/index.html), with a one-node "network." Another way is to use one of the deployment methods listed in the [the docs about contributing to BigchainDB](https://docs.bigchaindb.com/projects/contributing/en/latest/index.html).
+1. You could also run a BigchainDB node on you local machine. One way is to use the [Simple Deployment Template](./simple-deployment-template/index), with a one-node "network." Another way is to use one of the deployment methods listed in the [the docs about contributing to BigchainDB](https://docs.bigchaindb.com/projects/contributing/en/latest/index.html).
 
 Regardless of which BigchainDB network you use, you'll probably use one of the [BigchainDB drivers or tools](https://www.bigchaindb.com/getstarted/#drivers).
 

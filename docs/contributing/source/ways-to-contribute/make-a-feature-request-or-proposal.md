@@ -6,4 +6,4 @@ Code is Apache-2.0 and docs are CC-BY-4.0
 
 # Make a Feature Request or Proposal
 
-To make a feature request or proposal, [write a BigchainDB Enhancement Proposal (BEP)](write-a-bep.html).
+To make a feature request or proposal, [write a BigchainDB Enhancement Proposal (BEP)](write-a-bep).

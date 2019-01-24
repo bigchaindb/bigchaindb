@@ -6,7 +6,7 @@ Code is Apache-2.0 and docs are CC-BY-4.0
 
 # Production Node Requirements
 
-**This page is about the requirements of BigchainDB Server.** You can find the requirements of MongoDB, Tendermint and other [production node components](node-components.html) in the documentation for that software.
+**This page is about the requirements of BigchainDB Server.** You can find the requirements of MongoDB, Tendermint and other [production node components](node-components) in the documentation for that software.
 
 ## OS Requirements
 
@@ -18,4 +18,4 @@ _Don't use macOS_ (formerly OS X, formerly Mac OS X), because it's not a server-
 
 BigchainDB Server runs many concurrent processes, so more RAM and more CPU cores is better.
 
-As mentioned on the page about [production node components](node-components.html), every machine running BigchainDB Server should be running an NTP daemon.
+As mentioned on the page about [production node components](node-components), every machine running BigchainDB Server should be running an NTP daemon.
