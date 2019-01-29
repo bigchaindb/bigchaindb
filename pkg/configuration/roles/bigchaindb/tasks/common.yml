@@ -10,7 +10,7 @@
   tags: [bigchaindb]
 
 - name: Install BigchainDB
-  shell: "python3.6 -m pip install --no-cache-dir -e /opt/stack/bigchaindb/.[dev] --ignore-installed pyyaml"
+  shell: "python3.6 -m pip install -e /opt/stack/bigchaindb/.[dev] --ignore-installed pyyaml"
   register: install_bdb
   failed_when: "'FAILED' in install_bdb.stderr or install_bdb.rc != 0"
   tags: [bigchaindb]

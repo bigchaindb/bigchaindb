@@ -6,7 +6,7 @@ WORKDIR /usr/src/app
 RUN apt-get -qq update \
     && apt-get -y upgrade \
     && apt-get install -y jq \
-    && pip install --no-cache-dir . \
+    && pip install . \
     && apt-get autoremove \
     && apt-get clean
 

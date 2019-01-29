@@ -32,5 +32,5 @@ ENV BIGCHAINDB_CI_ABCI ${abci_status}
 RUN mkdir -p /usr/src/app
 COPY . /usr/src/app/
 WORKDIR /usr/src/app
-RUN pip install --no-cache-dir -e .[dev]
+RUN pip install -e .[dev]
 RUN bigchaindb -y configure

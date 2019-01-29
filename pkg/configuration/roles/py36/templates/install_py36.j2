@@ -28,7 +28,7 @@ cd $HOME && \
 rm -rf /usr/src/python
 export PYTHON_PIP_VERSION=10.0.1
 wget -O get-pip.py 'https://bootstrap.pypa.io/get-pip.py'
-python3 get-pip.py --disable-pip-version-check --no-cache-dir "pip==$PYTHON_PIP_VERSION"
+python3 get-pip.py --disable-pip-version-check "pip==$PYTHON_PIP_VERSION"
 find /usr/local -depth \( \( -type d -a \( -name test -o -name tests \) \) -o \( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \) -exec rm -rf '{}' +;
 rm -f get-pip.py
 {% endraw %}
