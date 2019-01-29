@@ -9,7 +9,7 @@ RUN apk --update add sudo \
         libffi-dev openssl-dev build-base \
     && apk add --no-cache libstdc++ \
     && pip3 install --upgrade pip cffi \
-    && pip install --no-cache-dir -e .[dev] \
+    && pip install -e .[dev] \
     && apk del build-dependencies \
     && rm -f /var/cache/apk/*
 # When developing with Python in a docker container, we are using PYTHONBUFFERED
