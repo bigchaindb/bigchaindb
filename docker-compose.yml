@@ -12,6 +12,7 @@ services:
     ports:
       - "27017:27017"
     command: mongod
+    restart: always
   bigchaindb:
     depends_on:
       - mongodb
@@ -47,6 +48,7 @@ services:
       timeout: 5s
       retries: 3
     command: '.ci/entrypoint.sh'
+    restart: always
   tendermint:
     image: tendermint/tendermint:0.22.8
     # volumes:
@@ -56,6 +58,7 @@ services:
       - "26656:26656"
       - "26657:26657"
     command: sh -c "tendermint init && tendermint node --consensus.create_empty_blocks=false --proxy_app=tcp://bigchaindb:26658"
+    restart: always
   bdb:
     image: busybox
     depends_on:
