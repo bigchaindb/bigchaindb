@@ -23,7 +23,7 @@ epel_repo_gpg_key_url: "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-{{ ansible_distributio
 epel_repofile_path: "/etc/yum.repos.d/epel.repo"
 
 # MongoDB running config
-mongodb_storage_path: /data/db/main
+mongodb_storage_path: /data/db
 mongodb_log_path: /var/log/mongodb
 mongodb_config_path: /data/configdb
 directories:
