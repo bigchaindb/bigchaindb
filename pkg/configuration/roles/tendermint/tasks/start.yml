@@ -53,6 +53,7 @@
       - "{{ tendermint_rpc_port }}"
     volumes:
       - "{{ tendermint_host_mount_dir }}{{ item|string }}{{ tendermint_home }}:{{ tendermint_home }}"
+      - "{{ tendermint_host_mount_dir }}{{ item|string }}{{ tendermint_data }}:{{ tendermint_data }}"
       - "{{ tendermint_host_mount_config_dir }}{{ tendermint_home }}:/tendermint_config"
     entrypoint: ''
     command: bash -c 'cp /tendermint_config/genesis.json /tendermint/config/genesis.json &&
