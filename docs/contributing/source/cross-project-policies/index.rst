@@ -11,7 +11,6 @@ Policies
    :maxdepth: 1
 
    code-of-conduct
-   shared-workspace
    python-style-guide
    JavaScript Style Guide <https://github.com/ascribe/javascript>
    release-process

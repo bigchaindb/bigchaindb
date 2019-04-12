@@ -49,7 +49,6 @@ extensions = [
 
 try:
     remove('cross-project-policies/code-of-conduct.md')
-    remove('cross-project-policies/shared-workspace.md')
     remove('cross-project-policies/release-process.md')
     remove('cross-project-policies/python-style-guide.md')
 except:
@@ -61,9 +60,6 @@ def get_old_new(url, old, new):
 
 get_old_new('https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/CODE_OF_CONDUCT.md',
             'CODE_OF_CONDUCT.md', 'cross-project-policies/code-of-conduct.md')
-
-get_old_new('https://raw.githubusercontent.com/bigchaindb/BEPs/master/6/README.md',
-            'README.md', 'cross-project-policies/shared-workspace.md')
 
 get_old_new('https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/RELEASE_PROCESS.md',
             'RELEASE_PROCESS.md', 'cross-project-policies/release-process.md')

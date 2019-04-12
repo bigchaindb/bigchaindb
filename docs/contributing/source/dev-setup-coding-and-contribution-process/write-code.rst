@@ -65,6 +65,14 @@ Set Up Your Local Machine. Here's How.
   latest ``pip``, ``wheel`` and ``setuptools`` and put them inside the new virtualenv.
 
 
+Before You Start Writing Code
+-----------------------------
+
+Read `BEP-24 <https://github.com/bigchaindb/BEPs/tree/master/24>`_
+so you know what to do to ensure that your changes (i.e. your future pull request) can be merged.
+It's easy and will save you some hassle later on.
+
+
 Start Writing Code
 ------------------
 
@@ -140,28 +148,9 @@ Codecov gets its configuration from the file `codeocov.yaml <https://github.com/
 `docs.codecov.io <https://docs.codecov.io/v4.3.6/docs/codecov-yaml>`_. Codecov might also use ``setup.cfg``.
 
 
-First-Time Pull Requests from External Users
---------------------------------------------
-
-First-time pull requests from external users who haven't contributed before will get blocked by the requirement to agree to the
-BigchainDB Contributor License Agreement (CLA). It doesn't take long to agree to it. Go to
-`https://www.bigchaindb.com/cla/ <https://www.bigchaindb.com/cla/>`_ and:
-
-- Select the CLA you want to agree to (for individuals or for a whole company)
-- Fill in the form and submit it
-- Wait for an email from us with the next step. There is only one: copying a special block of text to GitHub.
-
-
 Merge!
 ------
 
 Ideally, we like your PR and merge it right away. We don't want to keep you waiting.
 
 If we want to make changes, we'll do them in a follow-up PR.
-
------------------
-
-You are awesome. Do you want a job? `Apply! <https://github.com/bigchaindb/org/tree/master/jobs>`_ Berlin is great. If you got this far, we'd be happy to consider you joining our team. Look at these `Unsplash photos of Berlin <https://unsplash.com/search/photos/berlin>`_. So nice.
-
-
-
