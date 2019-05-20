@@ -6,15 +6,13 @@
 Drivers & Tools
 ===============
 
-Libraries and Tools Maintained by the BigchainDB Team
------------------------------------------------------
+These drivers were originally created by the original BigchainDB team:
 
 * `Python Driver <https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html>`_
 * `JavaScript / Node.js Driver <https://github.com/bigchaindb/js-bigchaindb-driver>`_
-* `Java driver <https://github.com/bigchaindb/java-bigchaindb-driver>`_
+* `Java Driver <https://github.com/bigchaindb/java-bigchaindb-driver>`_
 
-Community-Driven Libraries and Tools
-------------------------------------
+These drivers and tools were created by the BigchainDB community:
 
 .. warning::
 
@@ -22,6 +20,7 @@ Community-Driven Libraries and Tools
    but may still be useful.
    Others might not work with the latest version of BigchainDB.
 
+* `C# driver <https://github.com/Omnibasis/bigchaindb-csharp-driver>`_ (working as of May 2019)
 * `Haskell transaction builder <https://github.com/bigchaindb/bigchaindb-hs>`_
 * `Go driver <https://github.com/zbo14/envoke/blob/master/bigchain/bigchain.go>`_
 * `Ruby driver <https://github.com/LicenseRocks/bigchaindb_ruby>`_
