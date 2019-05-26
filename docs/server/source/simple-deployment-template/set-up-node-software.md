@@ -13,12 +13,19 @@ MongoDB and Tendermint.
 ## Install BigchainDB Server
 
 BigchainDB Server requires **Python 3.6+**, so make sure your system has it.
+
 Install the required OS-level packages:
 
 ```
 # For Ubuntu 18.04:
 sudo apt install -y python3-pip libssl-dev
 # Ubuntu 16.04, and other Linux distros, may require other packages or more packages
+```
+
+BigchainDB Server requires [gevent](http://www.gevent.org/), and to install gevent, you must use pip 19 or later (as of 2019, because gevent now uses manylinux2010 wheels). Upgrade pip to the latest version:
+
+```
+sudo pip3 install -U pip
 ```
 
 Now install the latest version of BigchainDB Server.
