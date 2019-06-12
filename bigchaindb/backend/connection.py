@@ -2,14 +2,14 @@
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
-from itertools import repeat
-from importlib import import_module
 import logging
+from importlib import import_module
+from itertools import repeat
 
 import bigchaindb
-from bigchaindb.common.exceptions import ConfigurationError
 from bigchaindb.backend.exceptions import ConnectionError
-
+from bigchaindb.backend.utils import get_bigchaindb_config_value, get_bigchaindb_config_value_or_key_error
+from bigchaindb.common.exceptions import ConfigurationError
 
 BACKENDS = {
     'localmongodb': 'bigchaindb.backend.localmongodb.connection.LocalMongoDBConnection',
@@ -47,10 +47,10 @@ def connect(backend=None, host=None, port=None, name=None, max_tries=None,
             Authentication failure after connecting to the database.
     """
 
-    backend = backend or bigchaindb.config['database']['backend']
-    host = host or bigchaindb.config['database']['host']
-    port = port or bigchaindb.config['database']['port']
-    dbname = name or bigchaindb.config['database']['name']
+    backend = backend or get_bigchaindb_config_value_or_key_error('backend')
+    host = host or get_bigchaindb_config_value_or_key_error('host')
+    port = port or get_bigchaindb_config_value_or_key_error('port')
+    dbname = name or get_bigchaindb_config_value_or_key_error('name')
     # Not sure how to handle this here. This setting is only relevant for
     # mongodb.
     # I added **kwargs for both RethinkDBConnection and MongoDBConnection
@@ -60,15 +60,15 @@ def connect(backend=None, host=None, port=None, name=None, max_tries=None,
     # UPD: RethinkDBConnection is not here anymore cause we no longer support RethinkDB.
     # The problem described above might be reconsidered next time we introduce a backend,
     # if it ever happens.
-    replicaset = replicaset or bigchaindb.config['database'].get('replicaset')
-    ssl = ssl if ssl is not None else bigchaindb.config['database'].get('ssl', False)
-    login = login or bigchaindb.config['database'].get('login')
-    password = password or bigchaindb.config['database'].get('password')
-    ca_cert = ca_cert or bigchaindb.config['database'].get('ca_cert', None)
-    certfile = certfile or bigchaindb.config['database'].get('certfile', None)
-    keyfile = keyfile or bigchaindb.config['database'].get('keyfile', None)
-    keyfile_passphrase = keyfile_passphrase or bigchaindb.config['database'].get('keyfile_passphrase', None)
-    crlfile = crlfile or bigchaindb.config['database'].get('crlfile', None)
+    replicaset = replicaset or get_bigchaindb_config_value('replicaset')
+    ssl = ssl if ssl is not None else get_bigchaindb_config_value('ssl', False)
+    login = login or get_bigchaindb_config_value('login')
+    password = password or get_bigchaindb_config_value('password')
+    ca_cert = ca_cert or get_bigchaindb_config_value('ca_cert')
+    certfile = certfile or get_bigchaindb_config_value('certfile')
+    keyfile = keyfile or get_bigchaindb_config_value('keyfile')
+    keyfile_passphrase = keyfile_passphrase or get_bigchaindb_config_value('keyfile_passphrase', None)
+    crlfile = crlfile or get_bigchaindb_config_value('crlfile')
 
     try:
         module_name, _, class_name = BACKENDS[backend].rpartition('.')
@@ -117,7 +117,7 @@ class Connection:
         self.host = host or dbconf['host']
         self.port = port or dbconf['port']
         self.dbname = dbname or dbconf['name']
-        self.connection_timeout = connection_timeout if connection_timeout is not None\
+        self.connection_timeout = connection_timeout if connection_timeout is not None \
             else dbconf['connection_timeout']
         self.max_tries = max_tries if max_tries is not None else dbconf['max_tries']
         self.max_tries_counter = range(self.max_tries) if self.max_tries != 0 else repeat(0)

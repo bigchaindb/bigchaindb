@@ -9,6 +9,7 @@ MongoDB.
 import logging
 from collections import namedtuple
 from uuid import uuid4
+
 import rapidjson
 
 try:
@@ -25,6 +26,9 @@ from bigchaindb.models import Transaction
 from bigchaindb.common.exceptions import (SchemaValidationError,
                                           ValidationError,
                                           DoubleSpend)
+from bigchaindb.common.transaction_mode_types import (BROADCAST_TX_COMMIT,
+                                                      BROADCAST_TX_ASYNC,
+                                                      BROADCAST_TX_SYNC)
 from bigchaindb.tendermint_utils import encode_transaction, merkleroot
 from bigchaindb import exceptions as core_exceptions
 from bigchaindb.validation import BaseValidationRules
@@ -56,9 +60,9 @@ class BigchainDB(object):
                 A connection to the database.
         """
         config_utils.autoconfigure()
-        self.mode_commit = 'broadcast_tx_commit'
-        self.mode_list = ('broadcast_tx_async',
-                          'broadcast_tx_sync',
+        self.mode_commit = BROADCAST_TX_COMMIT
+        self.mode_list = (BROADCAST_TX_ASYNC,
+                          BROADCAST_TX_SYNC,
                           self.mode_commit)
         self.tendermint_host = bigchaindb.config['tendermint']['host']
         self.tendermint_port = bigchaindb.config['tendermint']['port']

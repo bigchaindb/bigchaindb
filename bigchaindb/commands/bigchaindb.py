@@ -16,6 +16,7 @@ import sys
 from bigchaindb.core import rollback
 from bigchaindb.migrations.chain_migration_election import ChainMigrationElection
 from bigchaindb.utils import load_node_key
+from bigchaindb.common.transaction_mode_types import BROADCAST_TX_COMMIT
 from bigchaindb.common.exceptions import (DatabaseDoesNotExist,
                                           ValidationError)
 from bigchaindb.elections.vote import Vote
@@ -131,7 +132,7 @@ def create_new_election(sk, bigchain, election_class, data):
         logger.error(fd_404)
         return False
 
-    resp = bigchain.write_transaction(election, 'broadcast_tx_commit')
+    resp = bigchain.write_transaction(election, BROADCAST_TX_COMMIT)
     if resp == (202, ''):
         logger.info('[SUCCESS] Submitted proposal with id: {}'.format(election.id))
         return election.id
@@ -206,7 +207,7 @@ def run_election_approve(args, bigchain):
                              tx.id).sign([key.private_key])
     approval.validate(bigchain)
 
-    resp = bigchain.write_transaction(approval, 'broadcast_tx_commit')
+    resp = bigchain.write_transaction(approval, BROADCAST_TX_COMMIT)
 
     if resp == (202, ''):
         logger.info('[SUCCESS] Your vote has been submitted')
@@ -261,7 +262,6 @@ def run_drop(args):
             return
 
     conn = backend.connect()
-    dbname = bigchaindb.config['database']['name']
     try:
         schema.drop_database(conn, dbname)
     except DatabaseDoesNotExist:

@@ -2,15 +2,18 @@
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
+from bigchaindb.backend.schema import validate_language_key
 from bigchaindb.common.exceptions import (InvalidSignature,
                                           DuplicateTransaction)
+from bigchaindb.common.schema import validate_transaction_schema
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.utils import (validate_txn_obj, validate_key)
-from bigchaindb.common.schema import validate_transaction_schema
-from bigchaindb.backend.schema import validate_language_key
 
 
 class Transaction(Transaction):
+    ASSET = 'asset'
+    METADATA = 'metadata'
+    DATA = 'data'
 
     def validate(self, bigchain, current_transactions=[]):
         """Validate transaction spend
@@ -46,10 +49,10 @@ class Transaction(Transaction):
     @classmethod
     def validate_schema(cls, tx_body):
         validate_transaction_schema(tx_body)
-        validate_txn_obj('asset', tx_body['asset'], 'data', validate_key)
-        validate_txn_obj('metadata', tx_body, 'metadata', validate_key)
-        validate_language_key(tx_body['asset'], 'data')
-        validate_language_key(tx_body, 'metadata')
+        validate_txn_obj(cls.ASSET, tx_body[cls.ASSET], cls.DATA, validate_key)
+        validate_txn_obj(cls.METADATA, tx_body, cls.METADATA, validate_key)
+        validate_language_key(tx_body[cls.ASSET], cls.DATA)
+        validate_language_key(tx_body, cls.METADATA)
 
 
 class FastTransaction:
