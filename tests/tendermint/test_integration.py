@@ -11,6 +11,8 @@ import pytest
 
 from abci.server import ProtocolHandler
 from abci.encoding import read_messages
+
+from bigchaindb.common.transaction_mode_types import BROADCAST_TX_COMMIT, BROADCAST_TX_SYNC
 from bigchaindb.version import __tm_supported_versions__
 from io import BytesIO
 
@@ -120,7 +122,7 @@ def test_post_transaction_responses(tendermint_ws_url, b):
                             asset=None)\
                     .sign([alice.private_key])
 
-    code, message = b.write_transaction(tx, 'broadcast_tx_commit')
+    code, message = b.write_transaction(tx, BROADCAST_TX_COMMIT)
     assert code == 202
 
     tx_transfer = Transaction.transfer(tx.to_inputs(),
@@ -128,7 +130,7 @@ def test_post_transaction_responses(tendermint_ws_url, b):
                                        asset_id=tx.id)\
                              .sign([alice.private_key])
 
-    code, message = b.write_transaction(tx_transfer, 'broadcast_tx_commit')
+    code, message = b.write_transaction(tx_transfer, BROADCAST_TX_COMMIT)
     assert code == 202
 
     carly = generate_key_pair()
@@ -137,7 +139,7 @@ def test_post_transaction_responses(tendermint_ws_url, b):
         [([carly.public_key], 1)],
         asset_id=tx.id,
     ).sign([alice.private_key])
-    for mode in ('broadcast_tx_sync', 'broadcast_tx_commit'):
+    for mode in (BROADCAST_TX_SYNC, BROADCAST_TX_COMMIT):
         code, message = b.write_transaction(double_spend, mode)
         assert code == 500
         assert message == 'Transaction validation failed'

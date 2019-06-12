@@ -7,13 +7,13 @@ from ssl import CERT_REQUIRED
 
 import pymongo
 
-import bigchaindb
-from bigchaindb.utils import Lazy
-from bigchaindb.common.exceptions import ConfigurationError
+from bigchaindb.backend.connection import Connection
 from bigchaindb.backend.exceptions import (DuplicateKeyError,
                                            OperationError,
                                            ConnectionError)
-from bigchaindb.backend.connection import Connection
+from bigchaindb.backend.utils import get_bigchaindb_config_value
+from bigchaindb.common.exceptions import ConfigurationError
+from bigchaindb.utils import Lazy
 
 logger = logging.getLogger(__name__)
 
@@ -33,15 +33,15 @@ class LocalMongoDBConnection(Connection):
         """
 
         super().__init__(**kwargs)
-        self.replicaset = replicaset or bigchaindb.config['database'].get('replicaset')
-        self.ssl = ssl if ssl is not None else bigchaindb.config['database'].get('ssl', False)
-        self.login = login or bigchaindb.config['database'].get('login')
-        self.password = password or bigchaindb.config['database'].get('password')
-        self.ca_cert = ca_cert or bigchaindb.config['database'].get('ca_cert', None)
-        self.certfile = certfile or bigchaindb.config['database'].get('certfile', None)
-        self.keyfile = keyfile or bigchaindb.config['database'].get('keyfile', None)
-        self.keyfile_passphrase = keyfile_passphrase or bigchaindb.config['database'].get('keyfile_passphrase', None)
-        self.crlfile = crlfile or bigchaindb.config['database'].get('crlfile', None)
+        self.replicaset = replicaset or get_bigchaindb_config_value('replicaset')
+        self.ssl = ssl if ssl is not None else get_bigchaindb_config_value('ssl', False)
+        self.login = login or get_bigchaindb_config_value('login')
+        self.password = password or get_bigchaindb_config_value('password')
+        self.ca_cert = ca_cert or get_bigchaindb_config_value('ca_cert')
+        self.certfile = certfile or get_bigchaindb_config_value('certfile')
+        self.keyfile = keyfile or get_bigchaindb_config_value('keyfile')
+        self.keyfile_passphrase = keyfile_passphrase or get_bigchaindb_config_value('keyfile_passphrase')
+        self.crlfile = crlfile or get_bigchaindb_config_value('crlfile')
 
     @property
     def db(self):

@@ -5,6 +5,7 @@
 import os
 from unittest.mock import patch
 
+
 try:
     from hashlib import sha3_256
 except ImportError:
@@ -15,6 +16,9 @@ import pytest
 from pymongo import MongoClient
 
 from bigchaindb import backend
+from bigchaindb.common.transaction_mode_types import (BROADCAST_TX_COMMIT,
+                                                      BROADCAST_TX_ASYNC,
+                                                      BROADCAST_TX_SYNC)
 from bigchaindb.lib import Block
 
 
@@ -103,20 +107,20 @@ def test_write_and_post_transaction(mock_post, b):
                     .sign([alice.private_key]).to_dict()
 
     tx = b.validate_transaction(tx)
-    b.write_transaction(tx, 'broadcast_tx_async')
+    b.write_transaction(tx, BROADCAST_TX_ASYNC)
 
     assert mock_post.called
     args, kwargs = mock_post.call_args
-    assert 'broadcast_tx_async' == kwargs['json']['method']
+    assert BROADCAST_TX_ASYNC == kwargs['json']['method']
     encoded_tx = [encode_transaction(tx.to_dict())]
     assert encoded_tx == kwargs['json']['params']
 
 
 @patch('requests.post')
 @pytest.mark.parametrize('mode', [
-    'broadcast_tx_async',
-    'broadcast_tx_sync',
-    'broadcast_tx_commit'
+    BROADCAST_TX_SYNC,
+    BROADCAST_TX_ASYNC,
+    BROADCAST_TX_COMMIT
 ])
 def test_post_transaction_valid_modes(mock_post, b, mode):
     from bigchaindb.models import Transaction

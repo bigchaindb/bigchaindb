@@ -11,7 +11,9 @@ from cryptoconditions import Ed25519Sha256
 from sha3 import sha3_256
 
 from bigchaindb.common import crypto
-
+from bigchaindb.common.transaction_mode_types import (BROADCAST_TX_COMMIT,
+                                                      BROADCAST_TX_ASYNC,
+                                                      BROADCAST_TX_SYNC)
 
 TX_ENDPOINT = '/api/v1/transactions/'
 
@@ -404,10 +406,10 @@ def test_transactions_get_list_bad(client):
 
 @patch('requests.post')
 @pytest.mark.parametrize('mode', [
-    ('', 'broadcast_tx_async'),
-    ('?mode=async', 'broadcast_tx_async'),
-    ('?mode=sync', 'broadcast_tx_sync'),
-    ('?mode=commit', 'broadcast_tx_commit'),
+    ('', BROADCAST_TX_ASYNC),
+    ('?mode=async', BROADCAST_TX_ASYNC),
+    ('?mode=sync', BROADCAST_TX_SYNC),
+    ('?mode=commit', BROADCAST_TX_COMMIT),
 ])
 def test_post_transaction_valid_modes(mock_post, client, mode):
     from bigchaindb.models import Transaction

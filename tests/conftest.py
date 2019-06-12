@@ -22,6 +22,7 @@ from pymongo import MongoClient
 
 from bigchaindb import ValidatorElection
 from bigchaindb.common import crypto
+from bigchaindb.common.transaction_mode_types import BROADCAST_TX_COMMIT
 from bigchaindb.tendermint_utils import key_from_base64
 from bigchaindb.backend import schema, query
 from bigchaindb.common.crypto import (key_pair_from_ed25519_key,
@@ -272,7 +273,7 @@ def signed_create_tx(alice, create_tx):
 
 @pytest.fixture
 def posted_create_tx(b, signed_create_tx):
-    res = b.post_transaction(signed_create_tx, 'broadcast_tx_commit')
+    res = b.post_transaction(signed_create_tx, BROADCAST_TX_COMMIT)
     assert res.status_code == 200
     return signed_create_tx
 

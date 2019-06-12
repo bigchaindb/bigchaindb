@@ -11,6 +11,7 @@ from functools import singledispatch
 from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 from bigchaindb.backend.schema import TABLES
 from bigchaindb.common import crypto
+from bigchaindb.common.transaction_mode_types import BROADCAST_TX_COMMIT
 from bigchaindb.elections.election import Election, Vote
 from bigchaindb.tendermint_utils import key_to_base64
 
@@ -36,7 +37,7 @@ def generate_block(bigchain):
                             asset=None)\
                     .sign([alice.private_key])
 
-    code, message = bigchain.write_transaction(tx, 'broadcast_tx_commit')
+    code, message = bigchain.write_transaction(tx, BROADCAST_TX_COMMIT)
     assert code == 202
 
 
