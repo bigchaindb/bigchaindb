@@ -19,7 +19,10 @@ import base58
 from cryptoconditions import Fulfillment, ThresholdSha256, Ed25519Sha256
 from cryptoconditions.exceptions import (
     ParsingError, ASN1DecodeError, ASN1EncodeError, UnsupportedTypeError)
-from sha3 import sha3_256
+try:
+    from hashlib import sha3_256
+except ImportError:
+    from sha3 import sha3_256
 
 from bigchaindb.common.crypto import PrivateKey, hash_data
 from bigchaindb.common.exceptions import (KeypairMismatchException,

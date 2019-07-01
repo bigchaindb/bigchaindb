@@ -5,7 +5,11 @@
 # Separate all crypto code so that we can easily test several implementations
 from collections import namedtuple
 
-import sha3
+try:
+    from hashlib import sha3_256
+except ImportError:
+    from sha3 import sha3_256
+
 from cryptoconditions import crypto
 
 
@@ -14,7 +18,7 @@ CryptoKeypair = namedtuple('CryptoKeypair', ('private_key', 'public_key'))
 
 def hash_data(data):
     """Hash the provided data using SHA3-256"""
-    return sha3.sha3_256(data.encode()).hexdigest()
+    return sha3_256(data.encode()).hexdigest()
 
 
 def generate_key_pair():

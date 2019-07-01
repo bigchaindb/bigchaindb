@@ -8,7 +8,10 @@ from unittest.mock import Mock, patch
 import base58
 import pytest
 from cryptoconditions import Ed25519Sha256
-from sha3 import sha3_256
+try:
+    from hashlib import sha3_256
+except ImportError:
+    from sha3 import sha3_256
 
 from bigchaindb.common import crypto
 from bigchaindb.common.transaction_mode_types import (BROADCAST_TX_COMMIT,
