@@ -1,5 +1,5 @@
 ARG python_version=3.6
-FROM pypy:${python_version}
+FROM python:${python_version}
 LABEL maintainer "devs@bigchaindb.com"
 
 RUN apt-get update \
