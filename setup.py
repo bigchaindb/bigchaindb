@@ -74,7 +74,6 @@ tests_require = [
 install_requires = [
     # TODO Consider not installing the db drivers, or putting them in extras.
     'pymongo~=3.6',
-    'pysha3~=1.0.2',
     'cryptoconditions==0.8.0',
     'python-rapidjson~=0.6.0',
     'logstats~=0.2.1',
@@ -90,6 +89,9 @@ install_requires = [
     'setproctitle~=1.1.0',
     'packaging~=18.0',
 ]
+
+if sys.version_info < (3, 6):
+    install_requires.append('pysha3~=1.0.2')
 
 setup(
     name='BigchainDB',

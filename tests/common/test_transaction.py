@@ -11,7 +11,10 @@ from copy import deepcopy
 from base58 import b58encode, b58decode
 from cryptoconditions import Ed25519Sha256
 from pytest import mark, raises
-from sha3 import sha3_256
+try:
+    from hashlib import sha3_256
+except ImportError:
+    from sha3 import sha3_256
 
 pytestmark = mark.bdb
 
