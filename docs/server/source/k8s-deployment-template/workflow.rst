@@ -59,7 +59,7 @@ you can do this:
 .. code::
 
    $ mkdir $(pwd)/tmdata
-   $ docker run --rm -v $(pwd)/tmdata:/tendermint/config tendermint/tendermint:0.22.8 init
+   $ docker run --rm -v $(pwd)/tmdata:/tendermint/config tendermint/tendermint:v0.31.5 init
    $ cat $(pwd)/tmdata/genesis.json
 
 You should see something that looks like:
@@ -69,7 +69,7 @@ You should see something that looks like:
    {"genesis_time": "0001-01-01T00:00:00Z",
     "chain_id": "test-chain-bGX7PM",
     "validators": [
-        {"pub_key": 
+        {"pub_key":
             {"type": "ed25519",
              "data": "4669C4B966EB8B99E45E40982B2716A9D3FA53B54C68088DAB2689935D7AF1A9"},
          "power": 10,

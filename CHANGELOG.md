@@ -24,6 +24,12 @@ For reference, the possible headings are:
 * **Known Issues**
 * **Notes**
 
+## [2.0] - 2019-09-26
+
+### Changed
+
+Migrated from Tendermint 0.22.8 to 0.31.5.
+
 ## [2.0 Beta 9] - 2018-11-27
 
 ### Changed
