@@ -13,42 +13,42 @@ services:
       - "27017:27017"
     command: mongod
     restart: always
-  # bigchaindb:
-  #   depends_on:
-  #     - mongodb
-  #     - tendermint
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile-dev
-  #   volumes:
-  #     - ./bigchaindb:/usr/src/app/bigchaindb
-  #     - ./tests:/usr/src/app/tests
-  #     - ./docs:/usr/src/app/docs
-  #     - ./htmlcov:/usr/src/app/htmlcov
-  #     - ./setup.py:/usr/src/app/setup.py
-  #     - ./setup.cfg:/usr/src/app/setup.cfg
-  #     - ./pytest.ini:/usr/src/app/pytest.ini
-  #     - ./tox.ini:/usr/src/app/tox.ini
-  #   environment:
-  #     BIGCHAINDB_DATABASE_BACKEND: localmongodb
-  #     BIGCHAINDB_DATABASE_HOST: mongodb
-  #     BIGCHAINDB_DATABASE_PORT: 27017
-  #     BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984
-  #     BIGCHAINDB_WSSERVER_HOST: 0.0.0.0
-  #     BIGCHAINDB_WSSERVER_ADVERTISED_HOST: bigchaindb
-  #     BIGCHAINDB_TENDERMINT_HOST: tendermint
-  #     BIGCHAINDB_TENDERMINT_PORT: 26657
-  #   ports:
-  #     - "9984:9984"
-  #     - "9985:9985"
-  #     - "26658"
-  #   healthcheck:
-  #     test: ["CMD", "bash", "-c", "curl http://bigchaindb:9984 && curl http://tendermint:26657/abci_query"]
-  #     interval: 3s
-  #     timeout: 5s
-  #     retries: 3
-  #   command: '.ci/entrypoint.sh'
-  #   restart: always
+  bigchaindb:
+    depends_on:
+      - mongodb
+      - tendermint
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    volumes:
+      - ./bigchaindb:/usr/src/app/bigchaindb
+      - ./tests:/usr/src/app/tests
+      - ./docs:/usr/src/app/docs
+      - ./htmlcov:/usr/src/app/htmlcov
+      - ./setup.py:/usr/src/app/setup.py
+      - ./setup.cfg:/usr/src/app/setup.cfg
+      - ./pytest.ini:/usr/src/app/pytest.ini
+      - ./tox.ini:/usr/src/app/tox.ini
+    environment:
+      BIGCHAINDB_DATABASE_BACKEND: localmongodb
+      BIGCHAINDB_DATABASE_HOST: mongodb
+      BIGCHAINDB_DATABASE_PORT: 27017
+      BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984
+      BIGCHAINDB_WSSERVER_HOST: 0.0.0.0
+      BIGCHAINDB_WSSERVER_ADVERTISED_HOST: bigchaindb
+      BIGCHAINDB_TENDERMINT_HOST: tendermint
+      BIGCHAINDB_TENDERMINT_PORT: 26657
+    ports:
+      - "9984:9984"
+      - "9985:9985"
+      - "26658"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl http://bigchaindb:9984 && curl http://tendermint:26657/abci_query"]
+      interval: 3s
+      timeout: 5s
+      retries: 3
+    command: '.ci/entrypoint.sh'
+    restart: always
   tendermint:
     image: tendermint/tendermint:v0.31.5
     # volumes:
@@ -57,48 +57,48 @@ services:
     ports:
       - "26656:26656"
       - "26657:26657"
-    command: sh -c "tendermint init && tendermint node --consensus.create_empty_blocks=false --proxy_app=tcp://10.0.75.1:26658"
+    command: sh -c "tendermint init && tendermint node --consensus.create_empty_blocks=false --proxy_app=tcp://bigchaindb:26658"
     restart: always
-  # bdb:
-  #   image: busybox
-  #   depends_on:
-  #     bigchaindb:
-  #       condition: service_healthy
+  bdb:
+    image: busybox
+    depends_on:
+      bigchaindb:
+        condition: service_healthy
 
 
-  # # curl client to check the health of development env
-  # curl-client:
-  #   image: appropriate/curl
-  #   command: /bin/sh -c "curl -s http://bigchaindb:9984/ > /dev/null && curl -s http://tendermint:26657/ > /dev/null"
+  # curl client to check the health of development env
+  curl-client:
+    image: appropriate/curl
+    command: /bin/sh -c "curl -s http://bigchaindb:9984/ > /dev/null && curl -s http://tendermint:26657/ > /dev/null"
 
-  # # BigchainDB setup to do acceptance testing with Python
-  # python-acceptance:
-  #   build:
-  #     context: .
-  #     dockerfile: ./acceptance/python/Dockerfile
-  #   volumes:
-  #     - ./acceptance/python/docs:/docs
-  #     - ./acceptance/python/src:/src
-  #   environment:
-  #     - BIGCHAINDB_ENDPOINT=bigchaindb
+  # BigchainDB setup to do acceptance testing with Python
+  python-acceptance:
+    build:
+      context: .
+      dockerfile: ./acceptance/python/Dockerfile
+    volumes:
+      - ./acceptance/python/docs:/docs
+      - ./acceptance/python/src:/src
+    environment:
+      - BIGCHAINDB_ENDPOINT=bigchaindb
 
-  # # Build docs only
-  # # docker-compose build bdocs
-  # # docker-compose up -d bdocs
-  # bdocs:
-  #   depends_on:
-  #     - vdocs
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile-dev
-  #     args:
-  #       backend: localmongodb
-  #   volumes:
-  #     - .:/usr/src/app/
-  #   command: make -C docs/server html
-  # vdocs:
-  #   image: nginx
-  #   ports:
-  #     - '33333:80'
-  #   volumes:
-  #     - ./docs/server/build/html:/usr/share/nginx/html
+  # Build docs only
+  # docker-compose build bdocs
+  # docker-compose up -d bdocs
+  bdocs:
+    depends_on:
+      - vdocs
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+      args:
+        backend: localmongodb
+    volumes:
+      - .:/usr/src/app/
+    command: make -C docs/server html
+  vdocs:
+    image: nginx
+    ports:
+      - '33333:80'
+    volumes:
+      - ./docs/server/build/html:/usr/share/nginx/html
