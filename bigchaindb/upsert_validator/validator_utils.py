@@ -3,6 +3,7 @@ import base64
 import binascii
 
 from abci.types_pb2 import (Validator,
+                            ValidatorUpdate,
                             PubKey)
 from bigchaindb.common.exceptions import InvalidPublicKey
 
@@ -12,8 +13,7 @@ def encode_validator(v):
     # NOTE: tendermint expects public to be encoded in go-amino format
     pub_key = PubKey(type='ed25519',
                      data=bytes.fromhex(ed25519_public_key))
-    return Validator(pub_key=pub_key,
-                     address=b'',
+    return ValidatorUpdate(pub_key=pub_key,
                      power=v['power'])
 
 

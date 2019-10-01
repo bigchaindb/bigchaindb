@@ -15,6 +15,7 @@ from abci.types_pb2 import (
     RequestBeginBlock,
     RequestEndBlock,
     Validator,
+    ValidatorUpdate,
 )
 
 from bigchaindb import App
@@ -51,7 +52,7 @@ def generate_validator():
     addr = codecs.decode(generate_address(), 'hex')
     pk, _ = generate_key_pair()
     pub_key = PubKey(type='ed25519', data=pk.encode())
-    val = Validator(address=addr, power=10, pub_key=pub_key)
+    val = ValidatorUpdate( power=10, pub_key=pub_key)
     return val
 
 
