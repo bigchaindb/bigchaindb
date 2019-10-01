@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
-import codecs
 import json
 import pytest
 import random
@@ -14,7 +13,6 @@ from abci.types_pb2 import (
     RequestInfo,
     RequestBeginBlock,
     RequestEndBlock,
-    Validator,
     ValidatorUpdate,
 )
 
@@ -49,10 +47,9 @@ def generate_address():
 
 
 def generate_validator():
-    addr = codecs.decode(generate_address(), 'hex')
     pk, _ = generate_key_pair()
     pub_key = PubKey(type='ed25519', data=pk.encode())
-    val = ValidatorUpdate( power=10, pub_key=pub_key)
+    val = ValidatorUpdate(power=10, pub_key=pub_key)
     return val
 
 

@@ -2,8 +2,7 @@ import codecs
 import base64
 import binascii
 
-from abci.types_pb2 import (Validator,
-                            ValidatorUpdate,
+from abci.types_pb2 import (ValidatorUpdate,
                             PubKey)
 from bigchaindb.common.exceptions import InvalidPublicKey
 
@@ -14,7 +13,7 @@ def encode_validator(v):
     pub_key = PubKey(type='ed25519',
                      data=bytes.fromhex(ed25519_public_key))
     return ValidatorUpdate(pub_key=pub_key,
-                     power=v['power'])
+                           power=v['power'])
 
 
 def decode_validator(v):
