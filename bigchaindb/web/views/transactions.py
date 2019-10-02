@@ -41,27 +41,26 @@ class TransactionApi(Resource):
 
         return tx.to_dict()
 
-class TransactionListApi(Resource):
 
+class TransactionListApi(Resource):
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('operation', type=parameters.valid_operation)
         parser.add_argument('asset_id', type=parameters.valid_txid,
                             required=True)
         parser.add_argument('last_tx', type=parameters.valid_bool,
-                    required=False)
+                            required=False)
         args = parser.parse_args()
 
         with current_app.config['bigchain_pool']() as bigchain:
             txs = bigchain.get_transactions_filtered(**args)
-            print( txs )
-            if args['last_tx'] and args['last_tx']==True:
+            if args['last_tx'] and args['last_tx'] is True:
                 lastTX = None
                 for x in txs:
                     lastTX = x
 
                 if lastTX:
-                    return [ lastTX.to_dict() ]
+                    return [lastTX.to_dict]
                 else:
                     return []
             else:
