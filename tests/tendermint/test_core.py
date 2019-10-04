@@ -6,7 +6,7 @@ import json
 import pytest
 import random
 
-from github.com.tendermint.tendermint.abci.types.types_pb2 import (
+from abci import (
     PubKey,
     ResponseInitChain,
     RequestInitChain,

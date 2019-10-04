@@ -4,7 +4,7 @@
 
 import codecs
 
-import github.com.tendermint.tendermint.abci.types.types_pb2 as types
+import abci as types
 import json
 import pytest
 

@@ -9,7 +9,7 @@ import logging
 import sys
 
 from abci.application import BaseApplication
-from github.com.tendermint.tendermint.abci.types.types_pb2 import (
+from abci import (
     ResponseInitChain,
     ResponseInfo,
     ResponseCheckTx,

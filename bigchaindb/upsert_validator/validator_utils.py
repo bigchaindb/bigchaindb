@@ -2,8 +2,7 @@ import codecs
 import base64
 import binascii
 
-from github.com.tendermint.tendermint.abci.types.types_pb2 import (ValidatorUpdate,
-                                                                   PubKey)
+from abci import (ValidatorUpdate, PubKey)
 from bigchaindb.common.exceptions import InvalidPublicKey
 
 
