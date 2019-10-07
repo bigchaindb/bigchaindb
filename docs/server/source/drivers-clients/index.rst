@@ -20,6 +20,7 @@ These drivers and tools were created by the BigchainDB community:
    but may still be useful.
    Others might not work with the latest version of BigchainDB.
 
+* `ANSI C driver <https://github.com/RiddleAndCode/bigchaindb-c-driver>`_, should also work with C++ (working as of June 2019)
 * `C# driver <https://github.com/Omnibasis/bigchaindb-csharp-driver>`_ (working as of May 2019)
 * `Haskell transaction builder <https://github.com/bigchaindb/bigchaindb-hs>`_
 * `Go driver <https://github.com/zbo14/envoke/blob/master/bigchain/bigchain.go>`_

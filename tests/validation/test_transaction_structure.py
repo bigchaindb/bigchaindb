@@ -9,7 +9,10 @@ structural / schematic issues are caught when reading a transaction
 import json
 
 import pytest
-import sha3
+try:
+    import hashlib as sha3
+except ImportError:
+    import sha3
 from unittest.mock import MagicMock
 
 from bigchaindb.common.exceptions import (AmountError,

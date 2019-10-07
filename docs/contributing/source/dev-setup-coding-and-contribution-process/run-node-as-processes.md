@@ -17,7 +17,7 @@ and of course you also need to install BigchainDB Sever from the local code you 
 
 ## Install and Run MongoDB
 
-MongoDB can be easily installed, just refer to their [installation documentation](https://docs.mongodb.com/manual/installation/) for your distro. 
+MongoDB can be easily installed, just refer to their [installation documentation](https://docs.mongodb.com/manual/installation/) for your distro.
 We know MongoDB 3.4 and 3.6 work with BigchainDB.
 After the installation of MongoDB is complete, run MongoDB using `sudo mongod`
 
@@ -25,13 +25,13 @@ After the installation of MongoDB is complete, run MongoDB using `sudo mongod`
 
 ### Installing a Tendermint Executable
 
-The version of BigchainDB Server described in these docs only works well with Tendermint 0.22.8 (not a higher version number). Install that:
+The version of BigchainDB Server described in these docs only works well with Tendermint 0.31.5 (not a higher version number). Install that:
 
 ```bash
 $ sudo apt install -y unzip
-$ wget https://github.com/tendermint/tendermint/releases/download/v0.22.8/tendermint_0.22.8_linux_amd64.zip
-$ unzip tendermint_0.22.8_linux_amd64.zip
-$ rm tendermint_0.22.8_linux_amd64.zip
+$ wget https://github.com/tendermint/tendermint/releases/download/v0.31.5/tendermint_v0.31.5_linux_amd64.zip
+$ unzip tendermint_v0.31.5_linux_amd64.zip
+$ rm tendermint_v0.31.5_linux_amd64.zip
 $ sudo mv tendermint /usr/local/bin
 ```
 

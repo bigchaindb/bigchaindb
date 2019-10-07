@@ -33,13 +33,13 @@
 - name: Start BigchainDB
   shell: nohup bigchaindb -l DEBUG start > /tmp/bigchaindb_log_$(date +%Y%m%d_%H%M%S) 2>&1 &
   environment:
-    BIGCHAINDB_DATABASE_BACKEND: localmongodb
-    BIGCHAINDB_DATABASE_HOST: 127.0.0.1
-    BIGCHAINDB_DATABASE_PORT: 27017
-    BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984
-    BIGCHAINDB_WSSERVER_HOST: 0.0.0.0
-    BIGCHAINDB_WSSERVER_PORT: 9985
-    BIGCHAINDB_TENDERMINT_HOST: 127.0.0.1
-    BIGCHAINDB_TENDERMINT_PORT: 26657
+    BIGCHAINDB_DATABASE_BACKEND: "localmongodb"
+    BIGCHAINDB_DATABASE_HOST: "127.0.0.1"
+    BIGCHAINDB_DATABASE_PORT: "27017"
+    BIGCHAINDB_SERVER_BIND: "0.0.0.0:9984"
+    BIGCHAINDB_WSSERVER_HOST: "0.0.0.0"
+    BIGCHAINDB_WSSERVER_PORT: "9985"
+    BIGCHAINDB_TENDERMINT_HOST: "127.0.0.1"
+    BIGCHAINDB_TENDERMINT_PORT: "26657"
   when: mdb_pchk.stdout| int != 0 and bdb_pchk.stdout| int == 0 and tm_pchk.stdout| int != 0
   tags: [bigchaindb]
