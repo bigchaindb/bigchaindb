@@ -5,7 +5,7 @@
 import pytest
 import codecs
 
-import abci.types_pb2 as types
+import abci as types
 
 
 @pytest.fixture
@@ -15,10 +15,8 @@ def validator_pub_key():
 
 @pytest.fixture
 def init_chain_request():
-    addr = codecs.decode(b'9FD479C869C7D7E7605BF99293457AA5D80C3033', 'hex')
     pk = codecs.decode(b'VAgFZtYw8bNR5TMZHFOBDWk9cAmEu3/c6JgRBmddbbI=',
                        'base64')
-    val_a = types.Validator(address=addr, power=10,
-                            pub_key=types.PubKey(type='ed25519', data=pk))
-
+    val_a = types.ValidatorUpdate(power=10,
+                                  pub_key=types.PubKey(type='ed25519', data=pk))
     return types.RequestInitChain(validators=[val_a])

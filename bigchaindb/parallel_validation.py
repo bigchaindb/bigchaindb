@@ -5,7 +5,7 @@
 import multiprocessing as mp
 from collections import defaultdict
 
-from abci.types_pb2 import ResponseCheckTx, ResponseDeliverTx
+from abci import ResponseCheckTx, ResponseDeliverTx
 
 from bigchaindb import BigchainDB, App
 from bigchaindb.tendermint_utils import decode_transaction

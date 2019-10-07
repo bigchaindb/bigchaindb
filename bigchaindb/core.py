@@ -9,7 +9,7 @@ import logging
 import sys
 
 from abci.application import BaseApplication
-from abci.types_pb2 import (
+from abci import (
     ResponseInitChain,
     ResponseInfo,
     ResponseCheckTx,

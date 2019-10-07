@@ -1,7 +1,7 @@
 FROM alpine:3.9
 LABEL maintainer "devs@bigchaindb.com"
 
-ARG TM_VERSION=0.22.8
+ARG TM_VERSION=v0.31.5
 RUN mkdir -p /usr/src/app
 ENV HOME /root
 COPY . /usr/src/app/
