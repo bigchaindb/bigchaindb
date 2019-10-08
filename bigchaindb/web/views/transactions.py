@@ -51,16 +51,15 @@ class TransactionListApi(Resource):
         parser.add_argument('last_tx', type=parameters.valid_bool,
                             required=False)
         args = parser.parse_args()
-
         with current_app.config['bigchain_pool']() as bigchain:
             txs = bigchain.get_transactions_filtered(**args)
             if args['last_tx'] and args['last_tx'] is True:
                 lastTX = None
+
                 for x in txs:
                     lastTX = x
-
                 if lastTX:
-                    return [lastTX.to_dict]
+                    return [lastTX.to_dict()]
                 else:
                     return []
             else:
