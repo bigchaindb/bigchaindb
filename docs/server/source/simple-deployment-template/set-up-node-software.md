@@ -31,11 +31,11 @@ sudo pip3 install -U pip
 Now install the latest version of BigchainDB Server.
 You can find the latest version by going
 to the [BigchainDB project release history page on PyPI](https://pypi.org/project/BigchainDB/#history).
-For example, to install version 2.0.0b9, you would do:
+For example, to install version 2.0.0, you would do:
 
 ```
-# Change 2.0.0b9 to the latest version as explained above:
-sudo pip3 install bigchaindb==2.0.0b9
+# Change 2.0.0 to the latest version as explained above:
+sudo pip3 install bigchaindb==2.0.0
 ```
 
 Check that you installed the correct version of BigchainDB Server using `bigchaindb --version`.
