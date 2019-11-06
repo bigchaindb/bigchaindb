@@ -131,7 +131,7 @@ def get_txids_filtered(conn, asset_id, operation=None, last_tx=None):
     cursor = conn.run(conn.collection('transactions').find(match))
 
     if last_tx:
-        cursor = cursor.sort({'$natural': DESCENDING}).limit(1)
+        cursor = cursor.sort([('$natural', DESCENDING)]).limit(1)
 
     return (elem['id'] for elem in cursor)
 
