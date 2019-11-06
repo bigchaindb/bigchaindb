@@ -265,7 +265,7 @@ class BigchainDB(object):
         """Get a list of transactions filtered on some criteria
         """
         txids = backend.query.get_txids_filtered(self.connection, asset_id,
-                                                 operation)
+                                                 operation, last_tx)
         for txid in txids:
             yield self.get_transaction(txid)
 
