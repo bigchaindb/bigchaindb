@@ -382,12 +382,20 @@ def test_transactions_get_list_good(client):
         url = TX_ENDPOINT + '?asset_id=' + asset_id
         assert client.get(url).json == [
             ['asset_id', asset_id],
+            ['last_tx', None],
             ['operation', None]
         ]
         url = TX_ENDPOINT + '?asset_id=' + asset_id + '&operation=CREATE'
         assert client.get(url).json == [
             ['asset_id', asset_id],
+            ['last_tx', None],
             ['operation', 'CREATE']
+        ]
+        url = TX_ENDPOINT + '?asset_id=' + asset_id + '&last_tx=true'
+        assert client.get(url).json == [
+            ['asset_id', asset_id],
+            ['last_tx', True],
+            ['operation', None]
         ]
 
 

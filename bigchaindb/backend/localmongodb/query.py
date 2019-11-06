@@ -120,29 +120,19 @@ def store_block(conn, block):
 
 
 @register_query(LocalMongoDBConnection)
-def get_txids_filtered(conn, asset_id, operation=None):
-    match_create = {
-        'operation': 'CREATE',
-        'id': asset_id
-    }
-    match_transfer = {
-        'operation': 'TRANSFER',
-        'asset.id': asset_id
-    }
+def get_txids_filtered(conn, asset_id, operation=None, last_tx=None):
 
-    if operation == Transaction.CREATE:
-        match = match_create
-    elif operation == Transaction.TRANSFER:
-        match = match_transfer
-    else:
-        match = {'$or': [match_create, match_transfer]}
+    match = {
+        Transaction.CREATE: {'operation': 'CREATE', 'id': asset_id},
+        Transaction.TRANSFER: {'operation': 'TRANSFER', 'asset.id': asset_id},
+        None: {'$or': [{'asset.id': asset_id}, {'id': asset_id}]},
+    }[operation]
 
-    pipeline = [
-        {'$match': match}
-    ]
-    cursor = conn.run(
-        conn.collection('transactions')
-        .aggregate(pipeline))
+    cursor = conn.run(conn.collection('transactions').find(match))
+
+    if last_tx:
+        cursor = cursor.sort([('$natural', DESCENDING)]).limit(1)
+
     return (elem['id'] for elem in cursor)
 
 

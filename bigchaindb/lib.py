@@ -261,11 +261,11 @@ class BigchainDB(object):
     def get_transactions(self, txn_ids):
         return backend.query.get_transactions(self.connection, txn_ids)
 
-    def get_transactions_filtered(self, asset_id, operation=None):
+    def get_transactions_filtered(self, asset_id, operation=None, last_tx=None):
         """Get a list of transactions filtered on some criteria
         """
         txids = backend.query.get_txids_filtered(self.connection, asset_id,
-                                                 operation)
+                                                 operation, last_tx)
         for txid in txids:
             yield self.get_transaction(txid)
 

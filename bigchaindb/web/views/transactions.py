@@ -48,8 +48,9 @@ class TransactionListApi(Resource):
         parser.add_argument('operation', type=parameters.valid_operation)
         parser.add_argument('asset_id', type=parameters.valid_txid,
                             required=True)
+        parser.add_argument('last_tx', type=parameters.valid_bool,
+                            required=False)
         args = parser.parse_args()
-
         with current_app.config['bigchain_pool']() as bigchain:
             txs = bigchain.get_transactions_filtered(**args)
 

@@ -91,7 +91,7 @@ Transactions
    Requests to the ``/api/v1/transactions`` endpoint
    without any query parameters will get a response status code ``400 Bad Request``.
 
-.. http:get:: /api/v1/transactions?asset_id={asset_id}&operation={CREATE|TRANSFER}
+.. http:get:: /api/v1/transactions?asset_id={asset_id}&operation={CREATE|TRANSFER}&last_tx={true|false}
 
    Get a list of transactions that use an asset with the ID ``asset_id``.
 
@@ -106,11 +106,17 @@ Transactions
    If ``operation`` is not included, then *every* transaction involving
    the asset with ID ``asset_id`` will be returned.
 
+   if ``last_tx`` is set to ``true``, only the last transaction is returned
+   instead of all transactions with the given ``asset_id``.
+
    This endpoint returns transactions only if they are in committed blocks.
 
    :query string operation: (Optional) ``CREATE`` or ``TRANSFER``.
 
    :query string asset_id: asset ID.
+
+   :query string last_tx: (Optional) ``true`` or ``false``.
+
 
    **Example request**:
 
@@ -141,7 +147,7 @@ Transactions
    Otherwise, the node will send the transaction to Tendermint (in the same node) using the
    `Tendermint broadcast API
    <https://tendermint.com/docs/tendermint-core/using-tendermint.html#broadcast-api>`_.
-   
+
    The meaning of the ``mode`` query parameter is inherited from the mode parameter in
    `Tendermint's broadcast API
    <https://tendermint.com/docs/tendermint-core/using-tendermint.html#broadcast-api>`_.
@@ -191,7 +197,7 @@ Transactions
    :resheader Content-Type: ``application/json``
 
    :statuscode 202: The meaning of this response depends on the value
-                    of the ``mode`` parameter. See above. 
+                    of the ``mode`` parameter. See above.
 
    :statuscode 400: The posted transaction was invalid.
 
@@ -347,14 +353,14 @@ Assets
 .. http:get:: /api/v1/assets/?search={search}
 
     Return all assets that match a given text search.
-    
+
     .. note::
-    
+
        The ``id`` of the asset
        is the same ``id`` of the CREATE transaction that created the asset.
 
     .. note::
-    
+
        You can use ``assets/?search`` or ``assets?search``.
 
     If no assets match the text search it returns an empty list.
@@ -471,14 +477,14 @@ Transaction Metadata
 .. http:get:: /api/v1/metadata/?search={search}
 
     Return all metadata objects that match a given text search.
-    
+
     .. note::
 
        The ``id`` of the metadata
        is the same ``id`` of the transaction where it was defined.
 
     .. note::
-    
+
        You can use ``metadata/?search`` or ``metadata?search``.
 
     If no metadata objects match the text search it returns an empty list.
