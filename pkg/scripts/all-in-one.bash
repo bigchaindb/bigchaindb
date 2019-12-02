@@ -10,7 +10,7 @@
 # BigchainDB configuration
 bigchaindb-monit-config
 
-nohup mongod > "$HOME/.bigchaindb-monit/logs/mongodb_log_$(date +%Y%m%d_%H%M%S)" 2>&1 &
+nohup mongod --bind_ip_all > "$HOME/.bigchaindb-monit/logs/mongodb_log_$(date +%Y%m%d_%H%M%S)" 2>&1 &
 
 # Tendermint configuration
 tendermint init
