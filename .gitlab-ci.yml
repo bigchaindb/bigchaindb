@@ -1,0 +1,12 @@
+image: docker:git
+
+stages:
+  - docker
+
+job_docker:
+  stage: docker
+  services:
+    - docker:dind
+  script: sh ./upload-docker.sh
+  only:
+    - master
