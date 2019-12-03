@@ -22,7 +22,7 @@ class LocalMongoDBConnection(Connection):
 
     def __init__(self, replicaset=None, ssl=None, login=None, password=None,
                  ca_cert=None, certfile=None, keyfile=None,
-                 keyfile_passphrase=None, crlfile=None, **kwargs):
+                 keyfile_passphrase=None, crlfile=None, auth_mechanism=None, auth_source=None, **kwargs):
         """Create a new Connection instance.
 
         Args:
@@ -42,6 +42,8 @@ class LocalMongoDBConnection(Connection):
         self.keyfile = keyfile or get_bigchaindb_config_value('keyfile')
         self.keyfile_passphrase = keyfile_passphrase or get_bigchaindb_config_value('keyfile_passphrase')
         self.crlfile = crlfile or get_bigchaindb_config_value('crlfile')
+        self.auth_mechanism = auth_mechanism or get_bigchaindb_config_value('auth_mechanism')
+        self.auth_source = auth_source or get_bigchaindb_config_value('auth_source')
 
     @property
     def db(self):
