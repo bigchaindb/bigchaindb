@@ -73,7 +73,7 @@ tests_require = [
 
 install_requires = [
     # TODO Consider not installing the db drivers, or putting them in extras.
-    'pymongo~=3.6',
+    'pymongo~=3.9',
     'cryptoconditions==0.8.0',
     'python-rapidjson~=0.6.0',
     'logstats~=0.2.1',
@@ -106,7 +106,7 @@ setup(
         "query functionality, decentralized control, immutable data storage and "
         "built-in asset support, BigchainDB is like a database with blockchain "
         "characteristics."
-        ),
+    ),
     url='https://github.com/BigchainDB/bigchaindb/',
     author='BigchainDB Contributors',
     author_email='devs@bigchaindb.com',
@@ -130,7 +130,7 @@ setup(
 
     packages=find_packages(exclude=['tests*']),
 
-    scripts = ['pkg/scripts/bigchaindb-monit-config'],
+    scripts=['pkg/scripts/bigchaindb-monit-config'],
 
     entry_points={
         'console_scripts': [
