@@ -105,7 +105,6 @@ class LocalMongoDBConnection(Connection):
                                              ssl=self.ssl,
                                              **MONGO_OPTS)
                 if self.login is not None and self.password is not None:
-                    print('Test connexion', self.dbname, self.login, self.password)
                     client[self.dbname].authenticate(self.login, self.password)
             else:
                 logger.info('Connecting to MongoDB over TLS/SSL...')
