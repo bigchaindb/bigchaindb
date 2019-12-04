@@ -18,7 +18,7 @@ BACKENDS = {
 logger = logging.getLogger(__name__)
 
 
-def connect(backend=None, host=None, port=None, name=None, max_tries=None,
+def connect(backend=None, uri=None, host=None, port=None, name=None, max_tries=None,
             connection_timeout=None, replicaset=None, ssl=None, login=None, password=None,
             ca_cert=None, certfile=None, keyfile=None, keyfile_passphrase=None,
             crlfile=None):
@@ -48,6 +48,7 @@ def connect(backend=None, host=None, port=None, name=None, max_tries=None,
     """
 
     backend = backend or get_bigchaindb_config_value_or_key_error('backend')
+    uri = uri or get_bigchaindb_config_value_or_key_error('uri')
     host = host or get_bigchaindb_config_value_or_key_error('host')
     port = port or get_bigchaindb_config_value_or_key_error('port')
     dbname = name or get_bigchaindb_config_value_or_key_error('name')
@@ -94,7 +95,7 @@ class Connection:
     from and implements this class.
     """
 
-    def __init__(self, host=None, port=None, dbname=None,
+    def __init__(self, host=None, uri=None, port=None, dbname=None,
                  connection_timeout=None, max_tries=None,
                  **kwargs):
         """Create a new :class:`~.Connection` instance.
@@ -114,6 +115,7 @@ class Connection:
 
         dbconf = bigchaindb.config['database']
 
+        self.uri = uri or dbconf['uri']
         self.host = host or dbconf['host']
         self.port = port or dbconf['port']
         self.dbname = dbname or dbconf['name']
@@ -159,9 +161,9 @@ class Connection:
             try:
                 self._conn = self._connect()
             except ConnectionError as exc:
-                logger.warning('Attempt %s/%s. Connection to %s:%s failed after %sms.',
+                logger.warning('Attempt %s/%s. Connection to %s:%s failed after %sms. %s',
                                attempt, self.max_tries if self.max_tries != 0 else '∞',
-                               self.host, self.port, self.connection_timeout)
+                               self.host, self.port, self.connection_timeout, self.uri or '')
                 if attempt == self.max_tries:
                     logger.critical('Cannot connect to the Database. Giving up.')
                     raise ConnectionError() from exc

@@ -92,7 +92,11 @@ class LocalMongoDBConnection(Connection):
             # `ConnectionFailure`.
             # The presence of ca_cert, certfile, keyfile, crlfile implies the
             # use of certificates for TLS connectivity.
-            if self.ca_cert is None or self.certfile is None or \
+            if self.uri is not None:
+                client = pymongo.MongoClient(self.uri,
+                                             serverSelectionTimeoutMS=self.connection_timeout,
+                                             **MONGO_OPTS)
+            elif self.ca_cert is None or self.certfile is None or \
                     self.keyfile is None or self.crlfile is None:
                 client = pymongo.MongoClient(self.host,
                                              self.port,
