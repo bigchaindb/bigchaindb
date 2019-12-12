@@ -4,7 +4,7 @@
 
 import codecs
 
-import abci as types
+from abci import types_v0_31_5 as types
 import json
 import pytest
 
@@ -18,13 +18,13 @@ from io import BytesIO
 
 
 @pytest.mark.bdb
-def test_app(b, init_chain_request):
+def test_app(a, b, init_chain_request):
     from bigchaindb import App
     from bigchaindb.tendermint_utils import calculate_hash
     from bigchaindb.common.crypto import generate_key_pair
     from bigchaindb.models import Transaction
 
-    app = App(b)
+    app = App(a, b)
     p = ProtocolHandler(app)
 
     data = p.process('info',
@@ -146,10 +146,10 @@ def test_post_transaction_responses(tendermint_ws_url, b):
 
 
 @pytest.mark.bdb
-def test_exit_when_tm_ver_not_supported(b):
+def test_exit_when_tm_ver_not_supported(a, b):
     from bigchaindb import App
 
-    app = App(b)
+    app = App(a, b)
     p = ProtocolHandler(app)
 
     with pytest.raises(SystemExit):

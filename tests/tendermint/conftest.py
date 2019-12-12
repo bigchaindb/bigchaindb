@@ -5,7 +5,7 @@
 import pytest
 import codecs
 
-import abci as types
+from abci import types_v0_31_5 as types
 
 
 @pytest.fixture

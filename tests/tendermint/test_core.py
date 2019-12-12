@@ -6,23 +6,14 @@ import json
 import pytest
 import random
 
-from abci import (
-    PubKey,
-    ResponseInitChain,
-    RequestInitChain,
-    RequestInfo,
-    RequestBeginBlock,
-    RequestEndBlock,
-    ValidatorUpdate,
-)
+from abci import types_v0_31_5 as types
 
 from bigchaindb import App
 from bigchaindb.backend.localmongodb import query
 from bigchaindb.common.crypto import generate_key_pair
 from bigchaindb.core import (CodeTypeOk,
                              CodeTypeError,
-                             rollback
-                             )
+                             rollback)
 from bigchaindb.elections.election import Election
 from bigchaindb.lib import Block
 from bigchaindb.migrations.chain_migration_election import ChainMigrationElection
@@ -48,20 +39,20 @@ def generate_address():
 
 def generate_validator():
     pk, _ = generate_key_pair()
-    pub_key = PubKey(type='ed25519', data=pk.encode())
-    val = ValidatorUpdate(power=10, pub_key=pub_key)
+    pub_key = types.PubKey(type='ed25519', data=pk.encode())
+    val = types.ValidatorUpdate(power=10, pub_key=pub_key)
     return val
 
 
 def generate_init_chain_request(chain_id, vals=None):
     vals = vals if vals is not None else [generate_validator()]
-    return RequestInitChain(validators=vals, chain_id=chain_id)
+    return types.RequestInitChain(validators=vals, chain_id=chain_id)
 
 
-def test_init_chain_successfully_registers_chain(b):
+def test_init_chain_successfully_registers_chain(a, b):
     request = generate_init_chain_request('chain-XYZ')
-    res = App(b).init_chain(request)
-    assert res == ResponseInitChain()
+    res = App(a, b).init_chain(request)
+    assert res == types.ResponseInitChain()
     chain = query.get_latest_abci_chain(b.connection)
     assert chain == {'height': 0, 'chain_id': 'chain-XYZ', 'is_synced': True}
     assert query.get_latest_block(b.connection) == {
@@ -71,11 +62,11 @@ def test_init_chain_successfully_registers_chain(b):
     }
 
 
-def test_init_chain_ignores_invalid_init_chain_requests(b):
+def test_init_chain_ignores_invalid_init_chain_requests(a, b):
     validators = [generate_validator()]
     request = generate_init_chain_request('chain-XYZ', validators)
-    res = App(b).init_chain(request)
-    assert res == ResponseInitChain()
+    res = App(a, b).init_chain(request)
+    assert res == types.ResponseInitChain()
 
     validator_set = query.get_validator_set(b.connection)
 
@@ -88,7 +79,7 @@ def test_init_chain_ignores_invalid_init_chain_requests(b):
     ]
     for r in invalid_requests:
         with pytest.raises(SystemExit):
-            App(b).init_chain(r)
+            App(a, b).init_chain(r)
         # assert nothing changed - neither validator set, nor chain ID
         new_validator_set = query.get_validator_set(b.connection)
         assert new_validator_set == validator_set
@@ -101,11 +92,11 @@ def test_init_chain_ignores_invalid_init_chain_requests(b):
         }
 
 
-def test_init_chain_recognizes_new_chain_after_migration(b):
+def test_init_chain_recognizes_new_chain_after_migration(a, b):
     validators = [generate_validator()]
     request = generate_init_chain_request('chain-XYZ', validators)
-    res = App(b).init_chain(request)
-    assert res == ResponseInitChain()
+    res = App(a, b).init_chain(request)
+    assert res == types.ResponseInitChain()
 
     validator_set = query.get_validator_set(b.connection)['validators']
 
@@ -123,7 +114,7 @@ def test_init_chain_recognizes_new_chain_after_migration(b):
     ]
     for r in invalid_requests:
         with pytest.raises(SystemExit):
-            App(b).init_chain(r)
+            App(a, b).init_chain(r)
         assert query.get_latest_abci_chain(b.connection) == {
             'chain_id': 'chain-XYZ-migrated-at-height-1',
             'is_synced': False,
@@ -136,8 +127,8 @@ def test_init_chain_recognizes_new_chain_after_migration(b):
     # completes the migration
     request = generate_init_chain_request('chain-XYZ-migrated-at-height-1',
                                           validators)
-    res = App(b).init_chain(request)
-    assert res == ResponseInitChain()
+    res = App(a, b).init_chain(request)
+    assert res == types.ResponseInitChain()
     assert query.get_latest_abci_chain(b.connection) == {
         'chain_id': 'chain-XYZ-migrated-at-height-1',
         'is_synced': True,
@@ -157,7 +148,7 @@ def test_init_chain_recognizes_new_chain_after_migration(b):
     ]
     for r in invalid_requests:
         with pytest.raises(SystemExit):
-            App(b).init_chain(r)
+            App(a, b).init_chain(r)
         assert query.get_latest_abci_chain(b.connection) == {
             'chain_id': 'chain-XYZ-migrated-at-height-1',
             'is_synced': True,
@@ -172,9 +163,9 @@ def test_init_chain_recognizes_new_chain_after_migration(b):
         }
 
 
-def test_info(b):
-    r = RequestInfo(version=__tm_supported_versions__[0])
-    app = App(b)
+def test_info(a, b):
+    r = types.RequestInfo(version=__tm_supported_versions__[0])
+    app = App(a, b)
 
     res = app.info(r)
     assert res.last_block_height == 0
@@ -187,7 +178,7 @@ def test_info(b):
 
     # simulate a migration and assert the height is shifted
     b.store_abci_chain(2, 'chain-XYZ')
-    app = App(b)
+    app = App(a, b)
     b.store_block(Block(app_hash='2', height=2, transactions=[])._asdict())
     res = app.info(r)
     assert res.last_block_height == 0
@@ -200,14 +191,14 @@ def test_info(b):
 
     # it's always the latest migration that is taken into account
     b.store_abci_chain(4, 'chain-XYZ-new')
-    app = App(b)
+    app = App(a, b)
     b.store_block(Block(app_hash='4', height=4, transactions=[])._asdict())
     res = app.info(r)
     assert res.last_block_height == 0
     assert res.last_block_app_hash == b'4'
 
 
-def test_check_tx__signed_create_is_ok(b):
+def test_check_tx__signed_create_is_ok(a, b):
     from bigchaindb import App
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
@@ -219,12 +210,12 @@ def test_check_tx__signed_create_is_ok(b):
                             [([bob.public_key], 1)])\
                     .sign([alice.private_key])
 
-    app = App(b)
+    app = App(a, b)
     result = app.check_tx(encode_tx_to_bytes(tx))
     assert result.code == CodeTypeOk
 
 
-def test_check_tx__unsigned_create_is_error(b):
+def test_check_tx__unsigned_create_is_error(a, b):
     from bigchaindb import App
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
@@ -235,12 +226,12 @@ def test_check_tx__unsigned_create_is_error(b):
     tx = Transaction.create([alice.public_key],
                             [([bob.public_key], 1)])
 
-    app = App(b)
+    app = App(a, b)
     result = app.check_tx(encode_tx_to_bytes(tx))
     assert result.code == CodeTypeError
 
 
-def test_deliver_tx__valid_create_updates_db_and_emits_event(b, init_chain_request):
+def test_deliver_tx__valid_create_updates_db_and_emits_event(a, b, init_chain_request):
     import multiprocessing as mp
     from bigchaindb import App
     from bigchaindb.models import Transaction
@@ -254,17 +245,17 @@ def test_deliver_tx__valid_create_updates_db_and_emits_event(b, init_chain_reque
                             [([bob.public_key], 1)])\
                     .sign([alice.private_key])
 
-    app = App(b, events)
+    app = App(a, b, events)
 
     app.init_chain(init_chain_request)
 
-    begin_block = RequestBeginBlock()
+    begin_block = types.RequestBeginBlock()
     app.begin_block(begin_block)
 
     result = app.deliver_tx(encode_tx_to_bytes(tx))
     assert result.code == CodeTypeOk
 
-    app.end_block(RequestEndBlock(height=99))
+    app.end_block(types.RequestEndBlock(height=99))
     app.commit()
     assert b.get_transaction(tx.id).id == tx.id
     block_event = events.get()
@@ -278,7 +269,7 @@ def test_deliver_tx__valid_create_updates_db_and_emits_event(b, init_chain_reque
     #     next(unspent_outputs)
 
 
-def test_deliver_tx__double_spend_fails(b, init_chain_request):
+def test_deliver_tx__double_spend_fails(a, b, init_chain_request):
     from bigchaindb import App
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
@@ -290,16 +281,16 @@ def test_deliver_tx__double_spend_fails(b, init_chain_request):
                             [([bob.public_key], 1)])\
                     .sign([alice.private_key])
 
-    app = App(b)
+    app = App(a, b)
     app.init_chain(init_chain_request)
 
-    begin_block = RequestBeginBlock()
+    begin_block = types.RequestBeginBlock()
     app.begin_block(begin_block)
 
     result = app.deliver_tx(encode_tx_to_bytes(tx))
     assert result.code == CodeTypeOk
 
-    app.end_block(RequestEndBlock(height=99))
+    app.end_block(types.RequestEndBlock(height=99))
     app.commit()
 
     assert b.get_transaction(tx.id).id == tx.id
@@ -307,15 +298,15 @@ def test_deliver_tx__double_spend_fails(b, init_chain_request):
     assert result.code == CodeTypeError
 
 
-def test_deliver_transfer_tx__double_spend_fails(b, init_chain_request):
+def test_deliver_transfer_tx__double_spend_fails(a, b, init_chain_request):
     from bigchaindb import App
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
 
-    app = App(b)
+    app = App(a, b)
     app.init_chain(init_chain_request)
 
-    begin_block = RequestBeginBlock()
+    begin_block = types.RequestBeginBlock()
     app.begin_block(begin_block)
 
     alice = generate_key_pair()
@@ -351,11 +342,11 @@ def test_deliver_transfer_tx__double_spend_fails(b, init_chain_request):
     assert result.code == CodeTypeError
 
 
-def test_end_block_return_validator_updates(b, init_chain_request):
-    app = App(b)
+def test_end_block_return_validator_updates(a, b, init_chain_request):
+    app = App(a, b)
     app.init_chain(init_chain_request)
 
-    begin_block = RequestBeginBlock()
+    begin_block = types.RequestBeginBlock()
     app.begin_block(begin_block)
 
     # generate a block containing a concluded validator election
@@ -380,13 +371,13 @@ def test_end_block_return_validator_updates(b, init_chain_request):
 
     app.block_transactions = votes
 
-    resp = app.end_block(RequestEndBlock(height=2))
+    resp = app.end_block(types.RequestEndBlock(height=2))
     assert resp.validator_updates[0].power == new_validator['election']['power']
     expected = bytes.fromhex(new_validator['election']['public_key']['value'])
     assert expected == resp.validator_updates[0].pub_key.data
 
 
-def test_store_pre_commit_state_in_end_block(b, alice, init_chain_request):
+def test_store_pre_commit_state_in_end_block(a, b, alice, init_chain_request):
     from bigchaindb import App
     from bigchaindb.backend import query
     from bigchaindb.models import Transaction
@@ -396,13 +387,13 @@ def test_store_pre_commit_state_in_end_block(b, alice, init_chain_request):
                             asset={'msg': 'live long and prosper'})\
                     .sign([alice.private_key])
 
-    app = App(b)
+    app = App(a, b)
     app.init_chain(init_chain_request)
 
-    begin_block = RequestBeginBlock()
+    begin_block = types.RequestBeginBlock()
     app.begin_block(begin_block)
     app.deliver_tx(encode_tx_to_bytes(tx))
-    app.end_block(RequestEndBlock(height=99))
+    app.end_block(types.RequestEndBlock(height=99))
 
     resp = query.get_pre_commit_state(b.connection)
     assert resp['height'] == 99
@@ -410,17 +401,17 @@ def test_store_pre_commit_state_in_end_block(b, alice, init_chain_request):
 
     app.begin_block(begin_block)
     app.deliver_tx(encode_tx_to_bytes(tx))
-    app.end_block(RequestEndBlock(height=100))
+    app.end_block(types.RequestEndBlock(height=100))
     resp = query.get_pre_commit_state(b.connection)
     assert resp['height'] == 100
     assert resp['transactions'] == [tx.id]
 
     # simulate a chain migration and assert the height is shifted
     b.store_abci_chain(100, 'new-chain')
-    app = App(b)
+    app = App(a, b)
     app.begin_block(begin_block)
     app.deliver_tx(encode_tx_to_bytes(tx))
-    app.end_block(RequestEndBlock(height=1))
+    app.end_block(types.RequestEndBlock(height=1))
     resp = query.get_pre_commit_state(b.connection)
     assert resp['height'] == 101
     assert resp['transactions'] == [tx.id]
@@ -510,43 +501,43 @@ def test_new_validator_set(b):
     assert updated_validator_set == updated_validators
 
 
-def test_info_aborts_if_chain_is_not_synced(b):
+def test_info_aborts_if_chain_is_not_synced(a, b):
     b.store_abci_chain(0, 'chain-XYZ', False)
 
     with pytest.raises(SystemExit):
-        App(b).info(RequestInfo())
+        App(a, b).info(types.RequestInfo())
 
 
-def test_check_tx_aborts_if_chain_is_not_synced(b):
+def test_check_tx_aborts_if_chain_is_not_synced(a, b):
     b.store_abci_chain(0, 'chain-XYZ', False)
 
     with pytest.raises(SystemExit):
-        App(b).check_tx('some bytes')
+        App(a, b).check_tx('some bytes')
 
 
-def test_begin_aborts_if_chain_is_not_synced(b):
+def test_begin_aborts_if_chain_is_not_synced(a, b):
     b.store_abci_chain(0, 'chain-XYZ', False)
 
     with pytest.raises(SystemExit):
-        App(b).info(RequestBeginBlock())
+        App(a, b).info(types.RequestBeginBlock())
 
 
-def test_deliver_tx_aborts_if_chain_is_not_synced(b):
+def test_deliver_tx_aborts_if_chain_is_not_synced(a, b):
     b.store_abci_chain(0, 'chain-XYZ', False)
 
     with pytest.raises(SystemExit):
-        App(b).deliver_tx('some bytes')
+        App(a, b).deliver_tx('some bytes')
 
 
-def test_end_block_aborts_if_chain_is_not_synced(b):
+def test_end_block_aborts_if_chain_is_not_synced(a, b):
     b.store_abci_chain(0, 'chain-XYZ', False)
 
     with pytest.raises(SystemExit):
-        App(b).info(RequestEndBlock())
+        App(a, b).info(types.RequestEndBlock())
 
 
-def test_commit_aborts_if_chain_is_not_synced(b):
+def test_commit_aborts_if_chain_is_not_synced(a, b):
     b.store_abci_chain(0, 'chain-XYZ', False)
 
     with pytest.raises(SystemExit):
-        App(b).commit()
+        App(a, b).commit()

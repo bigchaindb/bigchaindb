@@ -5,27 +5,23 @@
 import multiprocessing as mp
 from collections import defaultdict
 
-from abci import ResponseCheckTx, ResponseDeliverTx
-
-from bigchaindb import BigchainDB, App
+from bigchaindb import App, BigchainDB
 from bigchaindb.tendermint_utils import decode_transaction
-
-
-CodeTypeOk = 0
+from abci import CodeTypeOk
 
 
 class ParallelValidationApp(App):
-    def __init__(self, bigchaindb=None, events_queue=None):
-        super().__init__(bigchaindb, events_queue)
+    def __init__(self, bigchaindb=None, events_queue=None, abci=None):
+        super().__init__(bigchaindb, events_queue, abci=abci)
         self.parallel_validator = ParallelValidator()
         self.parallel_validator.start()
 
     def check_tx(self, raw_transaction):
-        return ResponseCheckTx(code=CodeTypeOk)
+        return self.abci.ResponseCheckTx(code=CodeTypeOk)
 
     def deliver_tx(self, raw_transaction):
         self.parallel_validator.validate(raw_transaction)
-        return ResponseDeliverTx(code=CodeTypeOk)
+        return self.abci.ResponseDeliverTx(code=CodeTypeOk)
 
     def end_block(self, request_end_block):
         result = self.parallel_validator.result(timeout=30)

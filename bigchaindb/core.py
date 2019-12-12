@@ -9,15 +9,7 @@ import logging
 import sys
 
 from abci.application import BaseApplication
-from abci import (
-    ResponseInitChain,
-    ResponseInfo,
-    ResponseCheckTx,
-    ResponseBeginBlock,
-    ResponseDeliverTx,
-    ResponseEndBlock,
-    ResponseCommit,
-)
+from abci import CodeTypeOk
 
 from bigchaindb import BigchainDB
 from bigchaindb.elections.election import Election
@@ -30,7 +22,6 @@ import bigchaindb.upsert_validator.validator_utils as vutils
 from bigchaindb.events import EventTypes, Event
 
 
-CodeTypeOk = 0
 CodeTypeError = 1
 logger = logging.getLogger(__name__)
 
@@ -42,7 +33,8 @@ class App(BaseApplication):
     transaction logic to Tendermint Core.
     """
 
-    def __init__(self, bigchaindb=None, events_queue=None):
+    def __init__(self, abci, bigchaindb=None, events_queue=None,):
+        super().__init__(abci)
         self.events_queue = events_queue
         self.bigchaindb = bigchaindb or BigchainDB()
         self.block_txn_ids = []
@@ -108,7 +100,7 @@ class App(BaseApplication):
                                          genesis.chain_id, True)
         self.chain = {'height': abci_chain_height, 'is_synced': True,
                       'chain_id': genesis.chain_id}
-        return ResponseInitChain()
+        return self.abci.ResponseInitChain()
 
     def info(self, request):
         """Return height of the latest committed block."""
@@ -123,7 +115,7 @@ class App(BaseApplication):
 
         logger.info(f"Tendermint version: {request.version}")
 
-        r = ResponseInfo()
+        r = self.abci.ResponseInfo()
         block = self.bigchaindb.get_latest_block()
         if block:
             chain_shift = 0 if self.chain is None else self.chain['height']
@@ -148,10 +140,10 @@ class App(BaseApplication):
         transaction = decode_transaction(raw_transaction)
         if self.bigchaindb.is_valid_transaction(transaction):
             logger.debug('check_tx: VALID')
-            return ResponseCheckTx(code=CodeTypeOk)
+            return self.abci.ResponseCheckTx(code=CodeTypeOk)
         else:
             logger.debug('check_tx: INVALID')
-            return ResponseCheckTx(code=CodeTypeError)
+            return self.abci.ResponseCheckTx(code=CodeTypeError)
 
     def begin_block(self, req_begin_block):
         """Initialize list of transaction.
@@ -168,7 +160,7 @@ class App(BaseApplication):
 
         self.block_txn_ids = []
         self.block_transactions = []
-        return ResponseBeginBlock()
+        return self.abci.ResponseBeginBlock()
 
     def deliver_tx(self, raw_transaction):
         """Validate the transaction before mutating the state.
@@ -185,12 +177,12 @@ class App(BaseApplication):
 
         if not transaction:
             logger.debug('deliver_tx: INVALID')
-            return ResponseDeliverTx(code=CodeTypeError)
+            return self.abci.ResponseDeliverTx(code=CodeTypeError)
         else:
             logger.debug('storing tx')
             self.block_txn_ids.append(transaction.id)
             self.block_transactions.append(transaction)
-            return ResponseDeliverTx(code=CodeTypeOk)
+            return self.abci.ResponseDeliverTx(code=CodeTypeOk)
 
     def end_block(self, request_end_block):
         """Calculate block hash using transaction ids and previous block
@@ -226,7 +218,7 @@ class App(BaseApplication):
                                                   self.new_height,
                                                   self.block_transactions)
 
-        return ResponseEndBlock(validator_updates=validator_update)
+        return self.abci.ResponseEndBlock(validator_updates=validator_update)
 
     def commit(self):
         """Store the new height and along with block hash."""
@@ -257,7 +249,7 @@ class App(BaseApplication):
             })
             self.events_queue.put(event)
 
-        return ResponseCommit(data=data)
+        return self.abci.ResponseCommit(data=data)
 
 
 def rollback(b):
