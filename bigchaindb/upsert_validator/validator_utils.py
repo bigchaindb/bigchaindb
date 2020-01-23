@@ -1,18 +1,28 @@
-import codecs
 import base64
 import binascii
+import codecs
 
-from abci import (ValidatorUpdate, PubKey)
-from bigchaindb.common.exceptions import InvalidPublicKey
+import bigchaindb
+from abci import types_v0_22_8, types_v0_31_5, TmVersion
+from bigchaindb.common.exceptions import InvalidPublicKey, BigchainDBError
 
 
 def encode_validator(v):
     ed25519_public_key = v['public_key']['value']
     # NOTE: tendermint expects public to be encoded in go-amino format
-    pub_key = PubKey(type='ed25519',
-                     data=bytes.fromhex(ed25519_public_key))
-    return ValidatorUpdate(pub_key=pub_key,
-                           power=v['power'])
+    try:
+        version = TmVersion(bigchaindb.config["tendermint"]["version"])
+    except ValueError:
+        raise BigchainDBError('Invalid tendermint version, '
+                              'check BigchainDB configuration file')
+
+    validator_update_t, pubkey_t = {
+        TmVersion.v0_22_8: (types_v0_22_8.Validator, types_v0_22_8.PubKey),
+        TmVersion.v0_31_5: (types_v0_31_5.ValidatorUpdate, types_v0_31_5.PubKey)
+    }[version]
+    pub_key = pubkey_t(type='ed25519', data=bytes.fromhex(ed25519_public_key))
+
+    return validator_update_t(pub_key=pub_key, power=v['power'])
 
 
 def decode_validator(v):

@@ -234,6 +234,12 @@ def merlin():
 
 
 @pytest.fixture
+def a():
+    from abci import types_v0_31_5
+    return types_v0_31_5
+
+
+@pytest.fixture
 def b():
     from bigchaindb import BigchainDB
     return BigchainDB()
@@ -434,11 +440,12 @@ def event_loop():
 
 @pytest.fixture(scope='session')
 def abci_server():
-    from abci import ABCIServer
+    from abci.server import ABCIServer
+    from abci import types_v0_31_5
     from bigchaindb.core import App
     from bigchaindb.utils import Process
 
-    app = ABCIServer(app=App())
+    app = ABCIServer(app=App(types_v0_31_5))
     abci_proxy = Process(name='ABCI', target=app.run)
     yield abci_proxy.start()
     abci_proxy.terminate()

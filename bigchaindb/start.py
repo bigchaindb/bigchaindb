@@ -5,6 +5,8 @@
 import logging
 import setproctitle
 
+from abci import TmVersion, ABCI
+
 import bigchaindb
 from bigchaindb.lib import BigchainDB
 from bigchaindb.core import App
@@ -62,15 +64,26 @@ def start(args):
     # We need to import this after spawning the web server
     # because import ABCIServer will monkeypatch all sockets
     # for gevent.
-    from abci import ABCIServer
+    from abci.server import ABCIServer
 
     setproctitle.setproctitle('bigchaindb')
 
     # Start the ABCIServer
+    abci = ABCI(TmVersion(bigchaindb.config['tendermint']['version']))
     if args.experimental_parallel_validation:
-        app = ABCIServer(app=ParallelValidationApp(events_queue=exchange.get_publisher_queue()))
+        app = ABCIServer(
+            app=ParallelValidationApp(
+                abci=abci.types,
+                events_queue=exchange.get_publisher_queue(),
+            )
+        )
     else:
-        app = ABCIServer(app=App(events_queue=exchange.get_publisher_queue()))
+        app = ABCIServer(
+            app=App(
+                abci=abci.types,
+                events_queue=exchange.get_publisher_queue(),
+            )
+        )
     app.run()
 
 
