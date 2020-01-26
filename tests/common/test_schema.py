@@ -9,7 +9,7 @@ properties related to validation.
 from unittest.mock import patch
 
 from hypothesis import given
-from hypothesis_regex import regex
+from hypothesis.strategies import from_regex as regex
 from pytest import raises
 
 from bigchaindb.common.exceptions import SchemaValidationError
