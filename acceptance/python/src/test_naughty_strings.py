@@ -66,8 +66,11 @@ def send_naughty_tx(asset, metadata):
         # Then she expects a nicely formatted error code
         status_code = sent_transaction.status_code
         error = sent_transaction.error
-        regex = '\{"message":"Invalid transaction \\(ValidationError\\): Invalid key name .* in asset object. ' \
-                'The key name cannot contain characters .* or null characters","status":400\}\n'
+        regex = (
+            r'\{\s*\n*'
+            r'\s*"message": "Invalid transaction \(ValidationError\): Invalid key name.*The key name cannot contain characters.*\n*' # noqa
+            r'\s*"status": 400\n*'
+            r'\s*\}\n*')
         assert status_code == 400
         assert re.fullmatch(regex, error), sent_transaction
     # Otherwise, she expects to see her transaction in the database
