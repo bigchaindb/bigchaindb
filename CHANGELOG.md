@@ -25,6 +25,25 @@ For reference, the possible headings are:
 * **Known Issues**
 * **Notes**
 
+## [2.2.1] - 2020-04-14
+
+### Fixed
+
+Gevent library API update is incompatible with  bigchaindb-abci 1.0.1 version.
+Updated bigchaindb-abci.
+
+## [2.2.0] - 2020-02-20
+
+### Added
+
+Support for multiple ABCI versions.
+
+## [2.1.0] - 2019-11-06
+
+### Added
+
+Option for last transaction retrieval added.
+
 ## [2.0] - 2019-09-26
 
 ### Changed
