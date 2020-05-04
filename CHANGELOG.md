@@ -1,5 +1,6 @@
 <!---
-Copyright BigchainDB GmbH and BigchainDB contributors
+Copyright © 2020 Interplanetary Database Association e.V.,
+BigchainDB and IPDB software contributors.
 SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 Code is Apache-2.0 and docs are CC-BY-4.0
 --->
@@ -23,6 +24,25 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Known Issues**
 * **Notes**
+
+## [2.2.1] - 2020-04-14
+
+### Fixed
+
+Gevent library API update is incompatible with  bigchaindb-abci 1.0.1 version.
+Updated bigchaindb-abci.
+
+## [2.2.0] - 2020-02-20
+
+### Added
+
+Support for multiple ABCI versions.
+
+## [2.1.0] - 2019-11-06
+
+### Added
+
+Option for last transaction retrieval added.
 
 ## [2.0] - 2019-09-26
 
