@@ -78,6 +78,111 @@ class TestBigchainApi(object):
         assets = list(b.text_search('bigchaindb'))
         assert len(assets) == 3
 
+    def test_query(self, b, alice):
+        from bigchaindb.models import Transaction
+
+        # define the assets
+        asset1 = {'msg': 'BigchainDB 1', 'complex_key': {'complex_sub_key': 'value_1'}}
+        asset2 = {'msg': 'BigchainDB 2', 'complex_key': {'complex_sub_key': 'value_2'}}
+        asset3 = {'msg': 'BigchainDB 3', 'complex_key': {'complex_sub_key': 'value_3'}}
+
+        # create the transactions
+        tx1 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                                 asset=asset1).sign([alice.private_key])
+        tx2 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                                 asset=asset2).sign([alice.private_key])
+        tx3 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                                 asset=asset3).sign([alice.private_key])
+
+        # write the transactions to the DB
+        b.store_bulk_transactions([tx1, tx2, tx3])
+        # get the assets through text search
+        assets = list(b.query(json_query={
+            'data.complex_key.complex_sub_key': {
+                '$in': ['value_3', 'value_2', 'value_1']}}))
+        assert len(assets) == 3
+
+    def test_query_limit(self, b, alice):
+        from bigchaindb.models import Transaction
+
+        # define the assets
+        asset1 = {'msg': 'BigchainDB 1', 'complex_key': {'complex_sub_key': 'value_1'}}
+        asset2 = {'msg': 'BigchainDB 2', 'complex_key': {'complex_sub_key': 'value_2'}}
+        asset3 = {'msg': 'BigchainDB 3', 'complex_key': {'complex_sub_key': 'value_3'}}
+
+        # create the transactions
+        tx1 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                                 asset=asset1).sign([alice.private_key])
+        tx2 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                                 asset=asset2).sign([alice.private_key])
+        tx3 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                                 asset=asset3).sign([alice.private_key])
+
+        # write the transactions to the DB
+        b.store_bulk_transactions([tx1, tx2, tx3])
+        # get the assets through text search
+        assets = list(b.query(json_query={
+            'data.complex_key.complex_sub_key': {
+                '$in': ['value_3', 'value_2', 'value_1']}},
+                limit=2))
+        assert len(assets) == 2
+
+    def test_query_not_found(self, b, alice):
+        from bigchaindb.models import Transaction
+
+        # define the assets
+        asset1 = {'msg': 'BigchainDB 1', 'complex_key': {'complex_sub_key': 'value_1'}}
+        asset2 = {'msg': 'BigchainDB 2', 'complex_key': {'complex_sub_key': 'value_2'}}
+        asset3 = {'msg': 'BigchainDB 3', 'complex_key': {'complex_sub_key': 'value_3'}}
+
+        # create the transactions
+        tx1 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                                 asset=asset1).sign([alice.private_key])
+        tx2 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                                 asset=asset2).sign([alice.private_key])
+        tx3 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                                 asset=asset3).sign([alice.private_key])
+
+        # write the transactions to the DB
+        b.store_bulk_transactions([tx1, tx2, tx3])
+        # get the assets through text search
+        assets = list(b.query(json_query={'data.complex_key.complex_sub_key':'value_4'}))
+        assert len(assets) == 0
+
+    def test_aggregate(self, b, alice):
+        from bigchaindb.models import Transaction
+
+        # define the assets
+        asset1 = {'msg': 'BigchainDB 1', 'complex_key': {'complex_sub_key': 'value_1', 'aggregation_key': 'ak_1'}}
+        asset2 = {'msg': 'BigchainDB 2', 'complex_key': {'complex_sub_key': 'value_2', 'aggregation_key': 'ak_1'}}
+        asset3 = {'msg': 'BigchainDB 3', 'complex_key': {'complex_sub_key': 'value_3', 'aggregation_key': 'ak_2'}}
+        asset4 = {'msg': 'BigchainDB 3', 'complex_key': {'complex_sub_key': 'value_4', 'aggregation_key': 'ak_3'}}
+        asset5 = {'msg': 'BigchainDB 3', 'complex_key': {'complex_sub_key': 'value_5', 'aggregation_key': 'ak_3'}}
+        asset6 = {'msg': 'BigchainDB 3', 'complex_key': {'complex_sub_key': 'value_6', 'aggregation_key': 'ak_3'}}
+
+        # create the transactions
+        tx1 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                                 asset=asset1).sign([alice.private_key])
+        tx2 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                                 asset=asset2).sign([alice.private_key])
+        tx3 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                                 asset=asset3).sign([alice.private_key])
+        tx4 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                                 asset=asset4).sign([alice.private_key])
+        tx5 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                                 asset=asset5).sign([alice.private_key])
+        tx6 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                                 asset=asset6).sign([alice.private_key])
+
+        # write the transactions to the DB
+        b.store_bulk_transactions([tx1, tx2, tx3, tx4, tx5, tx6])
+        # get the assets through text search
+        aggregation_query = [{'$group': {'_id': "$data.complex_key.aggregation_key", 'count': {'$sum': 1}}}]
+        assets = list(b.aggregate(aggregation_functions=aggregation_query))
+        assert assets == [{'_id': 'ak_3', 'count': 3},
+                          {'_id': 'ak_2', 'count': 1},
+                          {'_id': 'ak_1', 'count': 2}]
+
     @pytest.mark.usefixtures('inputs')
     def test_non_create_input_not_found(self, b, user_pk):
         from cryptoconditions import Ed25519Sha256
