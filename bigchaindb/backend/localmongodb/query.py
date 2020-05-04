@@ -138,6 +138,23 @@ def get_txids_filtered(conn, asset_id, operation=None, last_tx=None):
 
 
 @register_query(LocalMongoDBConnection)
+def query(conn, json_query, *, limit=0, table='assets'):
+    cursor = conn.run(
+        conn.collection(table)
+        .find(json_query).limit(limit))
+
+    return (obj for obj in cursor)
+
+
+@register_query(LocalMongoDBConnection)
+def aggregate(conn, aggregation_functions, *, table='assets'):
+    cursor = conn.run(
+        conn.collection(table)
+        .aggregate(aggregation_functions))
+    return (obj for obj in cursor)
+
+
+@register_query(LocalMongoDBConnection)
 def text_search(conn, search, *, language='english', case_sensitive=False,
                 diacritic_sensitive=False, text_score=False, limit=0, table='assets'):
     cursor = conn.run(
