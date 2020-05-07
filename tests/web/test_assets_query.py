@@ -6,7 +6,8 @@ import pytest
 import json
 import urllib.parse
 
-QUERY_ASSETS_ENDPOINT = '/api/v1/query-assets/'
+QUERY_ASSETS_ENDPOINT = '/api/v1/assets/query'
+
 
 @pytest.mark.bdb
 def test_query_assets_with_query(client, b, alice):
@@ -26,6 +27,7 @@ def test_query_assets_with_query(client, b, alice):
     print(res)
     assert json.loads(res.json)[0]["data"] == {'msg': 'abc 1'}
     assert res.status_code == 200
+
 
 @pytest.mark.bdb
 def test_query_assets_with_empty_query(client, b, alice):
@@ -83,10 +85,9 @@ def test_query_assets_with_empty_query_limit_0(client, b, alice):
     b.store_bulk_transactions([tx1])
     b.store_bulk_transactions([tx2])
 
-    res = client.get(QUERY_ASSETS_ENDPOINT + '?limit=0'+ f"&query={urllib.parse.quote(json.dumps({}))}")
+    res = client.get(QUERY_ASSETS_ENDPOINT + '?limit=0' + f"&query={urllib.parse.quote(json.dumps({}))}")
     print(res.json)
     assert len(json.loads(res.json)) == 2
     assert json.loads(res.json)[0]["data"] == {'msg': 'abc 1'}
     assert json.loads(res.json)[1]["data"] == {'msg': 'abc 2'}
     assert res.status_code == 200
-
