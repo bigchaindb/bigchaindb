@@ -12,7 +12,7 @@ from json import JSONEncoder
 import logging
 from bson import ObjectId
 from flask_restful import reqparse, Resource
-from flask import current_app, request, jsonify
+from flask import current_app
 
 from bigchaindb.backend.exceptions import OperationError
 from bigchaindb.web.views.base import make_error
