@@ -146,7 +146,7 @@ class TestBigchainApi(object):
         # write the transactions to the DB
         b.store_bulk_transactions([tx1, tx2, tx3])
         # get the assets through text search
-        assets = list(b.query(json_query={'data.complex_key.complex_sub_key':'value_4'}))
+        assets = list(b.query(json_query={'data.complex_key.complex_sub_key': 'value_4'}))
         assert len(assets) == 0
 
     def test_aggregate(self, b, alice):
