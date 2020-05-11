@@ -6,7 +6,11 @@ import pytest
 import json
 import urllib.parse
 
+<<<<<<< HEAD
 AGGREGATE_ASSETS_ENDPOINT = '/api/v1/aggregate-assets/'
+=======
+AGGREGATE_ASSETS_ENDPOINT = '/api/v1/assets/aggregate'
+>>>>>>> 6ad10cef3d55b47891b3111a7460067b745f247a
 
 
 def insert_aggregation_assets(b, alice):
@@ -19,6 +23,7 @@ def insert_aggregation_assets(b, alice):
     asset6 = {'msg': 'BigchainDB 3', 'complex_key': {'complex_sub_key': 'value_6', 'aggregation_key': 'ak_3'}}
 
     # create the transactions
+<<<<<<< HEAD
     tx1 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
                                 asset=asset1).sign([alice.private_key])
     tx2 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
@@ -31,6 +36,14 @@ def insert_aggregation_assets(b, alice):
                                 asset=asset5).sign([alice.private_key])
     tx6 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
                                 asset=asset6).sign([alice.private_key])
+=======
+    tx1 = Transaction.create([alice.public_key], [([alice.public_key], 1)], asset=asset1).sign([alice.private_key])
+    tx2 = Transaction.create([alice.public_key], [([alice.public_key], 1)], asset=asset2).sign([alice.private_key])
+    tx3 = Transaction.create([alice.public_key], [([alice.public_key], 1)], asset=asset3).sign([alice.private_key])
+    tx4 = Transaction.create([alice.public_key], [([alice.public_key], 1)], asset=asset4).sign([alice.private_key])
+    tx5 = Transaction.create([alice.public_key], [([alice.public_key], 1)], asset=asset5).sign([alice.private_key])
+    tx6 = Transaction.create([alice.public_key], [([alice.public_key], 1)], asset=asset6).sign([alice.private_key])
+>>>>>>> 6ad10cef3d55b47891b3111a7460067b745f247a
 
     # write the transactions to the DB
     b.store_bulk_transactions([tx1, tx2, tx3, tx4, tx5, tx6])
@@ -39,16 +52,35 @@ def insert_aggregation_assets(b, alice):
 @pytest.mark.bdb
 def test_aggregate_assets_with_query(client, b, alice):
     insert_aggregation_assets(b, alice)
+<<<<<<< HEAD
     aggregation_functions = {'function_list': [{'$group': {'_id': "$data.complex_key.aggregation_key", 'count': {'$sum': 1}}}]}
     res = client.get(AGGREGATE_ASSETS_ENDPOINT + f"?aggregation_functions={urllib.parse.quote(json.dumps(aggregation_functions))}")
+=======
+    aggregation_functions = {'function_list':
+                             [{'$group': {'_id': "$data.complex_key.aggregation_key", 'count': {'$sum': 1}}}]}
+    res = client.get(AGGREGATE_ASSETS_ENDPOINT +
+                     f"?aggregation_functions={urllib.parse.quote(json.dumps(aggregation_functions))}")
+>>>>>>> 6ad10cef3d55b47891b3111a7460067b745f247a
     assert res.json == json.dumps({"results": [{'_id': 'ak_3', 'count': 3},
                                                {'_id': 'ak_2', 'count': 1},
                                                {'_id': 'ak_1', 'count': 2}]})
     assert res.status_code == 200
 
+<<<<<<< HEAD
 @pytest.mark.bdb
 def test_aggregate_assets_with_invalid_query(client, b, alice):
     insert_aggregation_assets(b, alice)
     aggregation_functions = {'something': [{'$group': {'_id': "$data.complex_key.aggregation_key", 'count': {'$sum': 1}}}]}
     res = client.get(AGGREGATE_ASSETS_ENDPOINT + f"?aggregation_functions={urllib.parse.quote(json.dumps(aggregation_functions))}")
     assert res.status_code == 400
+=======
+
+@pytest.mark.bdb
+def test_aggregate_assets_with_invalid_query(client, b, alice):
+    insert_aggregation_assets(b, alice)
+    aggregation_functions = {'something':
+                             [{'$group': {'_id': "$data.complex_key.aggregation_key", 'count': {'$sum': 1}}}]}
+    res = client.get(AGGREGATE_ASSETS_ENDPOINT +
+                     f"?aggregation_functions={urllib.parse.quote(json.dumps(aggregation_functions))}")
+    assert res.status_code == 400
+>>>>>>> 6ad10cef3d55b47891b3111a7460067b745f247a

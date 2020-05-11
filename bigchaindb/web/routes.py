@@ -38,8 +38,13 @@ ROUTES_API_V1 = [
     r('transactions/<string:tx_id>', tx.TransactionApi),
     r('transactions', tx.TransactionListApi),
     r('outputs/', outputs.OutputListApi),
+<<<<<<< HEAD
     r('query-assets/', assets.AssetQueryApi),
     r('aggregate-assets/', assets.AssetAggregateApi),
+=======
+    r('assets/query/', assets.AssetQueryApi),
+    r('assets/aggregate/', assets.AssetAggregateApi),
+>>>>>>> 6ad10cef3d55b47891b3111a7460067b745f247a
     r('validators/', validators.ValidatorsApi),
 ]
 
