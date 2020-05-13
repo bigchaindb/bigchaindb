@@ -1,0 +1,20 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "api": {
+    "v1": {
+      "assets": "/api/v1/assets/",
+      "blocks": "/api/v1/blocks/",
+      "docs": "https://docs.bigchaindb.com/projects/server/en/v2.2.1/http-client-server-api.html",
+      "metadata": "/api/v1/metadata/",
+      "outputs": "/api/v1/outputs/",
+      "streams": "ws://localhost:9985/api/v1/streams/valid_transactions",
+      "transactions": "/api/v1/transactions/",
+      "validators": "/api/v1/validators"
+    }
+  },
+  "docs": "https://docs.bigchaindb.com/projects/server/en/v2.2.1/",
+  "software": "BigchainDB",
+  "version": "2.2.1"
+}

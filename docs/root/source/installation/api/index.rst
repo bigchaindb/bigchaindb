@@ -1,0 +1,16 @@
+
+.. Copyright © 2020 Interplanetary Database Association e.V.,
+   BigchainDB and IPDB software contributors.
+   SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+   Code is Apache-2.0 and docs are CC-BY-4.0
+
+   
+
+API
+===
+
+.. toctree::
+    :maxdepth: 1
+
+    http-client-server-api
+    websocket-event-stream-api
