@@ -7,6 +7,8 @@
 Installation
 ============
 
+You can install a single node to test out BigchainDB, connect it to a network or setup a network of nodes. 
+
 .. toctree::
    :maxdepth: 1
 

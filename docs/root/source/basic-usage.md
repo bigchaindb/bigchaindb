@@ -126,6 +126,6 @@ things. We documented those things in a post on *The BigchainDB Blog*:
 ### Example Transactions
 
 There are example BigchainDB transactions in
-[the HTTP API documentation](https://docs.bigchaindb.com/projects/server/en/latest/http-client-server-api.html)
+[the HTTP API documentation](./installation/api/http-client-server-api)
 and
-[the Python Driver documentation](https://docs.bigchaindb.com/projects/py-driver/en/latest/usage.html).
+[the Python Driver documentation](./drivers/index).
