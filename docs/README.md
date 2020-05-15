@@ -45,7 +45,7 @@ You can also use [Docker Compose](https://docs.docker.com/compose/) to build and
 $ docker-compose up -d bdocs
 ```
 
-The docs will be hosted on port **33333**, and can be accessed over [localhost](http:/localhost:33333), [127.0.0.1](http:/127.0.0.1:33333)
+The docs will be hosted on port **33333**, and can be accessed over [localhost](http://localhost:33333), [127.0.0.1](http://127.0.0.1:33333)
 OR http:/HOST_IP:33333.
 
 
