@@ -271,8 +271,8 @@ def test_get_spending_transactions_multiple_inputs():
         ({'transaction_id': tx3.id, 'output_index': 0}, 1, [tx4.id]),
         ({'transaction_id': tx3.id, 'output_index': 1}, 0, None),
     ]
-    for l, num, match in links:
-        txns = list(query.get_spending_transactions(conn, [l]))
+    for li, num, match in links:
+        txns = list(query.get_spending_transactions(conn, [li]))
         assert len(txns) == num
         if len(txns):
             assert [tx['id'] for tx in txns] == match

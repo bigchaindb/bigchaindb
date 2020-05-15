@@ -546,7 +546,7 @@ class Transaction(object):
         elif (operation == self.TRANSFER and
                 not (isinstance(asset, dict) and 'id' in asset)):
             raise TypeError(('`asset` must be a dict holding an `id` property '
-                             "for 'TRANSFER' Transactions".format(operation)))
+                             'for \'TRANSFER\' Transactions'))
 
         if outputs and not isinstance(outputs, list):
             raise TypeError('`outputs` must be a list instance or None')
@@ -869,8 +869,9 @@ class Transaction(object):
             return cls._sign_threshold_signature_fulfillment(input_, message,
                                                              key_pairs)
         else:
-            raise ValueError("Fulfillment couldn't be matched to "
-                             'Cryptocondition fulfillment type.')
+            raise ValueError(
+                'Fulfillment couldn\'t be matched to '
+                'Cryptocondition fulfillment type.')
 
     @classmethod
     def _sign_simple_signature_fulfillment(cls, input_, message, key_pairs):
