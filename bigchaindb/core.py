@@ -46,9 +46,9 @@ class App(BaseApplication):
         self.chain = self.bigchaindb.get_latest_abci_chain()
 
     def log_abci_migration_error(self, chain_id, validators):
-        logger.error(f'An ABCI chain migration is in process. ' +
-                     'Download the new ABCI client and configure it with ' +
-                     'chain_id={chain_id} and validators={validators}.')
+        logger.error('An ABCI chain migration is in process. '
+                     'Download the new ABCI client and configure it with '
+                     f'chain_id={chain_id} and validators={validators}.')
 
     def abort_if_abci_chain_is_not_synced(self):
         if self.chain is None or self.chain['is_synced']:
@@ -69,8 +69,8 @@ class App(BaseApplication):
             chain_id = known_chain['chain_id']
 
             if known_chain['is_synced']:
-                msg = f'Got invalid InitChain ABCI request ({genesis}) - ' + \
-                      'the chain {chain_id} is already synced.'
+                msg = (f'Got invalid InitChain ABCI request ({genesis}) - '
+                       f'the chain {chain_id} is already synced.')
                 logger.error(msg)
                 sys.exit(1)
 
