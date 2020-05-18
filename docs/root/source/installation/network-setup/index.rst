@@ -15,5 +15,5 @@ There are several ways to setup a network. You can use the Kubernetes deployment
    networks
    network-setup
    k8s-deployment-template/index
-   bigchain-node-ansible.md
+   bigchaindb-node-ansible.md
    

@@ -1,4 +1,4 @@
-# Setting up a network of nodes with the Ansible script 
+# Network of nodes with the Ansible script 
 
 You can find one of the installation methods with Ansible on GitHub at:
 
