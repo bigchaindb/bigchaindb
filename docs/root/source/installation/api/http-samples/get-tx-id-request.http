@@ -1,0 +1,3 @@
+GET /api/v1/transactions/4957744b3ac54434b8270f2c854cc1040228c82ea4e72d66d2887a4d3e30b317 HTTP/1.1
+Host: example.com
+

@@ -1,0 +1,45 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "height": 1,
+  "transactions": [
+    {
+      "asset": {
+        "data": {
+          "msg": "Hello BigchainDB!"
+        }
+      },
+      "id": "4957744b3ac54434b8270f2c854cc1040228c82ea4e72d66d2887a4d3e30b317",
+      "inputs": [
+        {
+          "fulfillment": "pGSAIDE5i63cn4X8T8N1sZ2mGkJD5lNRnBM4PZgI_zvzbr-cgUCy4BR6gKaYT-tdyAGPPpknIqI4JYQQ-p2nCg3_9BfOI-15vzldhyz-j_LZVpqAlRmbTzKS-Q5gs7ZIFaZCA_UD",
+          "fulfills": null,
+          "owners_before": [
+            "4K9sWUMFwTgaDGPfdynrbxWqWS6sWmKbZoTjxLtVUibD"
+          ]
+        }
+      ],
+      "metadata": {
+        "sequence": 0
+      },
+      "operation": "CREATE",
+      "outputs": [
+        {
+          "amount": "1",
+          "condition": {
+            "details": {
+              "public_key": "4K9sWUMFwTgaDGPfdynrbxWqWS6sWmKbZoTjxLtVUibD",
+              "type": "ed25519-sha-256"
+            },
+            "uri": "ni:///sha-256;PNYwdxaRaNw60N6LDFzOWO97b8tJeragczakL8PrAPc?fpt=ed25519-sha-256&cost=131072"
+          },
+          "public_keys": [
+            "4K9sWUMFwTgaDGPfdynrbxWqWS6sWmKbZoTjxLtVUibD"
+          ]
+        }
+      ],
+      "version": "2.0"
+    }
+  ]
+}

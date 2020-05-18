@@ -4,8 +4,8 @@
    SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
    Code is Apache-2.0 and docs are CC-BY-4.0
 
-Querying BigchainDB
-===================
+Queries in BigchainDB
+=====================
 
 A node operator can use the full power of MongoDB's query engine to search and query all stored data, including all transactions, assets and metadata.
 The node operator can decide for themselves how much of that query power they expose to external users.

@@ -96,10 +96,10 @@ services:
         backend: localmongodb
     volumes:
       - .:/usr/src/app/
-    command: make -C docs/server html
+    command: make -C docs/root html
   vdocs:
     image: nginx
     ports:
       - '33333:80'
     volumes:
-      - ./docs/server/build/html:/usr/share/nginx/html
+      - ./docs/root/build/html:/usr/share/nginx/html
