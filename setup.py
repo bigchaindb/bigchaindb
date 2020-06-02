@@ -77,7 +77,7 @@ install_requires = [
     'cryptoconditions==0.8.0',
     'python-rapidjson~=0.6.0',
     'logstats~=0.2.1',
-    'flask~=0.12.4',
+    'flask==1.0.0',
     'flask-cors~=3.0.0',
     'flask-restful~=0.3.0',
     'requests~=2.20.0',

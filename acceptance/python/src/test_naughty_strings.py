@@ -68,8 +68,9 @@ def send_naughty_tx(asset, metadata):
         error = sent_transaction.error
         regex = (
             r'\{\s*\n*'
-            r'\s*"message": "Invalid transaction \(ValidationError\): Invalid key name.*The key name cannot contain characters.*\n*' # noqa
-            r'\s*"status": 400\n*'
+            r'\s*"message":\s*"Invalid transaction \(ValidationError\):\s*'
+            r'Invalid key name.*The key name cannot contain characters.*\n*'
+            r'\s*"status":\s*400\n*'
             r'\s*\}\n*')
         assert status_code == 400
         assert re.fullmatch(regex, error), sent_transaction
