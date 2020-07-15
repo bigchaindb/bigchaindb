@@ -20,7 +20,7 @@ import os
 import copy
 import json
 import logging
-import collections
+import collections.abc
 from functools import lru_cache
 
 from pkg_resources import iter_entry_points, ResolutionError
@@ -52,7 +52,7 @@ def map_leafs(func, mapping):
             path = []
 
         for key, val in mapping.items():
-            if isinstance(val, collections.Mapping):
+            if isinstance(val, collections.abc.Mapping):
                 _inner(val, path + [key])
             else:
                 mapping[key] = func(val, path=path+[key])
@@ -80,7 +80,7 @@ def update(d, u):
         mapping: An updated version of d (updated by u).
     """
     for k, v in u.items():
-        if isinstance(v, collections.Mapping):
+        if isinstance(v, collections.abc.Mapping):
             r = update(d.get(k, {}), v)
             d[k] = r
         else:
