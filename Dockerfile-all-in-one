@@ -1,5 +1,5 @@
 FROM alpine:3.9
-LABEL maintainer "devs@bigchaindb.com"
+LABEL maintainer "contact@ipdb.global"
 
 ARG TM_VERSION=v0.31.5
 RUN mkdir -p /usr/src/app

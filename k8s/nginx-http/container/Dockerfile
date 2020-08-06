@@ -1,5 +1,5 @@
 FROM nginx:stable
-LABEL maintainer "devs@bigchaindb.com"
+LABEL maintainer "contact@ipdb.global"
 WORKDIR /
 RUN apt-get update \
     && apt-get -y upgrade \

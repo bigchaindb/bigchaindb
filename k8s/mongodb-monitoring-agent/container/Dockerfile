@@ -7,7 +7,7 @@
 # https://docs.cloudmanager.mongodb.com/tutorial/install-monitoring-agent-with-deb-package/
 
 FROM ubuntu:xenial
-LABEL maintainer "devs@bigchaindb.com"
+LABEL maintainer "contact@ipdb.global"
 # Using ARG, one can set DEBIAN_FRONTEND=noninteractive and others
 # just for the duration of the build:
 ARG DEBIAN_FRONTEND=noninteractive
