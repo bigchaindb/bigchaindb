@@ -109,7 +109,7 @@ setup(
         ),
     url='https://github.com/BigchainDB/bigchaindb/',
     author='BigchainDB Contributors',
-    author_email='devs@bigchaindb.com',
+    author_email='contact@ipdb.global',
     license='Apache Software License 2.0',
     zip_safe=False,
     python_requires='>=3.6',

@@ -1,6 +1,6 @@
 ARG python_version=3.6
 FROM python:${python_version}
-LABEL maintainer "devs@bigchaindb.com"
+LABEL maintainer "contact@ipdb.global"
 
 RUN apt-get update \
     && apt-get install -y vim \
