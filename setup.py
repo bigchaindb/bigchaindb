@@ -9,9 +9,9 @@ BigchainDB: The Blockchain Database
 For full docs visit https://docs.bigchaindb.com
 
 """
-from setuptools import setup, find_packages
-import sys
 
+import sys
+from setuptools import setup, find_packages
 
 if sys.version_info < (3, 6):
     sys.exit('Please use Python version 3.6 or higher.')
@@ -21,17 +21,16 @@ version = {}
 with open('bigchaindb/version.py') as fp:
     exec(fp.read(), version)
 
-
-# check if setuptools is up to date
 def check_setuptools_features():
+    """Check if setuptools is up to date."""
     import pkg_resources
     try:
         list(pkg_resources.parse_requirements('foo~=1.0'))
     except ValueError:
-        exit('Your Python distribution comes with an incompatible version '
-             'of `setuptools`. Please run:\n'
-             ' $ pip3 install --upgrade setuptools\n'
-             'and then run this command again')
+        sys.exit('Your Python distribution comes with an incompatible version '
+                 'of `setuptools`. Please run:\n'
+                 ' $ pip3 install --upgrade setuptools\n'
+                 'and then run this command again')
 
 
 check_setuptools_features()
@@ -122,15 +121,16 @@ setup(
         'Natural Language :: English',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX :: Linux',
     ],
 
     packages=find_packages(exclude=['tests*']),
 
-    scripts = ['pkg/scripts/bigchaindb-monit-config'],
+    scripts=['pkg/scripts/bigchaindb-monit-config'],
 
     entry_points={
         'console_scripts': [
