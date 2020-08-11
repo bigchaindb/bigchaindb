@@ -25,6 +25,12 @@ For reference, the possible headings are:
 * **Known Issues**
 * **Notes**
 
+## [2.2.2] - 2020-08-12
+
+### Security
+
+Several dependencies updated including Flask that had vulnerability.
+
 ## [2.2.1] - 2020-04-14
 
 ### Fixed
