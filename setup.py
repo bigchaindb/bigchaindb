@@ -61,7 +61,7 @@ tests_require = [
     'hypothesis>=5.3.0',
     # Removed pylint because its GPL license isn't Apache2-compatible
     'pytest>=3.0.0',
-    'pytest-cov>=2.2.1',
+    'pytest-cov==2.8.1',
     'pytest-mock',
     'pytest-xdist',
     'pytest-flask',
@@ -71,22 +71,22 @@ tests_require = [
 ] + docs_require
 
 install_requires = [
-    # TODO Consider not installing the db drivers, or putting them in extras.
-    'pymongo~=3.6',
+    'aiohttp==3.6.2',
+    'bigchaindb-abci==1.0.5',
     'cryptoconditions==0.8.0',
-    'python-rapidjson~=0.6.0',
-    'logstats~=0.2.1',
-    'flask==1.0.0',
-    'flask-cors~=3.0.0',
-    'flask-restful~=0.3.0',
-    'requests~=2.20.0',
-    'gunicorn~=19.0',
-    'jsonschema~=2.5.1',
-    'pyyaml>=4.2b1',
-    'aiohttp~=3.0',
-    'bigchaindb-abci>=1.0.2',
-    'setproctitle~=1.1.0',
-    'packaging~=18.0',
+    'flask-cors==3.0.8',
+    'flask-restful==0.3.8',
+    'flask==1.1.2',
+    'gunicorn==20.0.4',
+    'jsonschema==3.2.0',
+    'logstats==0.3.0',
+    'packaging==20.0.0',
+    # TODO Consider not installing the db drivers, or putting them in extras.
+    'pymongo==3.7.2',
+    'python-rapidjson==0.9.1',
+    'pyyaml==5.3.1',
+    'requests==2.23.0',
+    'setproctitle==1.1.10',
 ]
 
 if sys.version_info < (3, 6):
