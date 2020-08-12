@@ -78,7 +78,7 @@ class Input(object):
         if fulfills is not None and not isinstance(fulfills, TransactionLink):
             raise TypeError('`fulfills` must be a TransactionLink instance')
         if not isinstance(owners_before, list):
-            raise TypeError('`owners_after` must be a list instance')
+            raise TypeError('`owners_before` must be a list instance')
 
         self.fulfillment = fulfillment
         self.fulfills = fulfills
