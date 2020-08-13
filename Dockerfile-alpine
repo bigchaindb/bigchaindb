@@ -4,12 +4,12 @@ RUN mkdir -p /usr/src/app
 COPY . /usr/src/app/
 WORKDIR /usr/src/app
 RUN apk --update add sudo \
-    && apk --update add python3 openssl ca-certificates git\
+    && apk --update add python3 py-pip openssl ca-certificates git\
     && apk --update add --virtual build-dependencies python3-dev \
         libffi-dev openssl-dev build-base \
     && apk add --no-cache libstdc++ \
     && pip3 install --upgrade pip cffi \
-    && pip install -e .[dev] \
+    && pip install -e . \
     && apk del build-dependencies \
     && rm -f /var/cache/apk/*
 # When developing with Python in a docker container, we are using PYTHONBUFFERED

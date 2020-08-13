@@ -80,7 +80,7 @@ install_requires = [
     'gunicorn==20.0.4',
     'jsonschema==3.2.0',
     'logstats==0.3.0',
-    'packaging==20.0.0',
+    'packaging>=20.0.0',  # Dockerfile-alpine required for pkg has ver 20.0.4
     # TODO Consider not installing the db drivers, or putting them in extras.
     'pymongo==3.7.2',
     'python-rapidjson==0.9.1',
