@@ -5,6 +5,6 @@
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
 
-docker build -t bigchaindb/nginx_3scale:2.0.0-alpha .
+docker build -t bigchaindb/nginx_3scale:2.2.2 .
 
-docker push bigchaindb/nginx_3scale:2.0.0-alpha
+docker push bigchaindb/nginx_3scale:2.2.2

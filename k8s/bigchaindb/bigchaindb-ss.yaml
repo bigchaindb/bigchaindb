@@ -45,7 +45,7 @@ spec:
       # Nginx container for hosting public key of this ndoe
       - name: nginx
         imagePullPolicy: Always
-        image: bigchaindb/nginx_pub_key_access:2.0.0-alpha5
+        image: bigchaindb/nginx_pub_key_access:2.2.2
         env:
         - name: TM_PUB_KEY_ACCESS_PORT
           valueFrom:
@@ -62,7 +62,7 @@ spec:
       #Tendermint container
       - name: tendermint
         imagePullPolicy: Always
-        image: bigchaindb/tendermint:2.0.0-alpha5
+        image: bigchaindb/tendermint:2.2.2
         env:
         - name: TM_PERSISTENT_PEERS
           valueFrom:
@@ -159,7 +159,7 @@ spec:
           timeoutSeconds: 15
       # BigchainDB container
       - name: bigchaindb
-        image: bigchaindb/bigchaindb:2.0.0-beta9
+        image: bigchaindb/bigchaindb:2.2.2
         imagePullPolicy: Always
         args:
         - start
