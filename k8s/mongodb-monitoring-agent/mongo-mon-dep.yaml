@@ -29,7 +29,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: mdb-mon
-        image: bigchaindb/mongodb-monitoring-agent:2.0.0-alpha
+        image: bigchaindb/mongodb-monitoring-agent:2.2.2
         imagePullPolicy: IfNotPresent
         env:
         - name: MMS_API_KEYFILE_PATH

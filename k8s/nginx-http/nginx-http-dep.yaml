@@ -17,7 +17,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: nginx
-        image: bigchaindb/nginx_http:2.0.0-alpha5
+        image: bigchaindb/nginx_http:2.2.2
         imagePullPolicy: Always
         env:
         - name: NODE_FRONTEND_PORT
