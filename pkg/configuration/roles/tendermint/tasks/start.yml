@@ -32,7 +32,7 @@
         for i in $( seq {{ stack_size }} );do
         tendermint gen_validator > /tendermint/config/priv_validator$i.json;
         tendermint gen_node_key > /tendermint/config/node_id$i; mv /tendermint/config/node_key.json /tendermint/config/node_key$i.json;
-        cat tendermint/config/priv_validator$i.json | jq ".pub_key" | jq ". as \$k | {pub_key: \$k, power: \"10\",
+        cat tendermint/config/priv_validator$i.json | jq ".Key.pub_key" | jq ". as \$k | {pub_key: \$k, power: \"10\",
           name: \"{{ tendermint_docker_name }}$i\"}" > pub_validator$i.json;
         cat /tendermint/config/genesis.json | jq ".validators |= .+ [$(cat pub_validator$i.json)]" > tmpgenesis;
         mv tmpgenesis /tendermint/config/genesis.json;
@@ -58,7 +58,8 @@
       - "{{ tendermint_host_mount_config_dir }}{{ tendermint_home }}:/tendermint_config"
     entrypoint: ''
     command: bash -c 'cp /tendermint_config/genesis.json /tendermint/config/genesis.json &&
-      mv /tendermint_config/priv_validator"{{ item|string }}".json /tendermint/config/priv_validator.json &&
+      jq ".Key" /tendermint_config/priv_validator"{{ item|string }}".json > /tendermint/config/priv_validator_key.json &&
+      jq ".LastSignState" /tendermint_config/priv_validator"{{ item|string }}".json > /tendermint/data/priv_validator_state.json &&
       mv /tendermint_config/node_key"{{ item|string }}".json /tendermint/config/node_key.json &&
       peers=() && for i in $( seq {{ stack_size }} );do peers+=($(cat /tendermint_config/node_id$i)@"{{ tendermint_docker_name }}$i:{{ tendermint_p2p_port }}");done &&
       peers=$(IFS=","; echo "${peers[*]}") && echo $peers &&
