@@ -22,21 +22,14 @@
     name: "tm_config_gen"
     image: "{{ tendermint_image_name }}:{{ tendermint_image_tag }}"
     detach: true
+    env:
+      STACK_SIZE: "{{ stack_size }}"
+      TM_DOCKER_NAME: "{{ tendermint_docker_name }}"
     volumes:
       - "{{ tendermint_host_mount_config_dir }}{{ tendermint_home }}:{{ tendermint_home }}"
+      - "../scripts:/scripts"
     entrypoint: ''
-    command: |
-      bash -c 'tendermint init &&
-        jq ".validators=[]" /tendermint/config/genesis.json > /tendermint/config/genesis.tmp &&
-        mv /tendermint/config/genesis.tmp /tendermint/config/genesis.json && rm /tendermint/config/node_key.json &&
-        for i in $( seq {{ stack_size }} );do
-        tendermint gen_validator > /tendermint/config/priv_validator$i.json;
-        tendermint gen_node_key > /tendermint/config/node_id$i; mv /tendermint/config/node_key.json /tendermint/config/node_key$i.json;
-        cat tendermint/config/priv_validator$i.json | jq ".Key.pub_key" | jq ". as \$k | {pub_key: \$k, power: \"10\",
-          name: \"{{ tendermint_docker_name }}$i\"}" > pub_validator$i.json;
-        cat /tendermint/config/genesis.json | jq ".validators |= .+ [$(cat pub_validator$i.json)]" > tmpgenesis;
-        mv tmpgenesis /tendermint/config/genesis.json;
-        done'
+    command: /usr/bin/env bash -c "/scripts/tm_config_gen"
   when: stack_type|lower == "docker" or stack_type|lower == "cloud"
   tags: [tendermint]
 
@@ -56,15 +49,15 @@
       - "{{ tendermint_host_mount_dir }}{{ item|string }}{{ tendermint_home }}:{{ tendermint_home }}"
       - "{{ tendermint_host_mount_dir }}{{ item|string }}{{ tendermint_data }}:{{ tendermint_data }}"
       - "{{ tendermint_host_mount_config_dir }}{{ tendermint_home }}:/tendermint_config"
+      - "../scripts:/scripts"
     entrypoint: ''
-    command: bash -c 'cp /tendermint_config/genesis.json /tendermint/config/genesis.json &&
-      jq ".Key" /tendermint_config/priv_validator"{{ item|string }}".json > /tendermint/config/priv_validator_key.json &&
-      jq ".LastSignState" /tendermint_config/priv_validator"{{ item|string }}".json > /tendermint/data/priv_validator_state.json &&
-      mv /tendermint_config/node_key"{{ item|string }}".json /tendermint/config/node_key.json &&
-      peers=() && for i in $( seq {{ stack_size }} );do peers+=($(cat /tendermint_config/node_id$i)@"{{ tendermint_docker_name }}$i:{{ tendermint_p2p_port }}");done &&
-      peers=$(IFS=","; echo "${peers[*]}") && echo $peers &&
-      tendermint node --p2p.persistent_peers="$peers" --p2p.laddr "tcp://"{{ tendermint_docker_name }}{{ item|string }}":26656"
-      --proxy_app="tcp://"{{ bigchaindb_docker_name }}{{ item|string }}":26658" --consensus.create_empty_blocks=false --p2p.pex=false'
+    command: bash -c "/scripts/tm_start"
+    env:
+      STACK_SIZE: "{{ stack_size|string }}"
+      TM_DOCKER_NAME: "{{ tendermint_docker_name|string }}"
+      TM_P2P_PORT: "{{ tendermint_p2p_port|string }}"
+      BIGCHAINDB_DOCKER_NAME: "{{ bigchaindb_docker_name|string }}"
+      _ITEM: "{{ item|string }}"
     state: started
     keep_volumes: true
   with_sequence: start=1 end="{{ stack_size|int }}" stride=1

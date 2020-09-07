@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+# Comment: This script is was carved out of start.yml task command.  It's
+# purpose is to generated tendermint configuration files for each node in
+# `stack', and compile genesis.json file.  These files are further used in
+# tm_start script.
+
+# NOTE following environment have to be set!
+# $STACK_SIZE -- self explanatory
+# $TM_DOCKER_NAME -- used to identify tendermint containers in the network
+
+tendermint init
+cat /tendermint/config/genesis.json \
+    | jq ".validators=[]" > /tendermint/config/genesis.tmp
+
+mv /tendermint/config/genesis.tmp /tendermint/config/genesis.json
+rm /tendermint/config/node_key.json
+
+for i in $(seq $STACK_SIZE); do
+
+    tendermint gen_validator > /tendermint/config/priv_validator$i.json;
+    tendermint gen_node_key > /tendermint/config/node_id$i;
+    cat tendermint/config/priv_validator$i.json \
+        | jq ".Key.pub_key" \
+        | jq ". as \$k | {pub_key: \$k, \
+                          power: \"10\", \
+                          name: \"$TM_DOCKER_NAME$i\"}" \
+             > pub_validator$i.json;
+
+    # added
+    cat tendermint/config/priv_validator$i.json \
+        | jq ".Key" > tendermint/config/priv_validator_key$1.json
+
+    cat /tendermint/config/genesis.json \
+        | jq ".validators |= .+ [$(cat pub_validator$i.json)]" \
+             > tmpgenesis;
+
+    mv tmpgenesis /tendermint/config/genesis.json;
+done

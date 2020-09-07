@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Comment: This script is was carved out of start.yml task command.  It's
+# purpose is to copy generated in tm_config_gen configuration files from mounted
+# volume, compile `--p2p.persistent_peers' cmd argument and start tendermint
+# node.
+
+# NOTE following environment have to be set!
+# $_ITEM -- stack size position identifier
+# $STACK_SIZE -- self explanatory
+# $TM_DOCKER_NAME -- used to identify tendermint containers in the network
+# $BIGCHAINDB_DOCKER_NAME -- self explanatory
+# $TM_P2P_PORT -- self explanatory
+
+# Copy confguration files from mounted config volume
+cp /tendermint_config/genesis.json \
+   /tendermint/config/genesis.json
+cp /tendermint_config/priv_validator_key$_ITEM.json \
+   /tendermint/config/priv_validator_key.json
+cp /tendermint_config/node_key$_ITEM.json \
+   /tendermint/config/node_key.json
+
+# Create peers array (to be passed to `tendermint node' command
+peers=()
+for i in $(seq $STACK_SIZE); do
+    peers+=($(cat /tendermint_config/node_id$i)@"$TM_DOCKER_NAME$i:$TM_P2P_PORT");
+done
+peers=$(IFS=","; echo "${peers[*]}")
+
+echo "starting node with persistent peers set to:"
+echo $peers
+tendermint node \
+           --p2p.persistent_peers="$peers" \
+           --p2p.laddr "tcp://"$TM_DOCKER_NAME$_ITEM":26656" \
+           --proxy_app="tcp://"$BIGCHAINDB_DOCKER_NAME$_ITEM":26658" \
+           --consensus.create_empty_blocks=false \
+           --p2p.pex=false
