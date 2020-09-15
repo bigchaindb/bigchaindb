@@ -52,8 +52,7 @@ def test_eventify_block_works_with_any_transaction():
         assert event == expected
 
 
-@asyncio.coroutine
-def test_bridge_sync_async_queue(loop):
+async def test_bridge_sync_async_queue(loop):
     from bigchaindb.web.websocket_server import _multiprocessing_to_asyncio
 
     sync_queue = queue.Queue()
@@ -69,16 +68,16 @@ def test_bridge_sync_async_queue(loop):
     sync_queue.put('der')
     sync_queue.put('Autobahn')
 
-    result = yield from async_queue.get()
+    result = await async_queue.get()
     assert result == 'fahren'
 
-    result = yield from async_queue.get()
+    result = await async_queue.get()
     assert result == 'auf'
 
-    result = yield from async_queue.get()
+    result = await async_queue.get()
     assert result == 'der'
 
-    result = yield from async_queue.get()
+    result = await async_queue.get()
     assert result == 'Autobahn'
 
     assert async_queue.qsize() == 0
@@ -110,33 +109,31 @@ def test_start_creates_an_event_loop(queue_mock, get_event_loop_mock,
     )
 
 
-@asyncio.coroutine
-def test_websocket_string_event(test_client, loop):
+async def test_websocket_string_event(test_client, loop):
     from bigchaindb.web.websocket_server import init_app, POISON_PILL, EVENTS_ENDPOINT
 
     event_source = asyncio.Queue(loop=loop)
     app = init_app(event_source, loop=loop)
-    client = yield from test_client(app)
-    ws = yield from client.ws_connect(EVENTS_ENDPOINT)
+    client = await test_client(app)
+    ws = await client.ws_connect(EVENTS_ENDPOINT)
 
-    yield from event_source.put('hack')
-    yield from event_source.put('the')
-    yield from event_source.put('planet!')
+    await event_source.put('hack')
+    await event_source.put('the')
+    await event_source.put('planet!')
 
-    result = yield from ws.receive()
+    result = await ws.receive()
     assert result.data == 'hack'
 
-    result = yield from ws.receive()
+    result = await ws.receive()
     assert result.data == 'the'
 
-    result = yield from ws.receive()
+    result = await ws.receive()
     assert result.data == 'planet!'
 
-    yield from event_source.put(POISON_PILL)
+    await event_source.put(POISON_PILL)
 
 
-@asyncio.coroutine
-def test_websocket_block_event(b, test_client, loop):
+async def test_websocket_block_event(b, test_client, loop):
     from bigchaindb import events
     from bigchaindb.web.websocket_server import init_app, POISON_PILL, EVENTS_ENDPOINT
     from bigchaindb.models import Transaction
@@ -148,22 +145,22 @@ def test_websocket_block_event(b, test_client, loop):
 
     event_source = asyncio.Queue(loop=loop)
     app = init_app(event_source, loop=loop)
-    client = yield from test_client(app)
-    ws = yield from client.ws_connect(EVENTS_ENDPOINT)
+    client = await test_client(app)
+    ws = await client.ws_connect(EVENTS_ENDPOINT)
     block = {'height': 1, 'transactions': [tx]}
     block_event = events.Event(events.EventTypes.BLOCK_VALID, block)
 
-    yield from event_source.put(block_event)
+    await event_source.put(block_event)
 
     for tx in block['transactions']:
-        result = yield from ws.receive()
+        result = await ws.receive()
         json_result = json.loads(result.data)
         assert json_result['transaction_id'] == tx.id
         # Since the transactions are all CREATEs, asset id == transaction id
         assert json_result['asset_id'] == tx.id
         assert json_result['height'] == block['height']
 
-    yield from event_source.put(POISON_PILL)
+    await event_source.put(POISON_PILL)
 
 
 @pytest.mark.skip('Processes are not stopping properly, and the whole test suite would hang')

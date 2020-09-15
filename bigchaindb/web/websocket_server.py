@@ -96,12 +96,11 @@ class Dispatcher:
 
         del self.subscribers[uuid]
 
-    @asyncio.coroutine
-    def publish(self):
+    async def publish(self):
         """Publish new events to the subscribers."""
 
         while True:
-            event = yield from self.event_source.get()
+            event = await self.event_source.get()
             str_buffer = []
 
             if event == POISON_PILL:
@@ -115,23 +114,22 @@ class Dispatcher:
 
             for str_item in str_buffer:
                 for _, websocket in self.subscribers.items():
-                    yield from websocket.send_str(str_item)
+                    await websocket.send_str(str_item)
 
 
-@asyncio.coroutine
-def websocket_handler(request):
+async def websocket_handler(request):
     """Handle a new socket connection."""
 
     logger.debug('New websocket connection.')
     websocket = web.WebSocketResponse()
-    yield from websocket.prepare(request)
+    await websocket.prepare(request)
     uuid = uuid4()
     request.app['dispatcher'].subscribe(uuid, websocket)
 
     while True:
         # Consume input buffer
         try:
-            msg = yield from websocket.receive()
+            msg = await websocket.receive()
         except RuntimeError as e:
             logger.debug('Websocket exception: %s', str(e))
             break
