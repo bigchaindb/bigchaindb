@@ -68,7 +68,8 @@ if [ ! -f /tendermint/config/priv_validator.json ]; then
   tendermint gen_validator > /tendermint/config/priv_validator.json
   # pub_key.json will be served by the nginx container
   cat /tendermint/config/priv_validator.json
-  cat /tendermint/config/priv_validator.json | jq ".pub_key" > "$TM_PUB_KEY_DIR"/pub_key.json
+  cat /tendermint/config/priv_validator.json \
+      | jq ".Key.pub_key" > "$TM_PUB_KEY_DIR"/pub_key.json
 fi
 
 if [ ! -f /tendermint/config/node_key.json ]; then
@@ -105,7 +106,9 @@ for i in "${!VALS_ARR[@]}"; do
   set -e
   # add validator to genesis file along with its pub_key
   curl -s "http://${VALS_ARR[$i]}:$tm_pub_key_access_port/pub_key.json" | jq ". as \$k | {pub_key: \$k, power: \"${VAL_POWERS_ARR[$i]}\", name: \"${VALS_ARR[$i]}\"}" > pub_validator.json
-  cat /tendermint/config/genesis.json | jq ".validators |= .+ [$(cat pub_validator.json)]" > tmpgenesis && mv tmpgenesis /tendermint/config/genesis.json
+  cat /tendermint/config/genesis.json \
+      | jq ".validators |= .+ [$(cat pub_validator.json)]" > tmpgenesis \
+      && mv tmpgenesis /tendermint/config/genesis.json
   rm pub_validator.json
 done
 
