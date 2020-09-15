@@ -31,6 +31,14 @@ For reference, the possible headings are:
 
 Several dependencies updated including Flask that had vulnerability.
 
+### Fixed
+
+* Updated priv_validator key format in stack script (#2707)
+
+### External Contributors
+
+* @aostrun - [#2708](https://github.com/bigchaindb/bigchaindb/pull/2708)
+
 ## [2.2.1] - 2020-04-14
 
 ### Fixed
