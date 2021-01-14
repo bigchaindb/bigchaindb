@@ -1,4 +1,4 @@
-# Copyright © 2020 Interplanetary Database Association e.V.,
+# Copyright © 2020, 2021 Interplanetary Database Association e.V.,
 # BigchainDB and IPDB software contributors.
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
@@ -72,7 +72,7 @@ tests_require = [
 
 install_requires = [
     'aiohttp==3.6.2',
-    'bigchaindb-abci==1.0.5',
+    'bigchaindb-abci==1.0.6',
     'cryptoconditions==0.8.0',
     'flask-cors==3.0.8',
     'flask-restful==0.3.8',
