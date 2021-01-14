@@ -27,5 +27,5 @@
     action: "{{ operation }}"
     home_dir: "{{ home_path }}"
   roles:
-    - tendermint
     - bigchaindb
+    - tendermint

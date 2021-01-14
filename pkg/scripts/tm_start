@@ -14,10 +14,13 @@
 # Copy confguration files from mounted config volume
 cp /tendermint_config/genesis.json \
    /tendermint/config/genesis.json
-cp /tendermint_config/priv_validator_key$_ITEM.json \
-   /tendermint/config/priv_validator_key.json
 cp /tendermint_config/node_key$_ITEM.json \
    /tendermint/config/node_key.json
+
+cat /tendermint_config/priv_validator$_ITEM.json \
+    | jq ".LastSignState" > /tendermint/data/priv_validator_state.json
+cat /tendermint_config/priv_validator$_ITEM.json \
+    | jq ".Key" > /tendermint/config/priv_validator_key.json
 
 # Create peers array (to be passed to `tendermint node' command
 peers=()

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Comment: This script is was carved out of start.yml task command.  It's
-# purpose is to generated tendermint configuration files for each node in
+# purpose is to generate tendermint configuration files for each node in
 # `stack', and compile genesis.json file.  These files are further used in
 # tm_start script.
 
@@ -14,12 +14,13 @@ cat /tendermint/config/genesis.json \
     | jq ".validators=[]" > /tendermint/config/genesis.tmp
 
 mv /tendermint/config/genesis.tmp /tendermint/config/genesis.json
-rm /tendermint/config/node_key.json
+rm -f /tendermint/config/node_key.json
 
 for i in $(seq $STACK_SIZE); do
 
     tendermint gen_validator > /tendermint/config/priv_validator$i.json;
     tendermint gen_node_key > /tendermint/config/node_id$i;
+    mv /tendermint/config/node_key.json /tendermint/config/node_key$i.json
     cat tendermint/config/priv_validator$i.json \
         | jq ".Key.pub_key" \
         | jq ". as \$k | {pub_key: \$k, \
