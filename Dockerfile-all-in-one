@@ -7,6 +7,24 @@ ENV HOME /root
 COPY . /usr/src/app/
 WORKDIR /usr/src/app
 
+# Install mongodb and monit
+RUN apk --update add mongodb monit
+
+# Set permissions required for mongodb
+RUN mkdir -p /state/mongodb/data/db \
+             /state/mongodb/data/configdb \
+    && chown -R mongodb:mongodb /state/mongodb/data/db \
+                                /state/mongodb/data/configdb
+# Symlink mongo data folder to state folder
+RUN mkdir /data \
+    && ln -s /state/mongodb/data/configdb /data/configdb \
+    && ln -s /state/mongodb/data/db /data/db
+
+# Create symlinks for tendermint state directories
+RUN mkdir -p /tendermint \
+    && ln -s /state/tendermint/data \
+          /tendermint/data
+
 RUN apk --update add sudo bash \
     && apk --update add python3 openssl ca-certificates git \
     && apk --update add --virtual build-dependencies python3-dev \
@@ -17,9 +35,6 @@ RUN apk --update add sudo bash \
     && apk del build-dependencies \
     && rm -f /var/cache/apk/*
 
-# Install mongodb and monit
-RUN apk --update add mongodb monit
-
 # Install Tendermint
 RUN wget https://github.com/tendermint/tendermint/releases/download/${TM_VERSION}/tendermint_${TM_VERSION}_linux_amd64.zip \
     && unzip tendermint_${TM_VERSION}_linux_amd64.zip \
@@ -27,10 +42,6 @@ RUN wget https://github.com/tendermint/tendermint/releases/download/${TM_VERSION
     && rm tendermint_${TM_VERSION}_linux_amd64.zip
 
 ENV TMHOME=/tendermint
-
-# Set permissions required for mongodb
-RUN mkdir -p /data/db /data/configdb \
-        && chown -R mongodb:mongodb /data/db /data/configdb
 
 # BigchainDB enviroment variables
 ENV BIGCHAINDB_DATABASE_PORT 27017
@@ -42,8 +53,7 @@ ENV BIGCHAINDB_WSSERVER_SCHEME ws
 ENV BIGCHAINDB_WSSERVER_ADVERTISED_HOST 0.0.0.0
 ENV BIGCHAINDB_WSSERVER_ADVERTISED_SCHEME ws
 ENV BIGCHAINDB_TENDERMINT_PORT 26657
-
-VOLUME /data/db /data/configdb /tendermint
+VOLUME /state
 
 EXPOSE 27017 28017 9984 9985 26656 26657 26658
 
