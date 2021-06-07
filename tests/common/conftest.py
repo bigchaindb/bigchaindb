@@ -166,7 +166,7 @@ def transfer_tx(transfer_utx, user_priv):
     return transfer_utx.sign([user_priv])
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def dummy_transaction():
     return {
         'asset': {'data': None},
