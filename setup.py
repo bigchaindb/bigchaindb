@@ -71,7 +71,7 @@ tests_require = [
 ] + docs_require
 
 install_requires = [
-    'aiohttp==3.7.',
+    'aiohttp==3.7.4',
     'bigchaindb-abci==1.0.7',
     'cryptoconditions==0.8.1',
     'flask-cors==3.0.10',
