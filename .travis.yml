@@ -1,11 +1,11 @@
-# Copyright © 2020 Interplanetary Database Association e.V.,
+# Copyright © 2020, 2021 Interplanetary Database Association e.V.,
 # BigchainDB and IPDB software contributors.
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
 sudo: required
 
-dist: trusty
+dist: focal
 
 services:
   - docker
@@ -14,23 +14,19 @@ language: python
 cache: pip
 
 python:
-  - 3.5
   - 3.6
+  - 3.7
+  - 3.8
 
 env:
   global:
-    - DOCKER_COMPOSE_VERSION=1.19.0
+    - DOCKER_COMPOSE_VERSION=1.29.2
   matrix:
     - TOXENV=flake8
     - TOXENV=docsroot
 
 matrix:
   fast_finish: true
-  exclude:
-  - python: 3.5
-    env: TOXENV=flake8
-  - python: 3.5
-    env: TOXENV=docsroot
   include:
   - python: 3.6
     env:
@@ -44,6 +40,31 @@ matrix:
   - python: 3.6
     env:
     - BIGCHAINDB_ACCEPTANCE_TEST=enable
+  - python: 3.7
+    env:
+    - BIGCHAINDB_DATABASE_BACKEND=localmongodb
+    - BIGCHAINDB_DATABASE_SSL=
+  - python: 3.7
+    env:
+    - BIGCHAINDB_DATABASE_BACKEND=localmongodb
+    - BIGCHAINDB_DATABASE_SSL=
+    - BIGCHAINDB_CI_ABCI=enable
+  - python: 3.7
+    env:
+    - BIGCHAINDB_ACCEPTANCE_TEST=enable
+  - python: 3.8
+    env:
+    - BIGCHAINDB_DATABASE_BACKEND=localmongodb
+    - BIGCHAINDB_DATABASE_SSL=
+  - python: 3.8
+    env:
+    - BIGCHAINDB_DATABASE_BACKEND=localmongodb
+    - BIGCHAINDB_DATABASE_SSL=
+    - BIGCHAINDB_CI_ABCI=enable
+  - python: 3.8
+    env:
+    - BIGCHAINDB_ACCEPTANCE_TEST=enable
+
 
 before_install: sudo .ci/travis-before-install.sh
 

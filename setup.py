@@ -71,22 +71,22 @@ tests_require = [
 ] + docs_require
 
 install_requires = [
-    'aiohttp==3.6.2',
-    'bigchaindb-abci==1.0.5',
-    'cryptoconditions==0.8.0',
-    'flask-cors==3.0.8',
-    'flask-restful==0.3.8',
-    'flask==1.1.2',
-    'gunicorn==20.0.4',
+    'aiohttp==3.7.4',
+    'bigchaindb-abci==1.0.7',
+    'cryptoconditions==0.8.1',
+    'flask-cors==3.0.10',
+    'flask-restful==0.3.9',
+    'flask==2.0.1',
+    'gunicorn==20.1.0',
     'jsonschema==3.2.0',
     'logstats==0.3.0',
-    'packaging>=20.0.0',  # Dockerfile-alpine required for pkg has ver 20.0.4
+    'packaging>=20.9',
     # TODO Consider not installing the db drivers, or putting them in extras.
-    'pymongo==3.7.2',
-    'python-rapidjson==0.9.1',
-    'pyyaml==5.3.1',
-    'requests==2.23.0',
-    'setproctitle==1.1.10',
+    'pymongo==3.11.4',
+    'python-rapidjson==1.0',
+    'pyyaml==5.4.1',
+    'requests==2.25.1',
+    'setproctitle==1.2.2',
 ]
 
 if sys.version_info < (3, 6):
