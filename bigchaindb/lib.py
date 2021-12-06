@@ -16,7 +16,7 @@ import rapidjson
 try:
     from hashlib import sha3_256
 except ImportError:
-    # NOTE: neeeded for Python < 3.6
+    # NOTE: needed for Python < 3.6
     from sha3 import sha3_256
 
 import requests
