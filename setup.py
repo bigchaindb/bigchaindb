@@ -71,6 +71,7 @@ tests_require = [
 ] + docs_require
 
 install_requires = [
+    'chardet==3.0.4',
     'aiohttp==3.7.4',
     'bigchaindb-abci==1.0.7',
     'cryptoconditions==0.8.1',
