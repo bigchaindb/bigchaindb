@@ -50,7 +50,8 @@ docs_require = [
     'sphinxcontrib-httpdomain>=1.5.0',
     'sphinxcontrib-napoleon>=0.4.4',
     'aafigure>=0.6',
-    'wget'
+    'wget',
+    'jinja2==3.0.0'
 ]
 
 tests_require = [
