@@ -89,6 +89,7 @@ install_requires = [
     'pyyaml==5.4.1',
     'requests==2.25.1',
     'setproctitle==1.2.2',
+    'werkzeug==2.0.2'
 ]
 
 if sys.version_info < (3, 6):
