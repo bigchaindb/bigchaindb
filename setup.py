@@ -50,7 +50,8 @@ docs_require = [
     'sphinxcontrib-httpdomain>=1.5.0',
     'sphinxcontrib-napoleon>=0.4.4',
     'aafigure>=0.6',
-    'wget'
+    'wget',
+    'jinja2==3.0.0'
 ]
 
 tests_require = [
@@ -71,6 +72,7 @@ tests_require = [
 ] + docs_require
 
 install_requires = [
+    'chardet==3.0.4',
     'aiohttp==3.7.4',
     'bigchaindb-abci==1.0.7',
     'cryptoconditions==0.8.1',
@@ -87,6 +89,7 @@ install_requires = [
     'pyyaml==5.4.1',
     'requests==2.25.1',
     'setproctitle==1.2.2',
+    'werkzeug==2.0.2'
 ]
 
 if sys.version_info < (3, 6):
