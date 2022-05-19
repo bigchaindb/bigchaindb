@@ -398,6 +398,33 @@ class BigchainDB(object):
             logger.warning('Invalid transaction (%s): %s', type(e).__name__, e)
             return False
 
+    def query(self, json_query, *, limit=0, table='assets'):
+        """Return an iterator of assets that match the json query
+
+        Args:
+            json_query (str): A MongoDB json search query.
+            limit (int, optional): Limit the number of returned documents.
+
+        Returns:
+            iter: An iterator of assets that match the query.
+        """
+        return backend.query.query(self.connection, json_query,
+                                   limit=limit, table=table)
+
+    def aggregate(self, aggregation_functions, *, table='assets'):
+        """Return an iterator of aggregation results.
+
+        Args:
+            aggregation_functions (str): A MongoDB list of aggregation functions
+            in json format.
+            limit (int, optional): Limit the number of returned documents.
+
+        Returns:
+            iter: An iterator of aggregation results.
+        """
+        return backend.query.aggregate(self.connection, aggregation_functions,
+                                       table=table)
+
     def text_search(self, search, *, limit=0, table='assets'):
         """Return an iterator of assets that match the text search
 
