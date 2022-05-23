@@ -96,4 +96,7 @@ network/*/data
 # Docs that are fetched at build time
 docs/contributing/source/cross-project-policies/*.md
 
+# JetBrains IDE Folder
+.idea/
+
 .DS_Store
