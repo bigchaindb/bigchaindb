@@ -15,7 +15,7 @@ The following ports should expect unsolicited inbound traffic:
 
 1. **Port 22** can expect inbound SSH (TCP) traffic from the node administrator (i.e. a small set of IP addresses).
 1. **Port 3333** can expect inbound HTTP (TCP) traffic from BigchainDB clients sending transactions to the BigchainDB HTTP API.
-1. **Port 9985** can expect inbound WebSocket traffic from BigchainDB clients.
+1. **Port 3333** can expect inbound WebSocket traffic from BigchainDB clients.
 1. **Port 26656** can expect inbound Tendermint P2P traffic from other Tendermint peers.
 1. **Port 9986** can expect inbound HTTP (TCP) traffic from clients accessing the Public Key of a Tendermint instance.
 
@@ -53,9 +53,9 @@ If Gunicorn and the reverse proxy are running on the same server, then you'll ha
 
 You may want to have Gunicorn and the reverse proxy running on different servers, so that both can listen on port 3333. That would also help isolate the effects of a denial-of-service attack.
 
-## Port 9985
+## Port 3333
 
-Port 9985 is the default port for the BigchainDB WebSocket Event Stream API.
+Port 3333 is the default port for the BigchainDB WebSocket Event Stream API.
 
 ## Port 9986
 

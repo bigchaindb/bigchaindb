@@ -63,10 +63,10 @@ config = {
     'wsserver': {
         'scheme': 'ws',
         'host': 'localhost',
-        'port': 9985,
+        'port': 3333,
         'advertised_scheme': 'ws',
         'advertised_host': 'localhost',
-        'advertised_port': 9985,
+        'advertised_port': 3333,
     },
     'tendermint': {
         'host': 'localhost',

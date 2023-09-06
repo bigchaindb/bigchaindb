@@ -171,15 +171,15 @@ which is used to serve the
 (but setting it to `"wss"` does *not* enable SSL/TLS).
 `wsserver.host` is where to bind the aiohttp server socket and
 `wsserver.port` is the corresponding port.
-If you want to allow connections from anyone, on port 9985,
-set `wsserver.host` to 0.0.0.0 and `wsserver.port` to 9985.
+If you want to allow connections from anyone, on port 3333,
+set `wsserver.host` to 0.0.0.0 and `wsserver.port` to 3333.
 
 **Example using environment variables**
 
 ```text
 export BIGCHAINDB_WSSERVER_SCHEME=ws
 export BIGCHAINDB_WSSERVER_HOST=0.0.0.0
-export BIGCHAINDB_WSSERVER_PORT=9985
+export BIGCHAINDB_WSSERVER_PORT=3333
 ```
 
 **Example config file snippet**
@@ -198,7 +198,7 @@ export BIGCHAINDB_WSSERVER_PORT=9985
 "wsserver": {
     "scheme": "ws",
     "host": "localhost",
-    "port": 9985
+    "port": 3333
 }
 ```
 
@@ -233,7 +233,7 @@ export BIGCHAINDB_WSSERVER_ADVERTISED_PORT=443
 "wsserver": {
     "advertised_scheme": "ws",
     "advertised_host": "localhost",
-    "advertised_port": 9985
+    "advertised_port": 3333
 }
 ```
 

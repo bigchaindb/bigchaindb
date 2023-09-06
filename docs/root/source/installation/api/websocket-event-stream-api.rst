@@ -12,7 +12,7 @@ The WebSocket Event Stream API
 .. important::
     The WebSocket Event Stream runs on a different port than the Web API. The
     default port for the Web API is `3333`, while the one for the Event Stream
-    is `9985`.
+    is `3333`.
 
 BigchainDB provides real-time event streams over the WebSocket protocol with
 the Event Stream API.
@@ -40,7 +40,7 @@ response contains a ``streams`` property:
 
     {
      ...,
-     "streams": "ws://example.com:9985/api/v1/streams/valid_transactions",
+     "streams": "ws://example.com:3333/api/v1/streams/valid_transactions",
      ...
     }
 

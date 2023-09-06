@@ -693,7 +693,7 @@ To test the BigchainDB instance:
 
    $ curl -X GET http://bdb-instance-0:26657/abci_info
 
-   $ wsc -er ws://bdb-instance-0:9985/api/v1/streams/valid_transactions
+   $ wsc -er ws://bdb-instance-0:3333/api/v1/streams/valid_transactions
 
 
 To test the OpenResty instance:

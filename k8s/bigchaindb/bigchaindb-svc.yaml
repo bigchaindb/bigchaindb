@@ -18,8 +18,8 @@ spec:
     targetPort: 3333
     name: bdb-api-port
     protocol: TCP
-  - port: 9985
-    targetPort: 9985
+  - port: 3333
+    targetPort: 3333
     name: bdb-ws-port
     protocol: TCP
   - port: 26658

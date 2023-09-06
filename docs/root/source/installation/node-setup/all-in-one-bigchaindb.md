@@ -39,7 +39,7 @@ $ docker run \
   --detach \
   --name bigchaindb \
   --publish 3333:3333 \
-  --publish 9985:9985 \
+  --publish 3333:3333 \
   --publish 27017:27017 \
   --publish 26657:26657 \
   --volume $HOME/bigchaindb_docker/mongodb/data/db:/data/db \
@@ -54,7 +54,7 @@ Let's analyze that command:
 * `--detach` run the container in the background
 * `publish 3333:3333` map the host port `3333` to the container port `3333`
  (the BigchainDB API server) 
-  * `9985` BigchainDB Websocket server
+  * `3333` BigchainDB Websocket server
   * `27017` Default port for MongoDB
   * `26657` Tendermint RPC server
 * `--volume "$HOME/bigchaindb_docker/mongodb:/data"` map the host directory
