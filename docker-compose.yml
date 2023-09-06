@@ -41,7 +41,43 @@ services:
       BIGCHAINDB_TENDERMINT_PORT: 26657
     ports:
       - "3333:3333"
-      - "7778:7777"
+      - "9985:9985"
+      - "26658"
+    healthcheck:
+      test: ["CMD", ".ci/healthcheck.sh"]
+      interval: 3s
+      timeout: 5s
+      retries: 3
+    command: '.ci/entrypoint.sh'
+    restart: always
+  bigchaindb2:
+    depends_on:
+      - mongodb
+      - tendermint
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    volumes:
+      - ./bigchaindb:/usr/src/app/bigchaindb
+      - ./tests:/usr/src/app/tests
+      - ./docs:/usr/src/app/docs
+      - ./htmlcov:/usr/src/app/htmlcov
+      - ./setup.py:/usr/src/app/setup.py
+      - ./setup.cfg:/usr/src/app/setup.cfg
+      - ./pytest.ini:/usr/src/app/pytest.ini
+      - ./tox.ini:/usr/src/app/tox.ini
+    environment:
+      BIGCHAINDB_DATABASE_BACKEND: localmongodb
+      BIGCHAINDB_DATABASE_HOST: mongodb
+      BIGCHAINDB_DATABASE_PORT: 27017
+      BIGCHAINDB_SERVER_BIND: 0.0.0.0:5555
+      BIGCHAINDB_WSSERVER_HOST: 0.0.0.0
+      BIGCHAINDB_WSSERVER_ADVERTISED_HOST: bigchaindb
+      BIGCHAINDB_TENDERMINT_HOST: tendermint
+      BIGCHAINDB_TENDERMINT_PORT: 26657
+    ports:
+      - "5555:5555"
+      - "9984:9984"
       - "26658"
     healthcheck:
       test: ["CMD", ".ci/healthcheck.sh"]
