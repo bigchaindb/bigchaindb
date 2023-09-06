@@ -11,7 +11,7 @@ The WebSocket Event Stream API
 
 .. important::
     The WebSocket Event Stream runs on a different port than the Web API. The
-    default port for the Web API is `9984`, while the one for the Event Stream
+    default port for the Web API is `3333`, while the one for the Event Stream
     is `9985`.
 
 BigchainDB provides real-time event streams over the WebSocket protocol with
@@ -33,7 +33,7 @@ Determining Support for the Event Stream API
 It's a good idea to make sure that the node you're connecting with
 has advertised support for the Event Stream API. To do so, send a HTTP GET
 request to the node's :ref:`api-root-endpoint`
-(e.g. ``http://localhost:9984/api/v1/``) and check that the
+(e.g. ``http://localhost:3333/api/v1/``) and check that the
 response contains a ``streams`` property:
 
 .. code:: JSON

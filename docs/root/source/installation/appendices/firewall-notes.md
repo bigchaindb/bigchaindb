@@ -14,7 +14,7 @@ This is a page of notes on the ports potentially used by BigchainDB nodes and th
 The following ports should expect unsolicited inbound traffic:
 
 1. **Port 22** can expect inbound SSH (TCP) traffic from the node administrator (i.e. a small set of IP addresses).
-1. **Port 9984** can expect inbound HTTP (TCP) traffic from BigchainDB clients sending transactions to the BigchainDB HTTP API.
+1. **Port 3333** can expect inbound HTTP (TCP) traffic from BigchainDB clients sending transactions to the BigchainDB HTTP API.
 1. **Port 9985** can expect inbound WebSocket traffic from BigchainDB clients.
 1. **Port 26656** can expect inbound Tendermint P2P traffic from other Tendermint peers.
 1. **Port 9986** can expect inbound HTTP (TCP) traffic from clients accessing the Public Key of a Tendermint instance.
@@ -45,13 +45,13 @@ Port 161 is the default SNMP port (usually UDP, sometimes TCP). SNMP is used, fo
 
 Port 443 is the default HTTPS port (TCP). Package managers might also get some packages using HTTPS.
 
-## Port 9984
+## Port 3333
 
-Port 9984 is the default port for the BigchainDB client-server HTTP API (TCP), which is served by Gunicorn HTTP Server. It's _possible_ allow port 9984 to accept inbound traffic from anyone, but we recommend against doing that. Instead, set up a reverse proxy server (e.g. using Nginx) and only allow traffic from there. Information about how to do that can be found [in the Gunicorn documentation](http://docs.gunicorn.org/en/stable/deploy.html). (They call it a proxy.)
+Port 3333 is the default port for the BigchainDB client-server HTTP API (TCP), which is served by Gunicorn HTTP Server. It's _possible_ allow port 3333 to accept inbound traffic from anyone, but we recommend against doing that. Instead, set up a reverse proxy server (e.g. using Nginx) and only allow traffic from there. Information about how to do that can be found [in the Gunicorn documentation](http://docs.gunicorn.org/en/stable/deploy.html). (They call it a proxy.)
 
-If Gunicorn and the reverse proxy are running on the same server, then you'll have to tell Gunicorn to listen on some port other than 9984 (so that the reverse proxy can listen on port 9984). You can do that by setting `server.bind` to 'localhost:PORT' in the [BigchainDB Configuration Settings](../../installation/node-setup/configuration), where PORT is whatever port you chose (e.g. 9983).
+If Gunicorn and the reverse proxy are running on the same server, then you'll have to tell Gunicorn to listen on some port other than 3333 (so that the reverse proxy can listen on port 3333). You can do that by setting `server.bind` to 'localhost:PORT' in the [BigchainDB Configuration Settings](../../installation/node-setup/configuration), where PORT is whatever port you chose (e.g. 9983).
 
-You may want to have Gunicorn and the reverse proxy running on different servers, so that both can listen on port 9984. That would also help isolate the effects of a denial-of-service attack.
+You may want to have Gunicorn and the reverse proxy running on different servers, so that both can listen on port 3333. That would also help isolate the effects of a denial-of-service attack.
 
 ## Port 9985
 

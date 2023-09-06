@@ -14,8 +14,8 @@ spec:
   selector:
     app: bdb-dep
   ports:
-  - port: 9984
-    targetPort: 9984
+  - port: 3333
+    targetPort: 3333
     name: bdb-api-port
     protocol: TCP
   - port: 9985
@@ -55,7 +55,7 @@ spec:
         - name: BIGCHAINDB_DATABASE_NAME
           value: bigchain
         - name: BIGCHAINDB_SERVER_BIND
-          value: "0.0.0.0:9984"
+          value: "0.0.0.0:3333"
         - name: BIGCHAINDB_WSSERVER_HOST
           value: "0.0.0.0"
         - name: BIGCHAINDB_WSSERVER_PORT
@@ -71,8 +71,8 @@ spec:
         - name: BIGCHAINDB_LOG_LEVEL_CONSOLE
           value: debug
         ports:
-        - containerPort: 9984
-          hostPort: 9984
+        - containerPort: 3333
+          hostPort: 3333
           name: bdb-port
           protocol: TCP
         - containerPort: 9985
@@ -86,13 +86,13 @@ spec:
         livenessProbe:
           httpGet:
             path: /
-            port: 9984
+            port: 3333
           initialDelaySeconds: 15
           timeoutSeconds: 10
         readinessProbe:
           httpGet:
             path: /
-            port: 9984
+            port: 3333
           initialDelaySeconds: 15
           timeoutSeconds: 10
       restartPolicy: Always

@@ -37,7 +37,7 @@ cd bigchaindb
 make run
 ```
 
-BigchainDB should be reachable now on `http://localhost:9984/`.
+BigchainDB should be reachable now on `http://localhost:3333/`.
 
 There are also other commands you can execute:
 

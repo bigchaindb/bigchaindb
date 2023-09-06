@@ -72,7 +72,7 @@ http {
     }
 
 
-    # Forward other URL paths to backend BDB at 9984.
+    # Forward other URL paths to backend BDB at 3333.
     location / {
       proxy_ignore_client_abort on;
       proxy_set_header X-Real-IP  $remote_addr;

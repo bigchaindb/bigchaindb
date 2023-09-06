@@ -144,4 +144,4 @@ echo "INFO: starting mongod..."
 # after https://github.com/docker-library/mongo/issues/172 is resolved. Check
 # for other bugs too.
 #exec /entrypoint.sh mongod --config ${MONGODB_CONF_FILE_PATH}
-exec /usr/bin/mongod --config ${MONGODB_CONF_FILE_PATH}
+exec /usr/bin/mongod --config ${'http://mongodb://localhost:27017'}

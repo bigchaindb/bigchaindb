@@ -84,7 +84,7 @@ spec:
         - name: BIGCHAINDB_BACKEND_HOST
           value: "bdb.default.svc.cluster.local"
         - name: BIGCHAINDB_API_PORT
-          value: "9984"
+          value: "3333"
         - name: BIGCHAINDB_WS_PORT
           value: "9985"
         ports:

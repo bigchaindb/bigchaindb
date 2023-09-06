@@ -33,7 +33,7 @@ directories:
 
 backend_db: localmongodb #[localmongodb]
 
-bigchaindb_server_bind: "0.0.0.0:9984"
+bigchaindb_server_bind: "0.0.0.0:3333"
 
 # Docker configuration
 bigchaindb_image_name: "bigchaindb/bigchaindb"
@@ -41,7 +41,7 @@ bigchaindb_image_tag: "develop"
 bigchaindb_docker_name: "bigchaindb"
 mongodb_docker_name: "mongodb"
 tendermint_docker_name: "tendermint"
-bigchaindb_default_server_port: 9984
+bigchaindb_default_server_port: 3333
 bigchaindb_default_ws_port: 9985
 bigchaindb_tendermint_port: 26657
 tendermint_abci_port: 45558

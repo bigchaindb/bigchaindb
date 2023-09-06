@@ -49,11 +49,11 @@ To configure BigchainDB Server, run:
 bigchaindb configure
 ```
 
-The first question is ``API Server bind? (default `localhost:9984`)``.
+The first question is ``API Server bind? (default `localhost:3333`)``.
 
 * If you're using NGINX (e.g. if you want HTTPS),
-  then accept the default value (`localhost:9984`).
-* If you're not using NGINX, then enter the value `0.0.0.0:9984`
+  then accept the default value (`localhost:3333`).
+* If you're not using NGINX, then enter the value `0.0.0.0:3333`
 
 You can accept the default value for all other BigchainDB config settings.
 

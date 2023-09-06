@@ -45,7 +45,7 @@ to allow all incoming and outgoing traffic for:
 * Any protocol on port 26656 (Tendermint P2P)
 
 If you don't care about HTTPS, then forget about port 443,
-and replace port 80 with port 9984 (the default BigchainDB HTTP port).
+and replace port 80 with port 3333 (the default BigchainDB HTTP port).
 
 ## Update Your System
 

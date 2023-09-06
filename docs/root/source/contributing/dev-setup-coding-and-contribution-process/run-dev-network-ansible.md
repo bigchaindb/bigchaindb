@@ -113,7 +113,7 @@ for details on how to use it.
 **Note**: The `bdb_root_url` can be be one of the following:
 ```text
 # BigchainDB is running as a process
-bdb_root_url = http://<HOST-IP>:9984
+bdb_root_url = http://<HOST-IP>:3333
 
 OR
 

@@ -14,8 +14,8 @@ spec:
   selector:
     app: bdb-instance-0-ss
   ports:
-  - port: 9984
-    targetPort: 9984
+  - port: 3333
+    targetPort: 3333
     name: bdb-api-port
     protocol: TCP
   - port: 9985

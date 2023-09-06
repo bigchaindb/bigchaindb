@@ -37,7 +37,7 @@ cd bigchaindb
 make run
 ```
 
-BigchainDB 应该可以通过 `http://localhost:9984/` 访问.
+BigchainDB 应该可以通过 `http://localhost:3333/` 访问.
 
 这里也有一些其他的命令你可以运行:
 
