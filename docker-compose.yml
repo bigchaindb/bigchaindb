@@ -41,7 +41,7 @@ services:
       BIGCHAINDB_TENDERMINT_PORT: 26657
     ports:
       - "3333:3333"
-      - "3333:3333"
+      - "7777:7777"
       - "26658"
     healthcheck:
       test: ["CMD", ".ci/healthcheck.sh"]
