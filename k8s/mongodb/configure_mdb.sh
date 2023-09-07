@@ -18,7 +18,7 @@ fi
 MONGODB_INSTANCE_NAME="mdb-instance-0"
 
 if [[ -n "$MONGODB_INSTANCE_NAME" ]]; then
-    /usr/local/bin/kubectl exec -it "${MONGODB_INSTANCE_NAME}"\-ss\-0 -- bash -c "/usr/bin/mongo --host localhost --port \$(printenv MONGODB_PORT) --ssl --sslCAFile /etc/mongod/ca/ca.pem --sslPEMKeyFile  /etc/mongod/ssl/mdb-instance.pem < /configure_mdb_users.js"
+    /usr/local/bin/kubectl exec -it "${MONGODB_INSTANCE_NAME}"\-ss\-0 -- bash -c "/usr/bin/mongo --host 0.0.0.0/0 --port \$(printenv MONGODB_PORT) --ssl --sslCAFile /etc/mongod/ca/ca.pem --sslPEMKeyFile  /etc/mongod/ssl/mdb-instance.pem < /configure_mdb_users.js"
 else
     echo "Skipping configuration, because relevant files don't exist!!!"
 fi
