@@ -245,7 +245,7 @@ def test_autoconfigure_env_precedence(monkeypatch):
     monkeypatch.setattr('bigchaindb.config_utils.file_config', lambda *args, **kwargs: file_config)
     monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': 'test-dbname',
                                        'BIGCHAINDB_DATABASE_PORT': '4242',
-                                       'BIGCHAINDB_SERVER_BIND': 'localhost:9985'})
+                                       'BIGCHAINDB_SERVER_BIND': 'localhost:3333'})
 
     import bigchaindb
     from bigchaindb import config_utils
@@ -255,7 +255,7 @@ def test_autoconfigure_env_precedence(monkeypatch):
     assert bigchaindb.config['database']['host'] == 'test-host'
     assert bigchaindb.config['database']['name'] == 'test-dbname'
     assert bigchaindb.config['database']['port'] == 4242
-    assert bigchaindb.config['server']['bind'] == 'localhost:9985'
+    assert bigchaindb.config['server']['bind'] == 'localhost:3333'
 
 
 def test_autoconfigure_explicit_file(monkeypatch):

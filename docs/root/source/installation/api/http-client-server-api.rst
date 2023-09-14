@@ -11,8 +11,8 @@ The HTTP Client-Server API
 
 This page assumes you already know an API Root URL
 for a BigchainDB node or reverse proxy.
-It should be something like ``https://example.com:9984``
-or ``https://12.34.56.78:9984``.
+It should be something like ``https://example.com:3333``
+or ``https://12.34.56.78:3333``.
 
 If you set up a BigchainDB node or reverse proxy yourself,
 and you're not sure what the API Root URL is,
@@ -24,8 +24,8 @@ BigchainDB Root URL
 -------------------
 
 If you send an HTTP GET request to the BigchainDB Root URL
-e.g. ``http://localhost:9984``
-or ``https://example.com:9984``
+e.g. ``http://localhost:3333``
+or ``https://example.com:3333``
 (with no ``/api/v1/`` on the end),
 then you should get an HTTP response
 with something like the following in the body:
@@ -40,8 +40,8 @@ API Root Endpoint
 -----------------
 
 If you send an HTTP GET request to the API Root Endpoint
-e.g. ``http://localhost:9984/api/v1/``
-or ``https://example.com:9984/api/v1/``,
+e.g. ``http://localhost:3333/api/v1/``
+or ``https://example.com:3333/api/v1/``,
 then you should get an HTTP response
 that allows you to discover the BigchainDB API endpoints:
 
@@ -706,7 +706,7 @@ Determining the API Root URL
 When you start BigchainDB Server using ``bigchaindb start``,
 an HTTP API is exposed at some address. The default is:
 
-``http://localhost:9984/api/v1/``
+``http://localhost:3333/api/v1/``
 
 It's bound to ``localhost``,
 so you can access it from the same machine,
@@ -729,9 +729,9 @@ then the public API Root URL is determined as follows:
 - The DNS hostname (like example.com) is determined by DNS records,
   such as an "A Record" associating example.com with 12.34.56.78
 
-- The port (like 9984) is determined by the ``server.bind`` setting
+- The port (like 3333) is determined by the ``server.bind`` setting
   if Gunicorn is exposed directly to the public Internet.
   If a reverse proxy (like NGINX) is exposed directly to the public Internet
   instead, then it could expose the HTTP API on whatever port it wants to.
-  (It should expose the HTTP API on port 9984, but it's not bound to do
+  (It should expose the HTTP API on port 3333, but it's not bound to do
   that by anything other than convention.)

@@ -33,7 +33,7 @@ def test_basic():
     # To use BighainDB we need a connection. Here we create one. By default we
     # connect to localhost, but you can override this value using the env variable
     # called `BIGCHAINDB_ENDPOINT`, a valid value must include the schema:
-    # `https://example.com:9984`
+    # `https://example.com:3333`
     bdb = BigchainDB(os.environ.get('BIGCHAINDB_ENDPOINT'))
 
     # ## Create keypairs

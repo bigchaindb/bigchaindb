@@ -74,15 +74,15 @@ data:
 
   # bigchaindb-api-port is the port number on which BigchainDB is listening
   # for HTTP requests.
-  bigchaindb-api-port: "9984"
+  bigchaindb-api-port: "3333"
 
   # bigchaindb-server-bind is the socket where BigchainDB binds for API
   # requests.
-  bigchaindb-server-bind: "0.0.0.0:9984"
+  bigchaindb-server-bind: "0.0.0.0:3333"
 
   # bigchaindb-ws-port and bigchaindb-ws-interface form the socket where
   # BigchainDB binds for Websocket connections.
-  bigchaindb-ws-port: "9985"
+  bigchaindb-ws-port: "3333"
   bigchaindb-ws-interface: "0.0.0.0"
 
   # bigchaindb-database-name is the database collection used by BigchainDB with

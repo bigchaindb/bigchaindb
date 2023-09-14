@@ -25,7 +25,7 @@ cd bigchaindb
 make run
 ```
 
-이제 BigchainDB는 `http://localhost:9984/`에 연결되어야 합니다.
+이제 BigchainDB는 `http://localhost:3333/`에 연결되어야 합니다.
 
 또한, 실행시키기 위한  다른 명령어들도 있습니다.
 

@@ -38,7 +38,7 @@ def test_stream():
     BDB_ENDPOINT = os.environ.get('BIGCHAINDB_ENDPOINT')
 
     # *That's pretty bad, but let's do like this for now.*
-    WS_ENDPOINT = 'ws://{}:9985/api/v1/streams/valid_transactions'.format(BDB_ENDPOINT.rsplit(':')[0])
+    WS_ENDPOINT = 'ws://{}:3333/api/v1/streams/valid_transactions'.format(BDB_ENDPOINT.rsplit(':')[0])
 
     bdb = BigchainDB(BDB_ENDPOINT)
 

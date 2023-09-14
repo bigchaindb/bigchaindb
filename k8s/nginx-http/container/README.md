@@ -19,4 +19,4 @@ reflect any changes made to the container.
 You can test the WebSocket server by using
 [wsc](https://www.npmjs.com/package/wsc) tool with a command like:
 
-`wsc -er ws://localhost:9985/api/v1/streams/valid_transactions`.
+`wsc -er ws://localhost:3333/api/v1/streams/valid_transactions`.

@@ -14,7 +14,7 @@ from bigchaindb.core import App  # noqa
 
 # from functools import reduce
 # PORT_NUMBER = reduce(lambda x, y: x * y, map(ord, 'BigchainDB')) % 2**16
-# basically, the port number is 9984
+# basically, the port number is 3333
 
 # The following variable is used by `bigchaindb configure` to
 # prompt the user for database values. We cannot rely on
@@ -55,7 +55,7 @@ config = {
     'server': {
         # Note: this section supports all the Gunicorn settings:
         #       - http://docs.gunicorn.org/en/stable/settings.html
-        'bind': 'localhost:9984',
+        'bind': 'localhost:3333',
         'loglevel': logging.getLevelName(
             log_config['handlers']['console']['level']).lower(),
         'workers': None,  # if None, the value will be cpu_count * 2 + 1
@@ -63,10 +63,10 @@ config = {
     'wsserver': {
         'scheme': 'ws',
         'host': 'localhost',
-        'port': 9985,
+        'port': 3333,
         'advertised_scheme': 'ws',
         'advertised_host': 'localhost',
-        'advertised_port': 9985,
+        'advertised_port': 3333,
     },
     'tendermint': {
         'host': 'localhost',

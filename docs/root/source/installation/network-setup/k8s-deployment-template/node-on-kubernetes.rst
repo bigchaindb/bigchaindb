@@ -687,13 +687,13 @@ To test the BigchainDB instance:
 
    $ dig +noall +answer _bdb-ws-port._tcp.bdb-instance-0.default.svc.cluster.local SRV
 
-   $ curl -X GET http://bdb-instance-0:9984
+   $ curl -X GET http://bdb-instance-0:3333
 
    $ curl -X GET http://bdb-instance-0:9986/pub_key.json
 
    $ curl -X GET http://bdb-instance-0:26657/abci_info
 
-   $ wsc -er ws://bdb-instance-0:9985/api/v1/streams/valid_transactions
+   $ wsc -er ws://bdb-instance-0:3333/api/v1/streams/valid_transactions
 
 
 To test the OpenResty instance:

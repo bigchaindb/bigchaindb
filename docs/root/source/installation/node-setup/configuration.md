@@ -113,14 +113,14 @@ are settings for the [Gunicorn HTTP server](http://gunicorn.org/), which is used
 
 `server.bind` is where to bind the Gunicorn HTTP server socket. It's a string. It can be any valid value for [Gunicorn's bind setting](http://docs.gunicorn.org/en/stable/settings.html#bind). For example:
 
-* If you want to allow IPv4 connections from anyone, on port 9984, use `0.0.0.0:9984`
-* If you want to allow IPv6 connections from anyone, on port 9984, use `[::]:9984`
+* If you want to allow IPv4 connections from anyone, on port 3333, use `0.0.0.0:3333`
+* If you want to allow IPv6 connections from anyone, on port 3333, use `[::]:3333`
 
-In a production setting, we recommend you use Gunicorn behind a reverse proxy server such as NGINX. If Gunicorn and the reverse proxy are running on the same machine, then you can use `localhost:9984` (the default value), meaning Gunicorn will talk to the reverse proxy on port 9984. The reverse proxy could then be bound to port 80 (for HTTP) or port 443 (for HTTPS), so that external clients would connect using that port. For example:
+In a production setting, we recommend you use Gunicorn behind a reverse proxy server such as NGINX. If Gunicorn and the reverse proxy are running on the same machine, then you can use `localhost:3333` (the default value), meaning Gunicorn will talk to the reverse proxy on port 3333. The reverse proxy could then be bound to port 80 (for HTTP) or port 443 (for HTTPS), so that external clients would connect using that port. For example:
 
-[External clients]---(port 443)---[NGINX]---(port 9984)---[Gunicorn / BigchainDB Server]
+[External clients]---(port 443)---[NGINX]---(port 3333)---[Gunicorn / BigchainDB Server]
 
-If Gunicorn and the reverse proxy are running on different machines, then `server.bind` should be `hostname:9984`, where hostname is the IP address or [FQDN](https://en.wikipedia.org/wiki/Fully_qualified_domain_name) of the reverse proxy.
+If Gunicorn and the reverse proxy are running on different machines, then `server.bind` should be `hostname:3333`, where hostname is the IP address or [FQDN](https://en.wikipedia.org/wiki/Fully_qualified_domain_name) of the reverse proxy.
 
 There's [more information about deploying behind a reverse proxy in the Gunicorn documentation](http://docs.gunicorn.org/en/stable/deploy.html). (They call it a proxy.)
 
@@ -133,7 +133,7 @@ for more information.
 **Example using environment variables**
 
 ```text
-export BIGCHAINDB_SERVER_BIND=0.0.0.0:9984
+export BIGCHAINDB_SERVER_BIND=0.0.0.0:3333
 export BIGCHAINDB_SERVER_LOGLEVEL=debug
 export BIGCHAINDB_SERVER_WORKERS=5
 ```
@@ -142,7 +142,7 @@ export BIGCHAINDB_SERVER_WORKERS=5
 
 ```js
 "server": {
-    "bind": "0.0.0.0:9984",
+    "bind": "0.0.0.0:3333",
     "loglevel": "debug",
     "workers": 5,
 }
@@ -152,7 +152,7 @@ export BIGCHAINDB_SERVER_WORKERS=5
 
 ```js
 "server": {
-    "bind": "localhost:9984",
+    "bind": "localhost:3333",
     "loglevel": "info",
     "workers": null,
 }
@@ -171,15 +171,15 @@ which is used to serve the
 (but setting it to `"wss"` does *not* enable SSL/TLS).
 `wsserver.host` is where to bind the aiohttp server socket and
 `wsserver.port` is the corresponding port.
-If you want to allow connections from anyone, on port 9985,
-set `wsserver.host` to 0.0.0.0 and `wsserver.port` to 9985.
+If you want to allow connections from anyone, on port 3333,
+set `wsserver.host` to 0.0.0.0 and `wsserver.port` to 3333.
 
 **Example using environment variables**
 
 ```text
 export BIGCHAINDB_WSSERVER_SCHEME=ws
 export BIGCHAINDB_WSSERVER_HOST=0.0.0.0
-export BIGCHAINDB_WSSERVER_PORT=9985
+export BIGCHAINDB_WSSERVER_PORT=3333
 ```
 
 **Example config file snippet**
@@ -198,7 +198,7 @@ export BIGCHAINDB_WSSERVER_PORT=9985
 "wsserver": {
     "scheme": "ws",
     "host": "localhost",
-    "port": 9985
+    "port": 3333
 }
 ```
 
@@ -233,7 +233,7 @@ export BIGCHAINDB_WSSERVER_ADVERTISED_PORT=443
 "wsserver": {
     "advertised_scheme": "ws",
     "advertised_host": "localhost",
-    "advertised_port": 9985
+    "advertised_port": 3333
 }
 ```
 

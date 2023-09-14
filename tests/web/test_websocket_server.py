@@ -192,7 +192,7 @@ def test_integration_from_webapi_to_websocket(monkeypatch, client, loop):
     import time
     time.sleep(1)
 
-    ws_url = client.get('http://localhost:9984/api/v1/').json['_links']['streams_v1']
+    ws_url = client.get('http://localhost:3333/api/v1/').json['_links']['streams_v1']
 
     # Connect to the WebSocket endpoint
     session = aiohttp.ClientSession()

@@ -118,7 +118,7 @@ def main():
 
     client = server.create_app().test_client()
 
-    host = 'example.com:9984'
+    host = 'example.com:3333'
 
     # HTTP Index
     res = client.get('/', environ_overrides={'HTTP_HOST': host})

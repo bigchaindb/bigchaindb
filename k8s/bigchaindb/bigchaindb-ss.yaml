@@ -265,10 +265,10 @@ spec:
           done
           bigchaindb -l DEBUG start
         ports:
-        - containerPort: 9984
+        - containerPort: 3333
           protocol: TCP
           name: bdb-port
-        - containerPort: 9985
+        - containerPort: 3333
           protocol: TCP
           name: bdb-ws-port
         - containerPort: 26658
