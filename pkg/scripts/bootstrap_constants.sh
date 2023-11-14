@@ -1,9 +1,7 @@
-#!/usr/bin/env bash
-# Copyright © 2020 Interplanetary Database Association e.V.,
-# BigchainDB and IPDB software contributors.
+# Rubilink-Blockchain © 2023 Interplanetary Database Association e.V.,
+# Rubilink-Blockchain and IPDB software contributors.
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
-
 OS_CONF=/etc/os-release
 declare -a SUPPORTED_OS=('centos' 'fedora' 'ubuntu' 'debian' 'macOS')
 declare -a OS_DEPENDENCIES=('ansible')

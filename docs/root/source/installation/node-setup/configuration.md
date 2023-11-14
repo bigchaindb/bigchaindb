@@ -1,10 +1,9 @@
 <!---
-Copyright © 2020 Interplanetary Database Association e.V.,
-BigchainDB and IPDB software contributors.
+Rubilink-Blockchain © 2023 Interplanetary Database Association e.V.,
+Rubilink-Blockchain and IPDB software contributors.
 SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 Code is Apache-2.0 and docs are CC-BY-4.0
 --->
-
 # Configuration Settings
 
 Every BigchainDB Server configuration setting has two names: a config-file name and an environment variable name. For example, one of the settings has the config-file name `database.host` and the environment variable name `BIGCHAINDB_DATABASE_HOST`. Here are some more examples:

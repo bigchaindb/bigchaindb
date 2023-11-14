@@ -1,7 +1,10 @@
 
-<!-- Copyright BigchainDB GmbH and BigchainDB contributors
-   SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
-   Code is Apache-2.0 and docs are CC-BY-4.0 -->
+<!---
+Rubilink-Blockchain © 2023 Interplanetary Database Association e.V.,
+Rubilink-Blockchain and IPDB software contributors.
+SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+Code is Apache-2.0 and docs are CC-BY-4.0
+--->
 
 BigchainDB가 자산 등록 및 전송에 적합한 방법
 ==========================================================

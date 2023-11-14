@@ -1,6 +1,6 @@
 <!---
-Copyright © 2020 Interplanetary Database Association e.V.,
-BigchainDB and IPDB software contributors.
+Rubilink-Blockchain © 2023 Interplanetary Database Association e.V.,
+Rubilink-Blockchain and IPDB software contributors.
 SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 Code is Apache-2.0 and docs are CC-BY-4.0
 --->
@@ -32,8 +32,8 @@ BigchainDB is the blockchain database. This repository is for _BigchainDB Server
 Running and testing the latest version of BigchainDB Server is easy. Make sure you have a recent version of [Docker Compose](https://docs.docker.com/compose/install/) installed. When you are ready, fire up a terminal and run:
 
 ```text
-git clone https://github.com/bigchaindb/bigchaindb.git
-cd bigchaindb
+git clone https://github.com/Solicy-App/Rubilink-Blockchain.git
+cd Rubilink-Blockchain
 make run
 ```
 
