@@ -86,7 +86,7 @@ install_requires = [
     # TODO Consider not installing the db drivers, or putting them in extras.
     'pymongo==3.11.4',
     'python-rapidjson==1.0',
-    'pyyaml==5.4.1',
+    'pyyaml',
     'requests==2.25.1',
     'setproctitle==1.2.2',
     'werkzeug==2.0.2'
