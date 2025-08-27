@@ -75,3 +75,8 @@ To view all commands available, run `make`.
 * [Licenses](LICENSES.md) - open source & open content
 * [Imprint](https://www.bigchaindb.com/imprint/)
 * [Contact Us](https://www.bigchaindb.com/contact/)
+
+## Quickstart Notes
+- Use Python 3.11+.
+- Create venv and activate before running make.
+- Install deps: pip install -r requirements.txt
