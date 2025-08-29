@@ -75,3 +75,12 @@ To view all commands available, run `make`.
 * [Licenses](LICENSES.md) - open source & open content
 * [Imprint](https://www.bigchaindb.com/imprint/)
 * [Contact Us](https://www.bigchaindb.com/contact/)
+### Python Quickstart
+
+```bash
+# Rights Reserved, Unlicensed
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python -m bigchaindb
+```
